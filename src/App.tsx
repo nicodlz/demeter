@@ -7,6 +7,7 @@ import { ProjectionsPage } from './pages/ProjectionsPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { ClientsPage } from './pages/ClientsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { DataPage } from './pages/DataPage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -27,6 +28,8 @@ function App() {
         return <ClientsPage />;
       case 'settings':
         return <SettingsPage />;
+      case 'data':
+        return <DataPage />;
       default:
         return <DashboardPage />;
     }

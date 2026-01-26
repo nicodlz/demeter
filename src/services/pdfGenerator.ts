@@ -418,8 +418,8 @@ export class PDFGenerator {
       pdfDoc.setTitle(`Invoice ${invoice.number}`);
       pdfDoc.setSubject(`Invoice for ${invoice.client.name}`);
       pdfDoc.setKeywords(['invoice', invoice.number]);
-      pdfDoc.setProducer('Uncertified');
-      pdfDoc.setCreator('Uncertified');
+      pdfDoc.setProducer('Demeter');
+      pdfDoc.setCreator('Demeter');
 
       // Store JSON metadata in a custom field (we'll use the Author field)
       pdfDoc.setAuthor(JSON.stringify(metadata));

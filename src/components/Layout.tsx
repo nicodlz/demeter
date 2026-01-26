@@ -36,6 +36,7 @@ export const Layout = ({ children, currentPage, onNavigate }: LayoutProps) => {
         { id: 'settings', label: 'Settings' },
       ],
     },
+    { id: 'data', label: 'Data' },
   ];
 
   const isActiveParent = (item: NavItem): boolean => {
@@ -53,7 +54,7 @@ export const Layout = ({ children, currentPage, onNavigate }: LayoutProps) => {
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
                 <h1 className="text-xl font-bold text-foreground">
-                  Uncertified
+                  Demeter
                 </h1>
               </div>
               <div className="ml-10 flex space-x-2">

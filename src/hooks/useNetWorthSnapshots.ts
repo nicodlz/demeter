@@ -6,32 +6,36 @@ import { storage, STORAGE_KEYS } from '../utils/storage';
 // Helper to calculate total for any snapshot format
 export const getSnapshotTotal = (
   snapshot: AnyNetWorthSnapshot,
-  convert: (amount: number, from: Currency, to: Currency) => number
+  convert: (amount: number, from: Currency, to: Currency) => number,
+  targetCurrency: Currency = 'USD'
 ): number => {
   if (isV2Snapshot(snapshot)) {
     const categories = ['stocks', 'crypto', 'cash', 'stablecoins'] as const;
     return categories.reduce((total, category) => {
       return total + snapshot[category].reduce((sum, entry) => {
-        return sum + convert(entry.amount, entry.currency, 'USD');
+        return sum + convert(entry.amount, entry.currency, targetCurrency);
       }, 0);
     }, 0);
   }
-  // V1: simple sum (already in same currency)
-  return snapshot.stocks + snapshot.crypto + snapshot.cash + snapshot.stablecoins;
+  // V1: assume USD and convert to target currency
+  const total = snapshot.stocks + snapshot.crypto + snapshot.cash + snapshot.stablecoins;
+  return convert(total, 'USD', targetCurrency);
 };
 
 // Helper to get category total for any snapshot format
 export const getCategoryTotal = (
   snapshot: AnyNetWorthSnapshot,
   category: 'stocks' | 'crypto' | 'cash' | 'stablecoins',
-  convert: (amount: number, from: Currency, to: Currency) => number
+  convert: (amount: number, from: Currency, to: Currency) => number,
+  targetCurrency: Currency = 'USD'
 ): number => {
   if (isV2Snapshot(snapshot)) {
     return snapshot[category].reduce((sum, entry) => {
-      return sum + convert(entry.amount, entry.currency, 'USD');
+      return sum + convert(entry.amount, entry.currency, targetCurrency);
     }, 0);
   }
-  return snapshot[category];
+  // V1: assume USD and convert to target currency
+  return convert(snapshot[category], 'USD', targetCurrency);
 };
 
 export const useNetWorthSnapshots = () => {
