@@ -49,11 +49,13 @@ export type {
 // ============= Expenses =============
 export {
   bankProviderSchema,
+  expenseTypeSchema,
   expenseSchema,
   categoryMappingSchema,
   parsedTransactionSchema,
 } from './expense';
 export type {
+  ExpenseType,
   BankProvider,
   Expense,
   CategoryMapping,

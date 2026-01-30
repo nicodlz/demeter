@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { Expense } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/formatters';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -103,6 +104,7 @@ export const ExpenseTable = ({
               <SortIcon field="date" />
             </button>
           </TableHead>
+          <TableHead>Type</TableHead>
           <TableHead>Description</TableHead>
           <TableHead>Category</TableHead>
           <TableHead>Source</TableHead>
@@ -123,6 +125,17 @@ export const ExpenseTable = ({
           <TableRow key={expense.id}>
             <TableCell className="font-medium">
               {formatDate(expense.date)}
+            </TableCell>
+            <TableCell>
+              {expense.type === 'income' ? (
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">
+                  Income
+                </Badge>
+              ) : (
+                <Badge variant="destructive">
+                  Expense
+                </Badge>
+              )}
             </TableCell>
             <TableCell>
               <div className="max-w-[300px] truncate" title={expense.description}>
@@ -146,8 +159,8 @@ export const ExpenseTable = ({
                 {expense.source}
               </span>
             </TableCell>
-            <TableCell className="text-right font-medium text-destructive">
-              -{formatCurrency(expense.amount, expense.currency)}
+            <TableCell className={`text-right font-medium ${expense.type === 'income' ? 'text-green-600' : 'text-destructive'}`}>
+              {expense.type === 'income' ? '+' : '-'}{formatCurrency(expense.amount, expense.currency)}
             </TableCell>
             <TableCell className="text-right">
               <DropdownMenu>
