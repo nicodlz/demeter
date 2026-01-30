@@ -27,7 +27,22 @@ export type {
   Expense,
   CategoryMapping,
   ParsedTransaction,
+  CryptoWallet,
+  TokenPosition,
 } from '../schemas';
+
+// ============================================================
+// Crypto Portfolio state (not schema-backed, runtime only)
+// ============================================================
+
+import type { CryptoWallet, TokenPosition } from '../schemas';
+
+export interface CryptoPortfolioState {
+  wallets: CryptoWallet[];
+  positions: TokenPosition[];
+  lastSyncAt: string | null;
+  syncing: boolean;
+}
 
 // ============================================================
 // Types NOT backed by schemas (display / derived types)

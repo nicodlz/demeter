@@ -8,6 +8,8 @@ import {
   anyNetWorthSnapshotSchema,
   expenseSchema,
   categoryMappingSchema,
+  cryptoWalletSchema,
+  tokenPositionSchema,
 } from '../schemas';
 import type { DemeterBackup } from '../schemas';
 
@@ -19,6 +21,9 @@ const STORAGE_KEYS = {
   NET_WORTH_SNAPSHOTS: 'demeter-net-worth-snapshots',
   EXPENSES: 'demeter-expenses',
   CATEGORY_MAPPINGS: 'demeter-category-mappings',
+  CRYPTO_WALLETS: 'demeter-crypto-wallets',
+  CRYPTO_POSITIONS: 'demeter-crypto-positions',
+  CRYPTO_LAST_SYNC: 'demeter-crypto-last-sync',
 } as const;
 
 /**
@@ -33,6 +38,8 @@ const STORAGE_SCHEMAS: Record<string, z.ZodType> = {
   [STORAGE_KEYS.NET_WORTH_SNAPSHOTS]: anyNetWorthSnapshotSchema.array(),
   [STORAGE_KEYS.EXPENSES]: expenseSchema.array(),
   [STORAGE_KEYS.CATEGORY_MAPPINGS]: categoryMappingSchema.array(),
+  [STORAGE_KEYS.CRYPTO_WALLETS]: cryptoWalletSchema.array(),
+  [STORAGE_KEYS.CRYPTO_POSITIONS]: tokenPositionSchema.array(),
 };
 
 export const storage = {
@@ -106,6 +113,9 @@ export const storage = {
         netWorthSnapshots: storage.get(STORAGE_KEYS.NET_WORTH_SNAPSHOTS, []),
         expenses: storage.get(STORAGE_KEYS.EXPENSES, []),
         categoryMappings: storage.get(STORAGE_KEYS.CATEGORY_MAPPINGS, []),
+        cryptoWallets: storage.get(STORAGE_KEYS.CRYPTO_WALLETS, []),
+        cryptoPositions: storage.get(STORAGE_KEYS.CRYPTO_POSITIONS, []),
+        cryptoLastSync: storage.get<string | null>(STORAGE_KEYS.CRYPTO_LAST_SYNC, null),
       },
     };
     return backup;
@@ -163,6 +173,15 @@ export const storage = {
       }
       if (backup.data.categoryMappings) {
         storage.set(STORAGE_KEYS.CATEGORY_MAPPINGS, backup.data.categoryMappings);
+      }
+      if (backup.data.cryptoWallets) {
+        storage.set(STORAGE_KEYS.CRYPTO_WALLETS, backup.data.cryptoWallets);
+      }
+      if (backup.data.cryptoPositions) {
+        storage.set(STORAGE_KEYS.CRYPTO_POSITIONS, backup.data.cryptoPositions);
+      }
+      if (backup.data.cryptoLastSync) {
+        storage.set(STORAGE_KEYS.CRYPTO_LAST_SYNC, backup.data.cryptoLastSync);
       }
 
       return { success: true };
