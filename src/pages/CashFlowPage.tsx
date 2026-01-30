@@ -18,6 +18,7 @@ import { ExpenseTable } from '@/components/expenses/ExpenseTable';
 import { ExpenseForm } from '@/components/expenses/ExpenseForm';
 import { ExpenseImportModal } from '@/components/expenses/ExpenseImportModal';
 import { ExpenseByCategoryChart } from '@/components/expenses/ExpenseByCategoryChart';
+import { CashFlowSankey } from '@/components/cashflow/CashFlowSankey';
 import { Upload, Plus, Download, X, TrendingUp, TrendingDown, ArrowRightLeft } from 'lucide-react';
 
 const CATEGORY_COLORS = [
@@ -458,6 +459,9 @@ export const CashFlowPage = () => {
           currency="EUR"
         />
       )}
+
+      {/* Sankey Money Flow */}
+      <CashFlowSankey expenses={expenses} currency="EUR" />
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
