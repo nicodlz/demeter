@@ -14,6 +14,7 @@ import { createNetWorthSlice } from './slices/netWorthSlice';
 import { createExpensesSlice } from './slices/expensesSlice';
 import { createCategoryMappingsSlice } from './slices/categoryMappingsSlice';
 import { createCryptoSlice } from './slices/cryptoSlice';
+import { createIbkrSlice } from './slices/ibkrSlice';
 
 // =============================================================================
 // Custom multi-key localStorage storage adapter
@@ -74,6 +75,26 @@ const multiKeyStorage: PersistStorage<PersistedState> = {
           localStorage.getItem(STORAGE_KEYS.CRYPTO_LAST_SYNC),
           null
         ),
+        ibkrPositions: safeJsonParse(
+          localStorage.getItem(STORAGE_KEYS.IBKR_POSITIONS),
+          []
+        ),
+        ibkrCashBalances: safeJsonParse(
+          localStorage.getItem(STORAGE_KEYS.IBKR_CASH_BALANCES),
+          []
+        ),
+        ibkrLastSyncAt: safeJsonParse(
+          localStorage.getItem(STORAGE_KEYS.IBKR_LAST_SYNC),
+          null
+        ),
+        ibkrAccountId: safeJsonParse(
+          localStorage.getItem(STORAGE_KEYS.IBKR_ACCOUNT_ID),
+          null
+        ),
+        ibkrNav: safeJsonParse(
+          localStorage.getItem(STORAGE_KEYS.IBKR_NAV),
+          null
+        ),
       };
       return { state, version: 0 };
     } catch {
@@ -94,6 +115,11 @@ const multiKeyStorage: PersistStorage<PersistedState> = {
       localStorage.setItem(STORAGE_KEYS.CRYPTO_WALLETS, JSON.stringify(state.cryptoWallets));
       localStorage.setItem(STORAGE_KEYS.CRYPTO_POSITIONS, JSON.stringify(state.cryptoPositions));
       localStorage.setItem(STORAGE_KEYS.CRYPTO_LAST_SYNC, JSON.stringify(state.cryptoLastSyncAt));
+      localStorage.setItem(STORAGE_KEYS.IBKR_POSITIONS, JSON.stringify(state.ibkrPositions));
+      localStorage.setItem(STORAGE_KEYS.IBKR_CASH_BALANCES, JSON.stringify(state.ibkrCashBalances));
+      localStorage.setItem(STORAGE_KEYS.IBKR_LAST_SYNC, JSON.stringify(state.ibkrLastSyncAt));
+      localStorage.setItem(STORAGE_KEYS.IBKR_ACCOUNT_ID, JSON.stringify(state.ibkrAccountId));
+      localStorage.setItem(STORAGE_KEYS.IBKR_NAV, JSON.stringify(state.ibkrNav));
     } catch (error) {
       console.error('Error persisting store to localStorage:', error);
     }
@@ -123,6 +149,7 @@ export const useStore = create<StoreState>()(
       ...createExpensesSlice(...a),
       ...createCategoryMappingsSlice(...a),
       ...createCryptoSlice(...a),
+      ...createIbkrSlice(...a),
     }),
     {
       name: 'demeter-store', // Required by persist, but our custom storage ignores it
@@ -138,6 +165,11 @@ export const useStore = create<StoreState>()(
         cryptoWallets: state.cryptoWallets,
         cryptoPositions: state.cryptoPositions,
         cryptoLastSyncAt: state.cryptoLastSyncAt,
+        ibkrPositions: state.ibkrPositions,
+        ibkrCashBalances: state.ibkrCashBalances,
+        ibkrLastSyncAt: state.ibkrLastSyncAt,
+        ibkrAccountId: state.ibkrAccountId,
+        ibkrNav: state.ibkrNav,
       }),
     }
   )

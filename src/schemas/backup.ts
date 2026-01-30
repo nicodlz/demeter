@@ -5,6 +5,7 @@ import { appSettingsSchema } from './settings';
 import { anyNetWorthSnapshotSchema } from './netWorth';
 import { expenseSchema, categoryMappingSchema } from './expense';
 import { cryptoWalletSchema, tokenPositionSchema } from './crypto';
+import { ibkrPositionSchema, ibkrCashBalanceSchema } from './ibkr';
 
 export const demeterBackupSchema = z.object({
   version: z.number(),
@@ -20,6 +21,11 @@ export const demeterBackupSchema = z.object({
     cryptoWallets: z.array(cryptoWalletSchema).optional(),
     cryptoPositions: z.array(tokenPositionSchema).optional(),
     cryptoLastSync: z.string().nullable().optional(),
+    ibkrPositions: z.array(ibkrPositionSchema).optional(),
+    ibkrCashBalances: z.array(ibkrCashBalanceSchema).optional(),
+    ibkrLastSync: z.string().nullable().optional(),
+    ibkrAccountId: z.string().nullable().optional(),
+    ibkrNav: z.number().nullable().optional(),
   }),
 });
 
