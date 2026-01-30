@@ -3,6 +3,7 @@ import type { NetWorthSnapshotV2, AssetEntry, Currency, AnyNetWorthSnapshot } fr
 import { isV2Snapshot } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
+import { useCrypto } from '@/hooks/useCrypto';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AssetCategoryInput } from './AssetCategoryInput';
+import { Wallet } from 'lucide-react';
 
 interface SnapshotFormProps {
   snapshot?: AnyNetWorthSnapshot;
@@ -37,6 +39,7 @@ export const SnapshotForm = ({
   onCancel,
 }: SnapshotFormProps) => {
   const { convert, loading: rateLoading } = useExchangeRate();
+  const { getTotalCryptoValue, getTotalStablecoinValue, lastSyncAt, positions } = useCrypto();
 
   const getInitialEntries = (category: 'stocks' | 'crypto' | 'cash' | 'stablecoins'): AssetEntry[] => {
     if (!snapshot) return [];
@@ -54,6 +57,31 @@ export const SnapshotForm = ({
   const [cash, setCash] = useState<AssetEntry[]>(getInitialEntries('cash'));
   const [stablecoins, setStablecoins] = useState<AssetEntry[]>(getInitialEntries('stablecoins'));
   const [notes, setNotes] = useState(snapshot?.notes || '');
+
+  const hasCryptoData = positions.length > 0 && lastSyncAt !== null;
+
+  const handleAutoFillFromWallets = () => {
+    if (!hasCryptoData) return;
+    const cryptoValue = getTotalCryptoValue;
+    const stablecoinValue = getTotalStablecoinValue;
+
+    setCrypto([
+      {
+        id: globalThis.crypto.randomUUID(),
+        name: 'Wallets (auto-synced)',
+        amount: cryptoValue,
+        currency: 'USD' as Currency,
+      },
+    ]);
+    setStablecoins([
+      {
+        id: globalThis.crypto.randomUUID(),
+        name: 'Wallets (auto-synced)',
+        amount: stablecoinValue,
+        currency: 'USD' as Currency,
+      },
+    ]);
+  };
 
   const calculateCategoryTotal = (entries: AssetEntry[]): number => {
     return entries.reduce((sum, entry) => {
@@ -105,6 +133,24 @@ export const SnapshotForm = ({
               required
             />
           </div>
+
+          {hasCryptoData && (
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
+              <div className="text-sm">
+                <span className="font-medium">Auto-fill crypto & stablecoins</span>
+                <span className="text-muted-foreground ml-2">from wallet sync</span>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAutoFillFromWallets}
+              >
+                <Wallet className="h-4 w-4 mr-2" />
+                Auto-fill from wallets
+              </Button>
+            </div>
+          )}
 
           <div className="space-y-3">
             <AssetCategoryInput

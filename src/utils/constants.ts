@@ -1,5 +1,18 @@
 import type { VATRate, AppSettings } from '../types';
 
+// ============= Crypto: Stablecoin classification =============
+export const STABLECOIN_SYMBOLS = [
+  'USDT', 'USDC', 'DAI', 'FRAX', 'LUSD', 'crvUSD', 'GHO', 'PYUSD',
+  'EURC', 'FDUSD', 'TUSD', 'USDP', 'USDbC', 'USDe', 'sUSDe', 'USDS', 'sUSDS',
+];
+
+/** Case-insensitive check */
+const stablecoinSet = new Set(STABLECOIN_SYMBOLS.map((s) => s.toLowerCase()));
+
+export const isStablecoinSymbol = (symbol: string): boolean => {
+  return stablecoinSet.has(symbol.toLowerCase());
+};
+
 export const DEFAULT_VAT_RATES: VATRate[] = [
   {
     country: 'France',
