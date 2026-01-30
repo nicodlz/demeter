@@ -5,10 +5,9 @@
  *   1. SendRequest – triggers report generation, returns a ReferenceCode
  *   2. GetStatement – retrieves the generated report (XML)
  *
- * TODO: In production this should go through a backend proxy to avoid
- *       exposing the Flex token in the browser. For now we call the
- *       IBKR endpoints directly (works if CORS is not enforced or a
- *       proxy/extension is used).
+ * In dev, requests go through the Vite proxy (/api/ibkr → IBKR).
+ * In production, deploy a backend proxy (Cloudflare Worker, Vercel, etc.)
+ * and set VITE_IBKR_PROXY_URL accordingly.
  */
 
 import type { IbkrPosition, IbkrCashBalance, IbkrAccount } from '@/schemas/ibkr';
@@ -17,8 +16,7 @@ import type { IbkrPosition, IbkrCashBalance, IbkrAccount } from '@/schemas/ibkr'
 // Constants
 // ============================================================
 
-const FLEX_BASE_URL =
-  'https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService';
+const FLEX_BASE_URL = import.meta.env.VITE_IBKR_PROXY_URL ?? '/api/ibkr';
 
 const POLL_DELAY_MS = 5_000;
 const MAX_POLL_ATTEMPTS = 6;

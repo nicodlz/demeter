@@ -10,4 +10,15 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      // Proxy IBKR Flex Web Service to avoid CORS issues in dev
+      '/api/ibkr': {
+        target: 'https://ndcdyn.interactivebrokers.com',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api\/ibkr/, '/AccountManagement/FlexWebService'),
+        secure: true,
+      },
+    },
+  },
 })
