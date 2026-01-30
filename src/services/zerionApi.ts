@@ -93,7 +93,7 @@ export async function fetchWalletPositions(
 ): Promise<ZerionPositionData[]> {
   const allPositions: ZerionPositionData[] = [];
   let url: string | undefined =
-    `https://api.zerion.io/v1/wallets/${address}/positions/?filter[positions]=only_simple&currency=usd`;
+    `https://api.zerion.io/v1/wallets/${address}/positions/?filter[positions]=no_filter&currency=usd`;
 
   while (url) {
     const response = await fetch(url, {
