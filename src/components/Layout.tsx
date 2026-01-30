@@ -35,7 +35,7 @@ const navItems: NavItem[] = [
       { to: '/billing/settings', label: 'Settings' },
     ],
   },
-  { to: '/data', label: 'Data' },
+  { to: '/configuration', label: 'Configuration' },
 ];
 
 interface LayoutProps {

@@ -75,8 +75,8 @@ export const CryptoPage = () => {
               <p className="font-medium">Zerion API Key Required</p>
               <p className="text-sm text-muted-foreground mt-1">
                 To sync wallet positions, you need to configure your Zerion API key in{' '}
-                <Link to="/billing/settings" className="underline text-foreground hover:text-foreground/80">
-                  Settings
+                <Link to="/configuration" className="underline text-foreground hover:text-foreground/80">
+                  Configuration
                 </Link>
                 . Get a free key at{' '}
                 <a

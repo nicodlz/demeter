@@ -1,12 +1,17 @@
 import { useState, useRef } from 'react';
 import { storage } from '@/utils/storage';
+import { useSettings } from '@/hooks/useSettings';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Upload, Database, AlertTriangle } from 'lucide-react';
+import { Download, Upload, Database, AlertTriangle, KeyRound, Save } from 'lucide-react';
 
 export const DataPage = () => {
+  const { settings, updateSettings } = useSettings();
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [zerionApiKey, setZerionApiKey] = useState(settings.zerionApiKey || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const backupInfo = storage.exportAll();
@@ -52,14 +57,61 @@ export const DataPage = () => {
     }
   };
 
+  const handleSaveApiKey = () => {
+    updateSettings({ zerionApiKey: zerionApiKey || undefined });
+    alert('API key saved!');
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Data Management</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Configuration</h2>
         <p className="text-muted-foreground">
-          Export and import all your Demeter data
+          Manage your API keys and data
         </p>
       </div>
+
+      {/* Crypto API */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <KeyRound className="h-5 w-5" />
+            Crypto API
+          </CardTitle>
+          <CardDescription>
+            Connect to Zerion to automatically track your crypto wallets & DeFi positions
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="zerionApiKey">Zerion API Key</Label>
+            <Input
+              name="zerionApiKey"
+              id="zerionApiKey"
+              type="password"
+              placeholder="zk_dev_..."
+              value={zerionApiKey}
+              onChange={(e) => setZerionApiKey(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Get a free API key at{' '}
+              <a
+                href="https://developers.zerion.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground"
+              >
+                developers.zerion.io
+              </a>
+              . Used for wallet position tracking on the Crypto page.
+            </p>
+          </div>
+          <Button onClick={handleSaveApiKey}>
+            <Save className="mr-2 h-4 w-4" />
+            Save API Key
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Current Data Stats */}
       <Card>
