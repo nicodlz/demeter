@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { AppSettings } from '../types';
+import { appSettingsSchema } from '../schemas';
 import { storage, STORAGE_KEYS } from '../utils/storage';
 import { DEFAULT_SETTINGS } from '../utils/constants';
 
@@ -13,14 +14,30 @@ export const useSettings = () => {
   }, [settings]);
 
   const updateSettings = (newSettings: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      const result = appSettingsSchema.safeParse(updated);
+      if (!result.success) {
+        console.error('[Demeter] Invalid settings update:', result.error.issues);
+        return prev;
+      }
+      return result.data;
+    });
   };
 
   const updateIssuer = (issuerData: Partial<AppSettings['issuer']>) => {
-    setSettings((prev) => ({
-      ...prev,
-      issuer: { ...prev.issuer, ...issuerData },
-    }));
+    setSettings((prev) => {
+      const updated = {
+        ...prev,
+        issuer: { ...prev.issuer, ...issuerData },
+      };
+      const result = appSettingsSchema.safeParse(updated);
+      if (!result.success) {
+        console.error('[Demeter] Invalid issuer update:', result.error.issues);
+        return prev;
+      }
+      return result.data;
+    });
   };
 
   const incrementInvoiceCounter = (): number => {

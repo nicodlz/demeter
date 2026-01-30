@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { NetWorthSnapshotV2, AnyNetWorthSnapshot, Currency } from '../types';
 import { isV2Snapshot } from '../types';
+import { netWorthSnapshotV2Schema, anyNetWorthSnapshotSchema } from '../schemas';
+import { z } from 'zod';
 import { storage, STORAGE_KEYS } from '../utils/storage';
 
 // Helper to calculate total for any snapshot format
@@ -50,14 +52,19 @@ export const useNetWorthSnapshots = () => {
   const addSnapshot = (
     snapshotData: Omit<NetWorthSnapshotV2, 'id' | 'createdAt' | 'updatedAt'>
   ) => {
-    const newSnapshot: NetWorthSnapshotV2 = {
+    const newSnapshot = {
       ...snapshotData,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setSnapshots((prev) => [...prev, newSnapshot]);
-    return newSnapshot;
+    const result = netWorthSnapshotV2Schema.safeParse(newSnapshot);
+    if (!result.success) {
+      console.error('[Demeter] Invalid snapshot data:', result.error.issues);
+      return newSnapshot as NetWorthSnapshotV2;
+    }
+    setSnapshots((prev) => [...prev, result.data]);
+    return result.data;
   };
 
   const updateSnapshot = (id: string, snapshotData: Omit<NetWorthSnapshotV2, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -65,19 +72,24 @@ export const useNetWorthSnapshots = () => {
       prev.map((snapshot): AnyNetWorthSnapshot => {
         if (snapshot.id !== id) return snapshot;
         // When updating, always convert to V2 format
-        const updatedSnapshot: NetWorthSnapshotV2 = {
+        const updatedSnapshot = {
           id: snapshot.id,
           createdAt: snapshot.createdAt,
           updatedAt: new Date().toISOString(),
           date: snapshotData.date,
-          version: 2,
+          version: 2 as const,
           stocks: snapshotData.stocks,
           crypto: snapshotData.crypto,
           cash: snapshotData.cash,
           stablecoins: snapshotData.stablecoins,
           notes: snapshotData.notes,
         };
-        return updatedSnapshot;
+        const result = netWorthSnapshotV2Schema.safeParse(updatedSnapshot);
+        if (!result.success) {
+          console.error('[Demeter] Invalid snapshot update:', result.error.issues);
+          return snapshot;
+        }
+        return result.data;
       })
     );
   };
@@ -120,9 +132,13 @@ export const useNetWorthSnapshots = () => {
 
   const importFromJSON = (jsonString: string): boolean => {
     try {
-      const imported = JSON.parse(jsonString) as AnyNetWorthSnapshot[];
-      if (!Array.isArray(imported)) return false;
-      setSnapshots(imported);
+      const parsed: unknown = JSON.parse(jsonString);
+      const result = z.array(anyNetWorthSnapshotSchema).safeParse(parsed);
+      if (!result.success) {
+        console.error('[Demeter] Invalid snapshot import data:', result.error.issues);
+        return false;
+      }
+      setSnapshots(result.data);
       return true;
     } catch {
       return false;
