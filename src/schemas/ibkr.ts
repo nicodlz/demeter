@@ -30,6 +30,10 @@ export const ibkrPositionSchema = z.object({
   costBasisMoney: z.number(),
   unrealizedPnl: z.number(),
   percentOfNav: z.number(),
+  fxRateToBase: z.number(),
+  marketValueBase: z.number(),
+  unrealizedPnlBase: z.number(),
+  costBasisMoneyBase: z.number(),
 });
 
 export type IbkrPosition = z.infer<typeof ibkrPositionSchema>;
@@ -39,6 +43,8 @@ export const ibkrCashBalanceSchema = z.object({
   currency: z.string(),
   endingCash: z.number(),
   endingSettledCash: z.number(),
+  fxRateToBase: z.number(),
+  endingCashBase: z.number(),
 });
 
 export type IbkrCashBalance = z.infer<typeof ibkrCashBalanceSchema>;

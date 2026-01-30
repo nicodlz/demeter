@@ -45,6 +45,11 @@ function parsePositions(doc: Document): IbkrPosition[] {
   const elements = doc.querySelectorAll('OpenPosition');
 
   elements.forEach((el) => {
+    const fxRate = getNumAttr(el, 'fxRateToBase') || 1;
+    const marketValue = getNumAttr(el, 'positionValue');
+    const unrealizedPnl = getNumAttr(el, 'fifoPnlUnrealized');
+    const costBasisMoney = getNumAttr(el, 'costBasisMoney');
+
     positions.push({
       accountId: getAttr(el, 'accountId'),
       symbol: getAttr(el, 'symbol'),
@@ -55,11 +60,15 @@ function parsePositions(doc: Document): IbkrPosition[] {
       currency: getAttr(el, 'currency'),
       quantity: getNumAttr(el, 'position'),
       markPrice: getNumAttr(el, 'markPrice'),
-      marketValue: getNumAttr(el, 'positionValue'),
+      marketValue,
       costBasisPrice: getNumAttr(el, 'costBasisPrice'),
-      costBasisMoney: getNumAttr(el, 'costBasisMoney'),
-      unrealizedPnl: getNumAttr(el, 'fifoPnlUnrealized'),
+      costBasisMoney,
+      unrealizedPnl,
       percentOfNav: getNumAttr(el, 'percentOfNAV'),
+      fxRateToBase: fxRate,
+      marketValueBase: marketValue * fxRate,
+      unrealizedPnlBase: unrealizedPnl * fxRate,
+      costBasisMoneyBase: costBasisMoney * fxRate,
     });
   });
 
@@ -74,10 +83,14 @@ function parseCashBalances(doc: Document): IbkrCashBalance[] {
     const currency = getAttr(el, 'currency');
     // Skip the aggregate "BASE_SUMMARY" row
     if (!currency || currency === 'BASE_SUMMARY') return;
+    const fxRate = getNumAttr(el, 'fxRateToBase') || 1;
+    const endingCash = getNumAttr(el, 'endingCash');
     balances.push({
       currency,
-      endingCash: getNumAttr(el, 'endingCash'),
+      endingCash,
       endingSettledCash: getNumAttr(el, 'endingSettledCash'),
+      fxRateToBase: fxRate,
+      endingCashBase: endingCash * fxRate,
     });
   });
 
