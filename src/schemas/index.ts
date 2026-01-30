@@ -60,6 +60,10 @@ export type {
   ParsedTransaction,
 } from './expense';
 
+// ============= Crypto =============
+export { cryptoWalletSchema, tokenPositionSchema } from './crypto';
+export type { CryptoWallet, TokenPosition } from './crypto';
+
 // ============= Backup =============
 export { demeterBackupSchema } from './backup';
 export type { DemeterBackup } from './backup';

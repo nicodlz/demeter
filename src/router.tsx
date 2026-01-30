@@ -12,6 +12,7 @@ import { ProjectionsPage } from '@/pages/ProjectionsPage';
 import { InvoicesPage } from '@/pages/InvoicesPage';
 import { ClientsPage } from '@/pages/ClientsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { CryptoPage } from '@/pages/CryptoPage';
 import { DataPage } from '@/pages/DataPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -37,6 +38,12 @@ const expensesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/expenses',
   component: ExpensesPage,
+});
+
+const cryptoRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/crypto',
+  component: CryptoPage,
 });
 
 const netWorthRoute = createRoute({
@@ -82,6 +89,7 @@ const billingSettingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   expensesRoute,
+  cryptoRoute,
   netWorthRoute,
   projectionsRoute,
   billingInvoicesRoute,

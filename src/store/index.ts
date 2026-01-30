@@ -13,6 +13,7 @@ import { createSavedItemsSlice } from './slices/savedItemsSlice';
 import { createNetWorthSlice } from './slices/netWorthSlice';
 import { createExpensesSlice } from './slices/expensesSlice';
 import { createCategoryMappingsSlice } from './slices/categoryMappingsSlice';
+import { createCryptoSlice } from './slices/cryptoSlice';
 
 // =============================================================================
 // Custom multi-key localStorage storage adapter
@@ -61,6 +62,18 @@ const multiKeyStorage: PersistStorage<PersistedState> = {
           localStorage.getItem(STORAGE_KEYS.CATEGORY_MAPPINGS),
           []
         ),
+        cryptoWallets: safeJsonParse(
+          localStorage.getItem(STORAGE_KEYS.CRYPTO_WALLETS),
+          []
+        ),
+        cryptoPositions: safeJsonParse(
+          localStorage.getItem(STORAGE_KEYS.CRYPTO_POSITIONS),
+          []
+        ),
+        cryptoLastSyncAt: safeJsonParse(
+          localStorage.getItem(STORAGE_KEYS.CRYPTO_LAST_SYNC),
+          null
+        ),
       };
       return { state, version: 0 };
     } catch {
@@ -78,6 +91,9 @@ const multiKeyStorage: PersistStorage<PersistedState> = {
       localStorage.setItem(STORAGE_KEYS.NET_WORTH_SNAPSHOTS, JSON.stringify(state.snapshots));
       localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(state.expenses));
       localStorage.setItem(STORAGE_KEYS.CATEGORY_MAPPINGS, JSON.stringify(state.mappings));
+      localStorage.setItem(STORAGE_KEYS.CRYPTO_WALLETS, JSON.stringify(state.cryptoWallets));
+      localStorage.setItem(STORAGE_KEYS.CRYPTO_POSITIONS, JSON.stringify(state.cryptoPositions));
+      localStorage.setItem(STORAGE_KEYS.CRYPTO_LAST_SYNC, JSON.stringify(state.cryptoLastSyncAt));
     } catch (error) {
       console.error('Error persisting store to localStorage:', error);
     }
@@ -106,6 +122,7 @@ export const useStore = create<StoreState>()(
       ...createNetWorthSlice(...a),
       ...createExpensesSlice(...a),
       ...createCategoryMappingsSlice(...a),
+      ...createCryptoSlice(...a),
     }),
     {
       name: 'demeter-store', // Required by persist, but our custom storage ignores it
@@ -118,6 +135,9 @@ export const useStore = create<StoreState>()(
         snapshots: state.snapshots,
         expenses: state.expenses,
         mappings: state.mappings,
+        cryptoWallets: state.cryptoWallets,
+        cryptoPositions: state.cryptoPositions,
+        cryptoLastSyncAt: state.cryptoLastSyncAt,
       }),
     }
   )
