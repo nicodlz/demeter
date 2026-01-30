@@ -23,11 +23,16 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { to: '/', label: 'Dashboard' },
-  { to: '/expenses', label: 'Expenses' },
-  { to: '/crypto', label: 'Crypto' },
-  { to: '/ibkr', label: 'IBKR' },
-  { to: '/net-worth', label: 'Net Worth' },
-  { to: '/projections', label: 'Projections' },
+  { to: '/cash-flow', label: 'Cash Flow' },
+  {
+    label: 'Portfolio',
+    children: [
+      { to: '/crypto', label: 'Crypto' },
+      { to: '/ibkr', label: 'IBKR' },
+      { to: '/net-worth', label: 'Net Worth' },
+      { to: '/projections', label: 'Projections' },
+    ],
+  },
   {
     label: 'Billing',
     children: [
@@ -52,7 +57,15 @@ export const Layout = ({ children }: LayoutProps) => {
     return pathname === to;
   };
 
+  const portfolioPaths = ['/crypto', '/ibkr', '/net-worth', '/projections'];
+  const isPortfolioActive = () => portfolioPaths.some((p) => pathname === p);
   const isBillingActive = () => pathname.startsWith('/billing');
+
+  const isDropdownActive = (label: string) => {
+    if (label === 'Portfolio') return isPortfolioActive();
+    if (label === 'Billing') return isBillingActive();
+    return false;
+  };
 
   const linkBaseClass = cn(
     buttonVariants({ variant: 'ghost' }),
@@ -81,7 +94,7 @@ export const Layout = ({ children }: LayoutProps) => {
                           type="button"
                           className={cn(
                             linkBaseClass,
-                            isBillingActive()
+                            isDropdownActive(item.label)
                               ? activeLinkClass
                               : inactiveLinkClass
                           )}

@@ -68,6 +68,7 @@ export interface ExpensesSlice {
     provider: BankProvider,
     categoryMapping?: (merchantName: string) => string | undefined,
   ) => Expense[];
+  addRecurringIncome: (baseEntry: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>, months: number) => Expense[];
   updateExpense: (id: string, data: Partial<Expense>) => void;
   deleteExpense: (id: string) => void;
   deleteExpenses: (ids: string[]) => void;
