@@ -532,6 +532,13 @@ export const CashFlowPage = () => {
             categories={allCategories}
             onEdit={(expense) => setEditingExpense(expense)}
             onDelete={deleteExpense}
+            onClone={(expense) => {
+              addExpense({
+                ...expense,
+                date: new Date().toISOString().split('T')[0],
+                source: expense.source ? `${expense.source} (clone)` : 'manual (clone)',
+              });
+            }}
             onCategorySelect={handleCategorySelect}
           />
         </CardContent>

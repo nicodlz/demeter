@@ -29,7 +29,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2, Copy, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { CategoryPicker } from './CategoryPicker';
 
 type SortField = 'date' | 'amount';
@@ -40,6 +40,7 @@ interface ExpenseTableProps {
   categories: string[];
   onEdit: (expense: Expense) => void;
   onDelete: (id: string) => void;
+  onClone: (expense: Expense) => void;
   onCategorySelect: (expenseId: string, category: string) => void;
 }
 
@@ -48,6 +49,7 @@ export const ExpenseTable = ({
   categories,
   onEdit,
   onDelete,
+  onClone,
   onCategorySelect,
 }: ExpenseTableProps) => {
   const [sortField, setSortField] = useState<SortField>('date');
@@ -173,6 +175,10 @@ export const ExpenseTable = ({
                   <DropdownMenuItem onClick={() => onEdit(expense)}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onClone(expense)}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Clone
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <AlertDialog>
