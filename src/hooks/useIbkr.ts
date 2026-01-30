@@ -59,19 +59,19 @@ export const useIbkr = () => {
   ]);
 
   const totalPositionValue = useMemo(() => {
-    return positions.reduce((sum, p) => sum + p.marketValue, 0);
+    return positions.reduce((sum, p) => sum + p.marketValueBase, 0);
   }, [positions]);
 
   const totalCashValue = useMemo(() => {
-    return cashBalances.reduce((sum, cb) => sum + cb.endingCash, 0);
+    return cashBalances.reduce((sum, cb) => sum + cb.endingCashBase, 0);
   }, [cashBalances]);
 
   const totalUnrealizedPnl = useMemo(() => {
-    return positions.reduce((sum, p) => sum + p.unrealizedPnl, 0);
+    return positions.reduce((sum, p) => sum + p.unrealizedPnlBase, 0);
   }, [positions]);
 
   const totalCostBasis = useMemo(() => {
-    return positions.reduce((sum, p) => sum + p.costBasisMoney, 0);
+    return positions.reduce((sum, p) => sum + p.costBasisMoneyBase, 0);
   }, [positions]);
 
   const assetCategories = useMemo(() => {
