@@ -1,5 +1,29 @@
 import type { CryptoWallet, TokenPosition } from '@/types';
-import { isStablecoinSymbol, stablecoinUsdRate } from '@/utils/constants';
+import { isStablecoinSymbol, stablecoinUsdRate, isAaveReceiptToken } from '@/utils/constants';
+
+/**
+ * Resolve an Aave receipt token symbol to its underlying stablecoin.
+ * e.g. "aGnoEURe" → "eure", "aUSDC" → "usdc"
+ */
+function resolveAaveUnderlying(symbol: string): string {
+  const lower = symbol.toLowerCase();
+  if (!lower.startsWith('a')) return lower;
+  const withoutA = lower.slice(1);
+
+  // Import the stablecoin set indirectly via isStablecoinSymbol — but we need
+  // the raw resolved symbol. Re-derive here for simplicity.
+  // Simple: aEURe → eure
+  if (isStablecoinSymbol(withoutA)) return withoutA;
+
+  // Chain-prefixed: aGnoEURe → strip chain prefix, return last matching stable
+  // We try progressively shorter suffixes.
+  for (let i = 1; i < withoutA.length; i++) {
+    const suffix = withoutA.slice(i);
+    if (isStablecoinSymbol(suffix)) return suffix;
+  }
+
+  return lower;
+}
 
 // ============================================================
 // Zerion REST API types (JSON:API response format)
@@ -192,13 +216,29 @@ export async function fetchAllWalletsPositions(
     }
   }
 
-  const totalCryptoValue = allPositions
+  // Deduplicate: remove aToken receipt tokens (wallet type) when a
+  // corresponding DeFi position (deposit/staked) already exists for the
+  // same underlying token, to avoid double-counting.
+  const defiKeys = new Set(
+    allPositions
+      .filter((p) => p.positionType !== 'wallet')
+      .map((p) => `${p.walletId}-${p.symbol.toLowerCase()}-${p.chain}`),
+  );
+  const deduped = allPositions.filter((p) => {
+    if (p.positionType !== 'wallet' || !isAaveReceiptToken(p.symbol)) return true;
+    // This is an aToken wallet position — check if a DeFi position exists
+    // for the same underlying on the same chain & wallet
+    const underlying = resolveAaveUnderlying(p.symbol);
+    return !defiKeys.has(`${p.walletId}-${underlying}-${p.chain}`);
+  });
+
+  const totalCryptoValue = deduped
     .filter((p) => !p.isStablecoin)
     .reduce((sum, p) => sum + p.usdValue, 0);
 
-  const totalStablecoinValue = allPositions
+  const totalStablecoinValue = deduped
     .filter((p) => p.isStablecoin)
     .reduce((sum, p) => sum + p.usdValue, 0);
 
-  return { positions: allPositions, totalCryptoValue, totalStablecoinValue, errors };
+  return { positions: deduped, totalCryptoValue, totalStablecoinValue, errors };
 }

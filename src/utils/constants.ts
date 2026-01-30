@@ -47,6 +47,20 @@ export function stablecoinUsdRate(symbol: string): number {
   return 1.0;
 }
 
+/**
+ * Detect Aave receipt tokens (aTokens): aUSDC, aEURe, aGnoEURe, etc.
+ */
+export const isAaveReceiptToken = (symbol: string): boolean => {
+  const lower = symbol.toLowerCase();
+  if (!lower.startsWith('a')) return false;
+  const withoutA = lower.slice(1);
+  if (stablecoinSet.has(withoutA)) return true;
+  for (const stable of stablecoinSet) {
+    if (withoutA.endsWith(stable) && withoutA.length > stable.length) return true;
+  }
+  return false;
+};
+
 /** Case-insensitive check.
  * Also matches Aave receipt-token variants:
  *   - Simple:       aUSDC, aEURe, aDAI, aGHO …
