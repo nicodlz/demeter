@@ -3,7 +3,8 @@ import type { VATRate, AppSettings } from '../types';
 // ============= Crypto: Stablecoin classification =============
 export const STABLECOIN_SYMBOLS = [
   'USDT', 'USDC', 'DAI', 'FRAX', 'LUSD', 'crvUSD', 'GHO', 'PYUSD',
-  'EURC', 'FDUSD', 'TUSD', 'USDP', 'USDbC', 'USDe', 'sUSDe', 'USDS', 'sUSDS',
+  'EURC', 'EURe', 'FDUSD', 'TUSD', 'USDP', 'USDbC', 'USDe', 'sUSDe', 'USDS', 'sUSDS',
+  'ZCHF',
 ];
 
 /** Case-insensitive check */
