@@ -1,42 +1,21 @@
-import { useState, useEffect } from 'react';
-import type { Invoice } from '../types';
-import { storage, STORAGE_KEYS } from '../utils/storage';
+import { useCallback } from 'react';
+import { useStore } from '../store';
 
 export const useInvoices = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>(() =>
-    storage.get<Invoice[]>(STORAGE_KEYS.INVOICES, [])
+  const invoices = useStore((state) => state.invoices);
+  const addInvoice = useStore((state) => state.addInvoice);
+  const updateInvoice = useStore((state) => state.updateInvoice);
+  const deleteInvoice = useStore((state) => state.deleteInvoice);
+
+  const getInvoiceById = useCallback(
+    (id: string) => invoices.find((invoice) => invoice.id === id),
+    [invoices]
   );
 
-  useEffect(() => {
-    storage.set(STORAGE_KEYS.INVOICES, invoices);
-  }, [invoices]);
-
-  const addInvoice = (invoice: Invoice) => {
-    setInvoices((prev) => [...prev, invoice]);
-    return invoice;
-  };
-
-  const updateInvoice = (id: string, invoiceData: Partial<Invoice>) => {
-    setInvoices((prev) =>
-      prev.map((invoice) =>
-        invoice.id === id
-          ? { ...invoice, ...invoiceData, updatedAt: new Date().toISOString() }
-          : invoice
-      )
-    );
-  };
-
-  const deleteInvoice = (id: string) => {
-    setInvoices((prev) => prev.filter((invoice) => invoice.id !== id));
-  };
-
-  const getInvoiceById = (id: string) => {
-    return invoices.find((invoice) => invoice.id === id);
-  };
-
-  const getInvoiceByNumber = (number: string) => {
-    return invoices.find((invoice) => invoice.number === number);
-  };
+  const getInvoiceByNumber = useCallback(
+    (number: string) => invoices.find((invoice) => invoice.number === number),
+    [invoices]
+  );
 
   return {
     invoices,
