@@ -1,40 +1,10 @@
-import { useState, useEffect } from 'react';
-import type { AppSettings } from '../types';
-import { storage, STORAGE_KEYS } from '../utils/storage';
-import { DEFAULT_SETTINGS } from '../utils/constants';
+import { useStore } from '../store';
 
 export const useSettings = () => {
-  const [settings, setSettings] = useState<AppSettings>(() =>
-    storage.get(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS)
-  );
-
-  useEffect(() => {
-    storage.set(STORAGE_KEYS.SETTINGS, settings);
-  }, [settings]);
-
-  const updateSettings = (newSettings: Partial<AppSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
-  };
-
-  const updateIssuer = (issuerData: Partial<AppSettings['issuer']>) => {
-    setSettings((prev) => ({
-      ...prev,
-      issuer: { ...prev.issuer, ...issuerData },
-    }));
-  };
-
-  const incrementInvoiceCounter = (): number => {
-    // Read fresh from localStorage to avoid race conditions
-    const currentSettings = storage.get<AppSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
-    const newCounter = currentSettings.invoiceCounter + 1;
-
-    // Update both localStorage and state atomically
-    const updatedSettings = { ...currentSettings, invoiceCounter: newCounter };
-    storage.set(STORAGE_KEYS.SETTINGS, updatedSettings);
-    setSettings(updatedSettings);
-
-    return newCounter;
-  };
+  const settings = useStore((state) => state.settings);
+  const updateSettings = useStore((state) => state.updateSettings);
+  const updateIssuer = useStore((state) => state.updateIssuer);
+  const incrementInvoiceCounter = useStore((state) => state.incrementInvoiceCounter);
 
   return {
     settings,
