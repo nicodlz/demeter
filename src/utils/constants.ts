@@ -7,11 +7,19 @@ export const STABLECOIN_SYMBOLS = [
   'ZCHF',
 ];
 
-/** Case-insensitive check */
+/** Case-insensitive check.
+ * Also matches Aave receipt-token variants (e.g. aUSDC, aEURe, AEURE).
+ */
 const stablecoinSet = new Set(STABLECOIN_SYMBOLS.map((s) => s.toLowerCase()));
 
 export const isStablecoinSymbol = (symbol: string): boolean => {
-  return stablecoinSet.has(symbol.toLowerCase());
+  const lower = symbol.toLowerCase();
+  if (stablecoinSet.has(lower)) return true;
+
+  // Aave aToken prefix: "ausdc", "aeure", "adai", "agho", etc.
+  if (lower.startsWith('a') && stablecoinSet.has(lower.slice(1))) return true;
+
+  return false;
 };
 
 export const DEFAULT_VAT_RATES: VATRate[] = [
