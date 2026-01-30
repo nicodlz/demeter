@@ -1,4 +1,5 @@
 import type { ParsedTransaction, Currency } from '../../types';
+import { parsedTransactionSchema } from '../../schemas';
 
 /**
  * Etherfi Parser (CSV)
@@ -110,7 +111,7 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
       // Credit if not card_spend
       const isCredit = txType !== 'card_spend';
 
-      transactions.push({
+      const tx = {
         date,
         description: merchantName,
         amount,
@@ -119,7 +120,13 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
         cardLastFour,
         isCredit,
         originalLine: lines[i],
-      });
+      };
+      const validated = parsedTransactionSchema.safeParse(tx);
+      if (validated.success) {
+        transactions.push(validated.data);
+      } else {
+        errors.push(`Invalid transaction on line ${i + 1}: ${validated.error.issues.map(issue => issue.message).join(', ')}`);
+      }
     } catch {
       errors.push(`Parse error on line ${i + 1}`);
     }

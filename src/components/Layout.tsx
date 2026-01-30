@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
+import { Link, useLocation } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,42 +10,56 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ChevronDown } from 'lucide-react';
 
-interface NavItem {
-  id: string;
+interface NavLink {
+  to: string;
   label: string;
-  children?: { id: string; label: string }[];
 }
+
+interface NavItem {
+  label: string;
+  to?: string;
+  children?: NavLink[];
+}
+
+const navItems: NavItem[] = [
+  { to: '/', label: 'Dashboard' },
+  { to: '/expenses', label: 'Expenses' },
+  { to: '/net-worth', label: 'Net Worth' },
+  { to: '/projections', label: 'Projections' },
+  {
+    label: 'Billing',
+    children: [
+      { to: '/billing/invoices', label: 'Invoices' },
+      { to: '/billing/clients', label: 'Clients' },
+      { to: '/billing/settings', label: 'Settings' },
+    ],
+  },
+  { to: '/data', label: 'Data' },
+];
 
 interface LayoutProps {
   children: ReactNode;
-  currentPage: string;
-  onNavigate: (page: string) => void;
 }
 
-export const Layout = ({ children, currentPage, onNavigate }: LayoutProps) => {
-  const navItems: NavItem[] = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'expenses', label: 'Expenses' },
-    { id: 'patrimoine', label: 'Net Worth' },
-    { id: 'projections', label: 'Projections' },
-    {
-      id: 'facturation',
-      label: 'Billing',
-      children: [
-        { id: 'invoices', label: 'Invoices' },
-        { id: 'clients', label: 'Clients' },
-        { id: 'settings', label: 'Settings' },
-      ],
-    },
-    { id: 'data', label: 'Data' },
-  ];
+export const Layout = ({ children }: LayoutProps) => {
+  const location = useLocation();
+  const pathname = location.pathname;
 
-  const isActiveParent = (item: NavItem): boolean => {
-    if (item.children) {
-      return item.children.some((child) => child.id === currentPage);
-    }
-    return item.id === currentPage;
+  const isActive = (to: string) => {
+    if (to === '/') return pathname === '/';
+    return pathname === to;
   };
+
+  const isBillingActive = () => pathname.startsWith('/billing');
+
+  const linkBaseClass = cn(
+    buttonVariants({ variant: 'ghost' }),
+    'h-16 rounded-none border-b-2 px-4'
+  );
+
+  const activeLinkClass = 'border-primary text-foreground';
+  const inactiveLinkClass =
+    'border-transparent text-muted-foreground hover:text-foreground hover:border-border';
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,56 +68,55 @@ export const Layout = ({ children, currentPage, onNavigate }: LayoutProps) => {
           <div className="flex justify-between h-16">
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-xl font-bold text-foreground">
-                  Demeter
-                </h1>
+                <h1 className="text-xl font-bold text-foreground">Demeter</h1>
               </div>
               <div className="ml-10 flex space-x-2">
                 {navItems.map((item) =>
                   item.children ? (
-                    <DropdownMenu key={item.id}>
+                    <DropdownMenu key={item.label}>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
+                        <button
+                          type="button"
                           className={cn(
-                            'h-16 rounded-none border-b-2 px-4',
-                            isActiveParent(item)
-                              ? 'border-primary text-foreground'
-                              : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                            linkBaseClass,
+                            isBillingActive()
+                              ? activeLinkClass
+                              : inactiveLinkClass
                           )}
                         >
                           {item.label}
                           <ChevronDown className="ml-1 h-4 w-4" />
-                        </Button>
+                        </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
                         {item.children.map((child) => (
-                          <DropdownMenuItem
-                            key={child.id}
-                            onClick={() => onNavigate(child.id)}
-                            className={cn(
-                              currentPage === child.id && 'bg-accent'
-                            )}
-                          >
-                            {child.label}
+                          <DropdownMenuItem key={child.to} asChild>
+                            <Link
+                              to={child.to}
+                              className={cn(
+                                'w-full cursor-pointer',
+                                isActive(child.to) && 'bg-accent'
+                              )}
+                            >
+                              {child.label}
+                            </Link>
                           </DropdownMenuItem>
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   ) : (
-                    <Button
-                      key={item.id}
-                      variant="ghost"
-                      onClick={() => onNavigate(item.id)}
+                    <Link
+                      key={item.to}
+                      to={item.to!}
                       className={cn(
-                        'h-16 rounded-none border-b-2 px-4',
-                        currentPage === item.id
-                          ? 'border-primary text-foreground'
-                          : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                        linkBaseClass,
+                        isActive(item.to!)
+                          ? activeLinkClass
+                          : inactiveLinkClass
                       )}
                     >
                       {item.label}
-                    </Button>
+                    </Link>
                   )
                 )}
               </div>

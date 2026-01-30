@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { storage } from '@/utils/storage';
-import type { DemeterBackup } from '@/utils/storage';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,8 +33,8 @@ export const DataPage = () => {
 
     try {
       const text = await file.text();
-      const backup = JSON.parse(text) as DemeterBackup;
-      const result = storage.importBackup(backup);
+      const parsed: unknown = JSON.parse(text);
+      const result = storage.importBackup(parsed);
 
       if (result.success) {
         setImportStatus({ type: 'success', message: 'Backup imported successfully! Refreshing...' });
