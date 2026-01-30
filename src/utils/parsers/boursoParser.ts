@@ -1,4 +1,5 @@
 import type { ParsedTransaction, Currency } from '../../types';
+import { parsedTransactionSchema } from '../../schemas';
 
 /**
  * Boursorama Parser
@@ -265,7 +266,7 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
     const cardMatch = raw.description.match(/CB\*(\d{4})/);
     const cardLastFour = cardMatch ? cardMatch[1] : undefined;
 
-    transactions.push({
+    const tx = {
       date,
       description: description || raw.description,
       amount,
@@ -274,7 +275,13 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
       cardLastFour,
       isCredit,
       originalLine: raw.originalLines.join('\n'),
-    });
+    };
+    const validated = parsedTransactionSchema.safeParse(tx);
+    if (validated.success) {
+      transactions.push(validated.data);
+    } else {
+      errors.push(`Invalid transaction: ${validated.error.issues.map(i => i.message).join(', ')}`);
+    }
   }
 
   return { success: transactions.length > 0, transactions, errors };
