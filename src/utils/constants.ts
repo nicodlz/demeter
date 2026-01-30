@@ -8,7 +8,9 @@ export const STABLECOIN_SYMBOLS = [
 ];
 
 /** Case-insensitive check.
- * Also matches Aave receipt-token variants (e.g. aUSDC, aEURe, AEURE).
+ * Also matches Aave receipt-token variants:
+ *   - Simple:       aUSDC, aEURe, aDAI, aGHO …
+ *   - Chain-prefix: aGnoEURe, aArbUSDC, aOptUSDT, aPolDAI, aEthUSDC …
  */
 const stablecoinSet = new Set(STABLECOIN_SYMBOLS.map((s) => s.toLowerCase()));
 
@@ -16,8 +18,17 @@ export const isStablecoinSymbol = (symbol: string): boolean => {
   const lower = symbol.toLowerCase();
   if (stablecoinSet.has(lower)) return true;
 
-  // Aave aToken prefix: "ausdc", "aeure", "adai", "agho", etc.
+  // Aave aToken: strip leading "a" then check
   if (lower.startsWith('a') && stablecoinSet.has(lower.slice(1))) return true;
+
+  // Aave chain-prefixed aToken (aGnoEURe, aArbUSDC, aOptUSDT, …):
+  // check if the symbol ends with a known stablecoin after the leading "a"
+  if (lower.startsWith('a')) {
+    const withoutA = lower.slice(1);
+    for (const stable of stablecoinSet) {
+      if (withoutA.endsWith(stable) && withoutA.length > stable.length) return true;
+    }
+  }
 
   return false;
 };
