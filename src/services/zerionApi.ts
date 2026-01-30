@@ -87,8 +87,23 @@ interface ZerionApiResponse {
 // API helpers
 // ============================================================
 
+const ZERION_BASE_URL = import.meta.env.VITE_PROXY_URL
+  ? `${import.meta.env.VITE_PROXY_URL}/zerion`
+  : 'https://api.zerion.io';
+
+const PROXY_KEY = import.meta.env.VITE_PROXY_KEY ?? '';
+
 function makeAuthHeader(apiKey: string): string {
   return `Basic ${btoa(apiKey + ':')}`;
+}
+
+function makeHeaders(apiKey: string): Record<string, string> {
+  const h: Record<string, string> = {
+    Authorization: makeAuthHeader(apiKey),
+    Accept: 'application/json',
+  };
+  if (PROXY_KEY) h['X-Proxy-Key'] = PROXY_KEY;
+  return h;
 }
 
 export class ZerionApiError extends Error {
@@ -117,14 +132,16 @@ export async function fetchWalletPositions(
 ): Promise<ZerionPositionData[]> {
   const allPositions: ZerionPositionData[] = [];
   let url: string | undefined =
-    `https://api.zerion.io/v1/wallets/${address}/positions/?filter[positions]=no_filter&currency=usd`;
+    `${ZERION_BASE_URL}/v1/wallets/${address}/positions/?filter[positions]=no_filter&currency=usd`;
 
   while (url) {
-    const response = await fetch(url, {
-      headers: {
-        Authorization: makeAuthHeader(apiKey),
-        Accept: 'application/json',
-      },
+    // Rewrite pagination URLs through proxy if needed
+    const fetchUrl = ZERION_BASE_URL !== 'https://api.zerion.io' && url.startsWith('https://api.zerion.io')
+      ? url.replace('https://api.zerion.io', ZERION_BASE_URL)
+      : url;
+
+    const response = await fetch(fetchUrl, {
+      headers: makeHeaders(apiKey),
     });
 
     if (!response.ok) {

@@ -16,7 +16,11 @@ import type { IbkrPosition, IbkrCashBalance, IbkrAccount } from '@/schemas/ibkr'
 // Constants
 // ============================================================
 
-const FLEX_BASE_URL = import.meta.env.VITE_IBKR_PROXY_URL ?? '/api/ibkr';
+const FLEX_BASE_URL = import.meta.env.VITE_PROXY_URL
+  ? `${import.meta.env.VITE_PROXY_URL}/ibkr`
+  : '/api/ibkr';
+
+const PROXY_KEY = import.meta.env.VITE_PROXY_KEY ?? '';
 
 const POLL_DELAY_MS = 5_000;
 const MAX_POLL_ATTEMPTS = 6;
@@ -173,7 +177,7 @@ async function sendRequest(token: string, queryId: string): Promise<string> {
   const url = `${FLEX_BASE_URL}/SendRequest?t=${encodeURIComponent(token)}&q=${encodeURIComponent(queryId)}&v=3`;
 
   const resp = await fetch(url, {
-    headers: { 'User-Agent': 'Demeter/1.0' },
+    headers: { 'User-Agent': 'Demeter/1.0', ...(PROXY_KEY && { 'X-Proxy-Key': PROXY_KEY }) },
   });
 
   if (!resp.ok) {
@@ -212,7 +216,7 @@ async function getStatement(token: string, referenceCode: string): Promise<strin
   const url = `${FLEX_BASE_URL}/GetStatement?t=${encodeURIComponent(token)}&q=${encodeURIComponent(referenceCode)}&v=3`;
 
   const resp = await fetch(url, {
-    headers: { 'User-Agent': 'Demeter/1.0' },
+    headers: { 'User-Agent': 'Demeter/1.0', ...(PROXY_KEY && { 'X-Proxy-Key': PROXY_KEY }) },
   });
 
   if (!resp.ok) {
