@@ -136,14 +136,23 @@ function mapPosition(
       (impl) => impl.address === null,
     ) ?? false;
 
+  const isStablecoin = isStablecoinSymbol(symbol);
+  let usdValue = attrs.value ?? 0;
+
+  // Fallback: if Zerion reports no value for a known stablecoin, use the
+  // raw amount as a USD approximation (1 stablecoin ≈ 1 unit of fiat).
+  if (isStablecoin && usdValue === 0 && attrs.quantity.float > 0) {
+    usdValue = attrs.quantity.float;
+  }
+
   return {
     id: `${walletId}-${raw.id}`,
     symbol,
     name: attrs.fungible_info.name,
     amount: attrs.quantity.float,
-    usdValue: attrs.value ?? 0,
+    usdValue,
     chain: chainId,
-    isStablecoin: isStablecoinSymbol(symbol),
+    isStablecoin,
     isNative,
     positionType: attrs.position_type,
     protocol: attrs.protocol ?? undefined,
