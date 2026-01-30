@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { SavedItem, LineItem } from '../types';
+import { savedItemSchema } from '../schemas';
 import { storage, STORAGE_KEYS } from '../utils/storage';
 
 export function useSavedItems() {
@@ -22,7 +23,16 @@ export function useSavedItems() {
   const updateItemById = useCallback(
     (id: string, updater: (item: SavedItem) => SavedItem): void => {
       setSavedItems((prev) =>
-        prev.map((item) => (item.id === id ? updater(item) : item))
+        prev.map((item) => {
+          if (item.id !== id) return item;
+          const updated = updater(item);
+          const result = savedItemSchema.safeParse(updated);
+          if (!result.success) {
+            console.error('[Demeter] Invalid saved item update:', result.error.issues);
+            return item;
+          }
+          return result.data;
+        })
       );
     },
     []
@@ -42,14 +52,19 @@ export function useSavedItems() {
       return { ...existing, ...item, usageCount: existing.usageCount + 1 };
     }
 
-    const newItem: SavedItem = {
+    const newItem = {
       ...item,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       usageCount: 1,
     };
-    setSavedItems((prev) => [...prev, newItem]);
-    return newItem;
+    const result = savedItemSchema.safeParse(newItem);
+    if (!result.success) {
+      console.error('[Demeter] Invalid saved item data:', result.error.issues);
+      return newItem as SavedItem;
+    }
+    setSavedItems((prev) => [...prev, result.data]);
+    return result.data;
   }
 
   function saveFromLineItem(lineItem: LineItem): SavedItem {

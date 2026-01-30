@@ -2,6 +2,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import type { TextItem as PdfTextItem } from 'pdfjs-dist/types/src/display/api';
 import type { ParsedTransaction, Currency } from '../../types';
+import { parsedTransactionSchema } from '../../schemas';
 
 // Set worker source for Vite
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -90,7 +91,7 @@ export const parseBoursoramaPdf = async (
         const description = tx.description.join(' ').trim();
         const merchantName = extractMerchantName(description);
 
-        transactions.push({
+        const parsedTx = {
           date,
           description,
           amount: tx.debit || tx.credit || 0,
@@ -98,7 +99,13 @@ export const parseBoursoramaPdf = async (
           merchantName,
           isCredit, // true = income (to be filtered out), false = expense (to keep)
           originalLine: `${tx.date} ${description}`,
-        });
+        };
+        const validated = parsedTransactionSchema.safeParse(parsedTx);
+        if (validated.success) {
+          transactions.push(validated.data);
+        } else {
+          errors.push(`Invalid transaction: ${validated.error.issues.map(i => i.message).join(', ')}`);
+        }
       }
     }
 
