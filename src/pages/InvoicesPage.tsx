@@ -74,13 +74,13 @@ export const InvoicesPage = () => {
     return map;
   }, [expenses]);
 
-  const createIncomeFromInvoice = useCallback((invoice: Invoice, paidAt: string) => {
+  const createIncomeFromInvoice = useCallback((invoice: Invoice, _paidAt?: string) => {
     const total = calculateInvoiceTotal(invoice);
     addExpense({
       type: 'income',
       amount: total,
       currency: invoice.currency || 'EUR',
-      date: paidAt.split('T')[0],
+      date: invoice.date,
       description: `Invoice ${invoice.number} - ${invoice.client.name}`,
       source: `Invoice ${invoice.number}`,
       sourceProvider: 'invoice',
