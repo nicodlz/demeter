@@ -58,9 +58,9 @@ const projectionsRoute = createRoute({
   component: ProjectionsPage,
 });
 
-const dataRoute = createRoute({
+const configurationRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/data',
+  path: '/configuration',
   component: DataPage,
 });
 
@@ -95,7 +95,7 @@ const routeTree = rootRoute.addChildren([
   billingInvoicesRoute,
   billingClientsRoute,
   billingSettingsRoute,
-  dataRoute,
+  configurationRoute,
 ]);
 
 // --- Router instance ---

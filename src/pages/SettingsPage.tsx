@@ -21,7 +21,6 @@ export const SettingsPage = () => {
   const [formData, setFormData] = useState<IssuerSettings>(settings.issuer);
   const [defaultCurrency, setDefaultCurrency] = useState<Currency>(settings.defaultCurrency || 'USD');
   const [dashboardCurrency, setDashboardCurrency] = useState<Currency>(settings.dashboardCurrency || 'USD');
-  const [zerionApiKey, setZerionApiKey] = useState(settings.zerionApiKey || '');
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -33,7 +32,7 @@ export const SettingsPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateIssuer(formData);
-    updateSettings({ defaultCurrency, dashboardCurrency, zerionApiKey: zerionApiKey || undefined });
+    updateSettings({ defaultCurrency, dashboardCurrency });
     alert('Settings saved!');
   };
 
@@ -164,40 +163,6 @@ export const SettingsPage = () => {
               </Select>
               <p className="text-xs text-muted-foreground">
                 All dashboard stats will be converted to this currency
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Crypto API</CardTitle>
-            <CardDescription>
-              Connect to Zerion to automatically track your crypto wallets &amp; DeFi positions
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="zerionApiKey">Zerion API Key</Label>
-              <Input
-                name="zerionApiKey"
-                id="zerionApiKey"
-                type="password"
-                placeholder="zk_dev_..."
-                value={zerionApiKey}
-                onChange={(e) => setZerionApiKey(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Get a free API key at{' '}
-                <a
-                  href="https://developers.zerion.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-foreground"
-                >
-                  developers.zerion.io
-                </a>
-                . Used for wallet position tracking on the Crypto page.
               </p>
             </div>
           </CardContent>
