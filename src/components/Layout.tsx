@@ -23,6 +23,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { to: '/', label: 'Dashboard' },
+  { to: '/cash-flow', label: 'Cash Flow' },
   { to: '/expenses', label: 'Expenses' },
   { to: '/crypto', label: 'Crypto' },
   { to: '/ibkr', label: 'IBKR' },

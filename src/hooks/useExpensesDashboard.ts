@@ -46,8 +46,8 @@ export const useExpensesDashboard = (
   };
 
   return useMemo(() => {
-    // Filter by date range if provided
-    let filteredExpenses = expenses;
+    // Filter to only expense-type entries (retrocompatible: missing type = expense)
+    let filteredExpenses = expenses.filter((e) => !e.type || e.type === 'expense');
     if (startDate) {
       filteredExpenses = filteredExpenses.filter((e) => e.date >= startDate);
     }
