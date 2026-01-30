@@ -1,5 +1,5 @@
 import type { CryptoWallet, TokenPosition } from '@/types';
-import { isStablecoinSymbol } from '@/utils/constants';
+import { isStablecoinSymbol, stablecoinUsdRate } from '@/utils/constants';
 
 // ============================================================
 // Zerion REST API types (JSON:API response format)
@@ -139,10 +139,10 @@ function mapPosition(
   const isStablecoin = isStablecoinSymbol(symbol);
   let usdValue = attrs.value ?? 0;
 
-  // Fallback: if Zerion reports no value for a known stablecoin, use the
-  // raw amount as a USD approximation (1 stablecoin ≈ 1 unit of fiat).
+  // Fallback: if Zerion reports no value for a known stablecoin, convert the
+  // raw amount to USD using the appropriate fiat rate (EUR, CHF, or USD).
   if (isStablecoin && usdValue === 0 && attrs.quantity.float > 0) {
-    usdValue = attrs.quantity.float;
+    usdValue = attrs.quantity.float * stablecoinUsdRate(symbol);
   }
 
   return {
