@@ -82,6 +82,7 @@ export const getProviderDisplayName = (provider: BankProvider): string => {
     gnosis_pay: 'Gnosis Pay',
     etherfi: 'Etherfi',
     manual: 'Manual',
+    invoice: 'Invoice',
   };
   return names[provider] || provider;
 };

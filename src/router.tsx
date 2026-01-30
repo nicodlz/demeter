@@ -2,11 +2,12 @@ import {
   createRouter,
   createRoute,
   createRootRoute,
+  redirect,
   Outlet,
 } from '@tanstack/react-router';
 import { Layout } from '@/components/Layout';
 import { DashboardPage } from '@/pages/DashboardPage';
-import { ExpensesPage } from '@/pages/ExpensesPage';
+import { CashFlowPage } from '@/pages/CashFlowPage';
 import { NetWorthPage } from '@/pages/NetWorthPage';
 import { ProjectionsPage } from '@/pages/ProjectionsPage';
 import { InvoicesPage } from '@/pages/InvoicesPage';
@@ -35,10 +36,19 @@ const indexRoute = createRoute({
   component: DashboardPage,
 });
 
-const expensesRoute = createRoute({
+const cashFlowRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/cash-flow',
+  component: CashFlowPage,
+});
+
+// Redirect /expenses → /cash-flow for backward compatibility
+const expensesRedirectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/expenses',
-  component: ExpensesPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/cash-flow' });
+  },
 });
 
 const cryptoRoute = createRoute({
@@ -95,7 +105,8 @@ const billingSettingsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  expensesRoute,
+  cashFlowRoute,
+  expensesRedirectRoute,
   cryptoRoute,
   ibkrRoute,
   netWorthRoute,

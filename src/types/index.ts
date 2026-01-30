@@ -23,6 +23,7 @@ export type {
   NetWorthSnapshot,
   NetWorthSnapshotV2,
   AnyNetWorthSnapshot,
+  ExpenseType,
   BankProvider,
   Expense,
   CategoryMapping,

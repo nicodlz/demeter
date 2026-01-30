@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import { currencySchema } from './client';
 
-export const bankProviderSchema = z.enum(['deblock', 'bourso', 'gnosis_pay', 'etherfi', 'manual']);
+export const bankProviderSchema = z.enum(['deblock', 'bourso', 'gnosis_pay', 'etherfi', 'manual', 'invoice']);
+
+export const expenseTypeSchema = z.enum(['expense', 'income']);
 
 export const expenseSchema = z.object({
   id: z.string(),
@@ -15,6 +17,7 @@ export const expenseSchema = z.object({
   merchantName: z.string().optional(),
   cardLastFour: z.string().optional(),
   originalLine: z.string().optional(),
+  type: expenseTypeSchema.default('expense'),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -37,6 +40,7 @@ export const parsedTransactionSchema = z.object({
   originalLine: z.string().optional(),
 });
 
+export type ExpenseType = z.infer<typeof expenseTypeSchema>;
 export type BankProvider = z.infer<typeof bankProviderSchema>;
 export type Expense = z.infer<typeof expenseSchema>;
 export type CategoryMapping = z.infer<typeof categoryMappingSchema>;

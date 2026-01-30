@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { Expense } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/formatters';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -28,7 +29,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2, Copy, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { CategoryPicker } from './CategoryPicker';
 
 type SortField = 'date' | 'amount';
@@ -39,6 +40,7 @@ interface ExpenseTableProps {
   categories: string[];
   onEdit: (expense: Expense) => void;
   onDelete: (id: string) => void;
+  onClone: (expense: Expense) => void;
   onCategorySelect: (expenseId: string, category: string) => void;
 }
 
@@ -47,6 +49,7 @@ export const ExpenseTable = ({
   categories,
   onEdit,
   onDelete,
+  onClone,
   onCategorySelect,
 }: ExpenseTableProps) => {
   const [sortField, setSortField] = useState<SortField>('date');
@@ -103,6 +106,7 @@ export const ExpenseTable = ({
               <SortIcon field="date" />
             </button>
           </TableHead>
+          <TableHead>Type</TableHead>
           <TableHead>Description</TableHead>
           <TableHead>Category</TableHead>
           <TableHead>Source</TableHead>
@@ -123,6 +127,17 @@ export const ExpenseTable = ({
           <TableRow key={expense.id}>
             <TableCell className="font-medium">
               {formatDate(expense.date)}
+            </TableCell>
+            <TableCell>
+              {expense.type === 'income' ? (
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">
+                  Income
+                </Badge>
+              ) : (
+                <Badge variant="destructive">
+                  Expense
+                </Badge>
+              )}
             </TableCell>
             <TableCell>
               <div className="max-w-[300px] truncate" title={expense.description}>
@@ -146,8 +161,8 @@ export const ExpenseTable = ({
                 {expense.source}
               </span>
             </TableCell>
-            <TableCell className="text-right font-medium text-destructive">
-              -{formatCurrency(expense.amount, expense.currency)}
+            <TableCell className={`text-right font-medium ${expense.type === 'income' ? 'text-green-600' : 'text-destructive'}`}>
+              {expense.type === 'income' ? '+' : '-'}{formatCurrency(expense.amount, expense.currency)}
             </TableCell>
             <TableCell className="text-right">
               <DropdownMenu>
@@ -160,6 +175,10 @@ export const ExpenseTable = ({
                   <DropdownMenuItem onClick={() => onEdit(expense)}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onClone(expense)}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Clone
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <AlertDialog>

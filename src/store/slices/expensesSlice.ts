@@ -24,6 +24,7 @@ export const createExpensesSlice: StateCreator<
   addExpense: (expense) => {
     const newExpense: Expense = {
       ...expense,
+      type: expense.type || 'expense',
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -45,9 +46,30 @@ export const createExpensesSlice: StateCreator<
       merchantName: t.merchantName,
       cardLastFour: t.cardLastFour,
       originalLine: t.originalLine,
+      type: 'expense' as const,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }));
+    set((state) => ({ expenses: [...state.expenses, ...newExpenses] }));
+    return newExpenses;
+  },
+
+  addRecurringIncome: (baseEntry, months) => {
+    const newExpenses: Expense[] = [];
+    const baseDate = new Date(baseEntry.date);
+
+    for (let i = 0; i < months; i++) {
+      const entryDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, baseDate.getDate());
+      newExpenses.push({
+        ...baseEntry,
+        type: 'income',
+        date: entryDate.toISOString().split('T')[0],
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     set((state) => ({ expenses: [...state.expenses, ...newExpenses] }));
     return newExpenses;
   },

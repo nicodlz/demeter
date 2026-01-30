@@ -17,6 +17,7 @@ export const useExpenses = () => {
   const expenses = useStore((state) => state.expenses);
   const addExpense = useStore((state) => state.addExpense);
   const addExpenses = useStore((state) => state.addExpenses);
+  const addRecurringIncome = useStore((state) => state.addRecurringIncome);
   const updateExpense = useStore((state) => state.updateExpense);
   const deleteExpense = useStore((state) => state.deleteExpense);
   const deleteExpenses = useStore((state) => state.deleteExpenses);
@@ -89,12 +90,36 @@ export const useExpenses = () => {
     );
   }, [expenses]);
 
+  // Type-based filters (retrocompatible: missing type treated as 'expense')
+  const getIncomes = useCallback(() => {
+    return expenses.filter((e) => e.type === 'income');
+  }, [expenses]);
+
+  const getExpensesOnly = useCallback(() => {
+    return expenses.filter((e) => !e.type || e.type === 'expense');
+  }, [expenses]);
+
   // Aggregations
   const getTotalByDateRange = useCallback(
     (start: string, end: string, currency?: Currency) => {
       return expenses
         .filter(
           (e) =>
+            e.date >= start &&
+            e.date <= end &&
+            (!currency || e.currency === currency)
+        )
+        .reduce((sum, e) => sum + e.amount, 0);
+    },
+    [expenses]
+  );
+
+  const getTotalIncomeByDateRange = useCallback(
+    (start: string, end: string, currency?: Currency) => {
+      return expenses
+        .filter(
+          (e) =>
+            e.type === 'income' &&
             e.date >= start &&
             e.date <= end &&
             (!currency || e.currency === currency)
@@ -159,6 +184,7 @@ export const useExpenses = () => {
     expenses,
     addExpense,
     addExpenses,
+    addRecurringIncome,
     updateExpense,
     deleteExpense,
     deleteExpenses,
@@ -168,7 +194,10 @@ export const useExpenses = () => {
     getExpensesByCategory,
     getExpensesBySource,
     getSortedExpenses,
+    getIncomes,
+    getExpensesOnly,
     getTotalByDateRange,
+    getTotalIncomeByDateRange,
     getUniqueSources,
     getUniqueCategories,
     updateCategoryForMerchant,

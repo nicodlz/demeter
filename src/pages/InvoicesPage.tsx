@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useSettings } from '@/hooks/useSettings';
 import { useClients } from '@/hooks/useClients';
+import { useExpenses } from '@/hooks/useExpenses';
 import type { Invoice } from '@/types';
 import { InvoiceForm } from '@/components/InvoiceForm';
 import { RecibosVerdeModal } from '@/components/RecibosVerdeModal';
@@ -45,17 +46,54 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { MoreHorizontal, Plus, Upload, FileArchive, Download, FileText, Pencil, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Plus, Upload, FileArchive, Download, FileText, Pencil, Trash2, CircleDollarSign } from 'lucide-react';
 
 export const InvoicesPage = () => {
   const { invoices, addInvoice, updateInvoice, deleteInvoice } = useInvoices();
   const { settings } = useSettings();
   const { addClient, getClientById } = useClients();
+  const { expenses, addExpense, deleteExpense } = useExpenses();
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [recibosVerdeInvoice, setRecibosVerdeInvoice] = useState<Invoice | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const zipInputRef = useRef<HTMLInputElement>(null);
+
+  // Build a map of invoice numbers that have an associated income entry
+  const invoiceIncomeMap = useMemo(() => {
+    const map = new Map<string, string>(); // invoiceNumber -> expense id
+    for (const exp of expenses) {
+      if (exp.type === 'income' && exp.sourceProvider === 'invoice' && exp.source) {
+        // source format: "Invoice INV-XXX"
+        const match = exp.source.match(/^Invoice\s+(.+)$/);
+        if (match) {
+          map.set(match[1], exp.id);
+        }
+      }
+    }
+    return map;
+  }, [expenses]);
+
+  const createIncomeFromInvoice = useCallback((invoice: Invoice, paidAt: string) => {
+    const total = calculateInvoiceTotal(invoice);
+    addExpense({
+      type: 'income',
+      amount: total,
+      currency: invoice.currency || 'EUR',
+      date: paidAt.split('T')[0],
+      description: `Invoice ${invoice.number} - ${invoice.client.name}`,
+      source: `Invoice ${invoice.number}`,
+      sourceProvider: 'invoice',
+      category: 'invoices',
+    });
+  }, [addExpense]);
+
+  const removeIncomeForInvoice = useCallback((invoiceNumber: string) => {
+    const expenseId = invoiceIncomeMap.get(invoiceNumber);
+    if (expenseId) {
+      deleteExpense(expenseId);
+    }
+  }, [invoiceIncomeMap, deleteExpense]);
 
   const processImportedInvoice = (importedInvoice: Invoice): void => {
     let clientId = importedInvoice.client.id;
@@ -105,12 +143,27 @@ export const InvoicesPage = () => {
 
   const handleTogglePaid = (invoice: Invoice) => {
     const isPaid = !invoice.paid;
+    const paidAt = isPaid ? new Date().toISOString() : undefined;
     updateInvoice(invoice.id, {
       ...invoice,
       paid: isPaid,
-      paidAt: isPaid ? new Date().toISOString() : undefined,
+      paidAt,
       updatedAt: new Date().toISOString(),
     });
+
+    if (isPaid && paidAt) {
+      // Create income entry when marking as paid
+      createIncomeFromInvoice(invoice, paidAt);
+    } else {
+      // Remove income entry when unmarking as paid
+      removeIncomeForInvoice(invoice.number);
+    }
+  };
+
+  const handleRecordAsIncome = (invoice: Invoice) => {
+    if (!invoice.paid) return;
+    const paidAt = invoice.paidAt || new Date().toISOString();
+    createIncomeFromInvoice(invoice, paidAt);
   };
 
   const handleGeneratePDF = async (invoice: Invoice) => {
@@ -364,22 +417,32 @@ export const InvoicesPage = () => {
                         {calculateInvoiceTotal(invoice).toFixed(2)}
                       </TableCell>
                       <TableCell>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge
-                              variant={invoice.paid ? 'default' : 'secondary'}
-                              className="cursor-pointer"
-                              onClick={() => handleTogglePaid(invoice)}
-                            >
-                              {invoice.paid ? 'Paid' : 'Pending'}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {invoice.paid && invoice.paidAt
-                              ? `Paid on ${formatDate(invoice.paidAt)}`
-                              : 'Click to mark as paid'}
-                          </TooltipContent>
-                        </Tooltip>
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge
+                                variant={invoice.paid ? 'default' : 'secondary'}
+                                className="cursor-pointer"
+                                onClick={() => handleTogglePaid(invoice)}
+                              >
+                                {invoice.paid ? 'Paid' : 'Pending'}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {invoice.paid && invoice.paidAt
+                                ? `Paid on ${formatDate(invoice.paidAt)}`
+                                : 'Click to mark as paid'}
+                            </TooltipContent>
+                          </Tooltip>
+                          {invoiceIncomeMap.has(invoice.number) && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <CircleDollarSign className="h-4 w-4 text-green-500" />
+                              </TooltipTrigger>
+                              <TooltipContent>Recorded as income in Cash Flow</TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -414,6 +477,15 @@ export const InvoicesPage = () => {
                                 <Download className="mr-2 h-4 w-4" />
                                 Download PDF
                               </DropdownMenuItem>
+                            )}
+                            {invoice.paid && !invoiceIncomeMap.has(invoice.number) && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleRecordAsIncome(invoice)}>
+                                  <CircleDollarSign className="mr-2 h-4 w-4" />
+                                  Record as Income
+                                </DropdownMenuItem>
+                              </>
                             )}
                             <DropdownMenuSeparator />
                             <AlertDialog>

@@ -1,11 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useNetWorthDashboard } from '@/hooks/useNetWorthDashboard';
 import { useExpensesDashboard } from '@/hooks/useExpensesDashboard';
+import { useCashFlowDashboard } from '@/hooks/useCashFlowDashboard';
 import { useSettings } from '@/hooks/useSettings';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { NetWorthStatsCards } from '@/components/networth/NetWorthStatsCards';
 import { NetWorthEvolutionChart } from '@/components/networth/NetWorthEvolutionChart';
 import { AllocationPieChart } from '@/components/networth/AllocationPieChart';
+import { CashFlowStatsCards } from '@/components/cashflow/CashFlowStatsCards';
+import { CashFlowChart } from '@/components/cashflow/CashFlowChart';
 import { ExpenseStatsCards } from '@/components/expenses/ExpenseStatsCards';
 import { ExpenseEvolutionChart } from '@/components/expenses/ExpenseEvolutionChart';
 import { ExpenseByCategoryChart } from '@/components/expenses/ExpenseByCategoryChart';
@@ -73,6 +76,7 @@ export const DashboardPage = () => {
   const [expenseDateRange, setExpenseDateRange] = useState<DateRange>('all');
 
   const networthStats = useNetWorthDashboard(displayCurrency);
+  const cashFlowStats = useCashFlowDashboard(displayCurrency, convert);
 
   const { start, end } = useMemo(() => getDateRange(expenseDateRange), [expenseDateRange]);
   const expenseStats = useExpensesDashboard(start, end, displayCurrency, convert);
@@ -127,6 +131,26 @@ export const DashboardPage = () => {
           data={networthStats.allocation}
           currency={displayCurrency}
           totalNetWorth={networthStats.totalNetWorth}
+          privacyMode={privacyMode}
+        />
+      </section>
+
+      <Separator />
+
+      {/* Cash Flow Section */}
+      <section className="space-y-4">
+        <h3 className="text-lg font-semibold">Cash Flow</h3>
+        <CashFlowStatsCards
+          totalIncome={cashFlowStats.currentMonthIncome}
+          totalExpenses={cashFlowStats.currentMonthExpenses}
+          balance={cashFlowStats.balance}
+          savingsRate={cashFlowStats.savingsRate}
+          currency={displayCurrency}
+          privacyMode={privacyMode}
+        />
+        <CashFlowChart
+          data={cashFlowStats.monthlyData}
+          currency={displayCurrency}
           privacyMode={privacyMode}
         />
       </section>
