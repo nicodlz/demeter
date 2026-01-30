@@ -10,6 +10,8 @@ import type {
   ParsedTransaction,
   BankProvider,
   CategoryMapping,
+  CryptoWallet,
+  TokenPosition,
 } from '../types';
 
 // ============= Settings Slice =============
@@ -79,6 +81,20 @@ export interface CategoryMappingsSlice {
   deleteMappingForMerchant: (merchantName: string) => void;
 }
 
+// ============= Crypto Slice =============
+export interface CryptoSlice {
+  cryptoWallets: CryptoWallet[];
+  cryptoPositions: TokenPosition[];
+  cryptoLastSyncAt: string | null;
+  cryptoSyncing: boolean;
+  addCryptoWallet: (wallet: Pick<CryptoWallet, 'label' | 'address'>) => CryptoWallet;
+  removeCryptoWallet: (id: string) => void;
+  updateCryptoWallet: (id: string, data: Partial<Pick<CryptoWallet, 'label' | 'address'>>) => void;
+  setCryptoPositions: (positions: TokenPosition[]) => void;
+  setCryptoSyncing: (syncing: boolean) => void;
+  setCryptoLastSyncAt: (date: string | null) => void;
+}
+
 // ============= Combined Store State =============
 export type StoreState = SettingsSlice &
   ClientsSlice &
@@ -86,7 +102,8 @@ export type StoreState = SettingsSlice &
   SavedItemsSlice &
   NetWorthSlice &
   ExpensesSlice &
-  CategoryMappingsSlice;
+  CategoryMappingsSlice &
+  CryptoSlice;
 
 // ============= Persisted State (data only, no actions) =============
 export interface PersistedState {
@@ -97,5 +114,8 @@ export interface PersistedState {
   snapshots: AnyNetWorthSnapshot[];
   expenses: Expense[];
   mappings: CategoryMapping[];
+  cryptoWallets: CryptoWallet[];
+  cryptoPositions: TokenPosition[];
+  cryptoLastSyncAt: string | null;
   _currencies?: Record<string, { rate: number; updatedAt: number }>;
 }

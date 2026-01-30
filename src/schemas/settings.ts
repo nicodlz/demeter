@@ -37,6 +37,7 @@ export const appSettingsSchema = z.object({
   partBCounter: z.number().optional(),
   partBSeriesCode: z.string().optional(),
   partBSeriesPrefix: z.string().optional(),
+  zerionApiKey: z.string().optional(),
 });
 
 export type VATRate = z.infer<typeof vatRateSchema>;

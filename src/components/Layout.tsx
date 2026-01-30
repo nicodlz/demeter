@@ -24,6 +24,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: '/', label: 'Dashboard' },
   { to: '/expenses', label: 'Expenses' },
+  { to: '/crypto', label: 'Crypto' },
   { to: '/net-worth', label: 'Net Worth' },
   { to: '/projections', label: 'Projections' },
   {
@@ -34,7 +35,7 @@ const navItems: NavItem[] = [
       { to: '/billing/settings', label: 'Settings' },
     ],
   },
-  { to: '/data', label: 'Data' },
+  { to: '/configuration', label: 'Configuration' },
 ];
 
 interface LayoutProps {
