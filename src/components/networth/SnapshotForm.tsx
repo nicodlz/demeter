@@ -4,6 +4,7 @@ import { isV2Snapshot } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { useCrypto } from '@/hooks/useCrypto';
+import { useIbkr } from '@/hooks/useIbkr';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AssetCategoryInput } from './AssetCategoryInput';
-import { Wallet } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface SnapshotFormProps {
   snapshot?: AnyNetWorthSnapshot;
@@ -40,6 +41,16 @@ export const SnapshotForm = ({
 }: SnapshotFormProps) => {
   const { convert, loading: rateLoading } = useExchangeRate();
   const { getTotalCryptoValue, getTotalStablecoinValue, lastSyncAt, positions } = useCrypto();
+  const {
+    positions: ibkrPositions,
+    totalPositionValue: ibkrTotalValue,
+    totalCashValue: ibkrCashValue,
+    lastSyncAt: ibkrLastSyncAt,
+  } = useIbkr();
+
+  const hasCryptoData = positions.length > 0 && lastSyncAt !== null;
+  const hasIbkrData = ibkrPositions.length > 0 && ibkrLastSyncAt !== null;
+  const hasAnySource = hasCryptoData || hasIbkrData;
 
   const getInitialEntries = (category: 'stocks' | 'crypto' | 'cash' | 'stablecoins'): AssetEntry[] => {
     if (!snapshot) return [];
@@ -53,34 +64,54 @@ export const SnapshotForm = ({
     snapshot?.date || new Date().toISOString().split('T')[0]
   );
   const [stocks, setStocks] = useState<AssetEntry[]>(getInitialEntries('stocks'));
-  const [crypto, setCrypto] = useState<AssetEntry[]>(getInitialEntries('crypto'));
+  const [cryptoEntries, setCryptoEntries] = useState<AssetEntry[]>(getInitialEntries('crypto'));
   const [cash, setCash] = useState<AssetEntry[]>(getInitialEntries('cash'));
   const [stablecoins, setStablecoins] = useState<AssetEntry[]>(getInitialEntries('stablecoins'));
   const [notes, setNotes] = useState(snapshot?.notes || '');
 
-  const hasCryptoData = positions.length > 0 && lastSyncAt !== null;
+  const handleAutoFillAll = () => {
+    // Fill crypto & stablecoins from Zerion wallets
+    if (hasCryptoData) {
+      const cryptoValue = getTotalCryptoValue;
+      const stablecoinValue = getTotalStablecoinValue;
 
-  const handleAutoFillFromWallets = () => {
-    if (!hasCryptoData) return;
-    const cryptoValue = getTotalCryptoValue;
-    const stablecoinValue = getTotalStablecoinValue;
+      setCryptoEntries([
+        {
+          id: globalThis.crypto.randomUUID(),
+          name: 'Wallets (auto-synced)',
+          amount: cryptoValue,
+          currency: 'USD' as Currency,
+        },
+      ]);
+      setStablecoins([
+        {
+          id: globalThis.crypto.randomUUID(),
+          name: 'Wallets (auto-synced)',
+          amount: stablecoinValue,
+          currency: 'USD' as Currency,
+        },
+      ]);
+    }
 
-    setCrypto([
-      {
-        id: globalThis.crypto.randomUUID(),
-        name: 'Wallets (auto-synced)',
-        amount: cryptoValue,
-        currency: 'USD' as Currency,
-      },
-    ]);
-    setStablecoins([
-      {
-        id: globalThis.crypto.randomUUID(),
-        name: 'Wallets (auto-synced)',
-        amount: stablecoinValue,
-        currency: 'USD' as Currency,
-      },
-    ]);
+    // Fill stocks & cash from IBKR
+    if (hasIbkrData) {
+      setStocks([
+        {
+          id: globalThis.crypto.randomUUID(),
+          name: 'IBKR Positions (auto-synced)',
+          amount: ibkrTotalValue,
+          currency: 'USD' as Currency,
+        },
+      ]);
+      setCash([
+        {
+          id: globalThis.crypto.randomUUID(),
+          name: 'IBKR Cash (auto-synced)',
+          amount: ibkrCashValue,
+          currency: 'USD' as Currency,
+        },
+      ]);
+    }
   };
 
   const calculateCategoryTotal = (entries: AssetEntry[]): number => {
@@ -91,7 +122,7 @@ export const SnapshotForm = ({
 
   const total =
     calculateCategoryTotal(stocks) +
-    calculateCategoryTotal(crypto) +
+    calculateCategoryTotal(cryptoEntries) +
     calculateCategoryTotal(cash) +
     calculateCategoryTotal(stablecoins);
 
@@ -101,12 +132,16 @@ export const SnapshotForm = ({
       date,
       version: 2,
       stocks,
-      crypto,
+      crypto: cryptoEntries,
       cash,
       stablecoins,
       notes: notes || undefined,
     });
   };
+
+  const sourceLabels: string[] = [];
+  if (hasCryptoData) sourceLabels.push('Zerion');
+  if (hasIbkrData) sourceLabels.push('IBKR');
 
   return (
     <Card>
@@ -134,20 +169,22 @@ export const SnapshotForm = ({
             />
           </div>
 
-          {hasCryptoData && (
+          {hasAnySource && (
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
               <div className="text-sm">
-                <span className="font-medium">Auto-fill crypto & stablecoins</span>
-                <span className="text-muted-foreground ml-2">from wallet sync</span>
+                <span className="font-medium">Auto-fill from all sources</span>
+                <span className="text-muted-foreground ml-2">
+                  {sourceLabels.join(' + ')}
+                </span>
               </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={handleAutoFillFromWallets}
+                onClick={handleAutoFillAll}
               >
-                <Wallet className="h-4 w-4 mr-2" />
-                Auto-fill from wallets
+                <Sparkles className="h-4 w-4 mr-2" />
+                Auto-fill all
               </Button>
             </div>
           )}
@@ -162,8 +199,8 @@ export const SnapshotForm = ({
 
             <AssetCategoryInput
               label="Crypto"
-              entries={crypto}
-              onChange={setCrypto}
+              entries={cryptoEntries}
+              onChange={setCryptoEntries}
               convert={convert}
             />
 

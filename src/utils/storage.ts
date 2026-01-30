@@ -11,6 +11,7 @@ import {
   cryptoWalletSchema,
   tokenPositionSchema,
 } from '../schemas';
+import { ibkrPositionSchema, ibkrCashBalanceSchema } from '../schemas/ibkr';
 import type { DemeterBackup } from '../schemas';
 
 const STORAGE_KEYS = {
@@ -24,6 +25,11 @@ const STORAGE_KEYS = {
   CRYPTO_WALLETS: 'demeter-crypto-wallets',
   CRYPTO_POSITIONS: 'demeter-crypto-positions',
   CRYPTO_LAST_SYNC: 'demeter-crypto-last-sync',
+  IBKR_POSITIONS: 'demeter-ibkr-positions',
+  IBKR_CASH_BALANCES: 'demeter-ibkr-cash-balances',
+  IBKR_LAST_SYNC: 'demeter-ibkr-last-sync',
+  IBKR_ACCOUNT_ID: 'demeter-ibkr-account-id',
+  IBKR_NAV: 'demeter-ibkr-nav',
 } as const;
 
 /**
@@ -40,6 +46,8 @@ const STORAGE_SCHEMAS: Record<string, z.ZodType> = {
   [STORAGE_KEYS.CATEGORY_MAPPINGS]: categoryMappingSchema.array(),
   [STORAGE_KEYS.CRYPTO_WALLETS]: cryptoWalletSchema.array(),
   [STORAGE_KEYS.CRYPTO_POSITIONS]: tokenPositionSchema.array(),
+  [STORAGE_KEYS.IBKR_POSITIONS]: ibkrPositionSchema.array(),
+  [STORAGE_KEYS.IBKR_CASH_BALANCES]: ibkrCashBalanceSchema.array(),
 };
 
 export const storage = {
@@ -116,6 +124,11 @@ export const storage = {
         cryptoWallets: storage.get(STORAGE_KEYS.CRYPTO_WALLETS, []),
         cryptoPositions: storage.get(STORAGE_KEYS.CRYPTO_POSITIONS, []),
         cryptoLastSync: storage.get<string | null>(STORAGE_KEYS.CRYPTO_LAST_SYNC, null),
+        ibkrPositions: storage.get(STORAGE_KEYS.IBKR_POSITIONS, []),
+        ibkrCashBalances: storage.get(STORAGE_KEYS.IBKR_CASH_BALANCES, []),
+        ibkrLastSync: storage.get<string | null>(STORAGE_KEYS.IBKR_LAST_SYNC, null),
+        ibkrAccountId: storage.get<string | null>(STORAGE_KEYS.IBKR_ACCOUNT_ID, null),
+        ibkrNav: storage.get<number | null>(STORAGE_KEYS.IBKR_NAV, null),
       },
     };
     return backup;
@@ -182,6 +195,21 @@ export const storage = {
       }
       if (backup.data.cryptoLastSync) {
         storage.set(STORAGE_KEYS.CRYPTO_LAST_SYNC, backup.data.cryptoLastSync);
+      }
+      if (backup.data.ibkrPositions) {
+        storage.set(STORAGE_KEYS.IBKR_POSITIONS, backup.data.ibkrPositions);
+      }
+      if (backup.data.ibkrCashBalances) {
+        storage.set(STORAGE_KEYS.IBKR_CASH_BALANCES, backup.data.ibkrCashBalances);
+      }
+      if (backup.data.ibkrLastSync) {
+        storage.set(STORAGE_KEYS.IBKR_LAST_SYNC, backup.data.ibkrLastSync);
+      }
+      if (backup.data.ibkrAccountId) {
+        storage.set(STORAGE_KEYS.IBKR_ACCOUNT_ID, backup.data.ibkrAccountId);
+      }
+      if (backup.data.ibkrNav !== undefined && backup.data.ibkrNav !== null) {
+        storage.set(STORAGE_KEYS.IBKR_NAV, backup.data.ibkrNav);
       }
 
       return { success: true };

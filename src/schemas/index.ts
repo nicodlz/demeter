@@ -64,6 +64,22 @@ export type {
 export { cryptoWalletSchema, tokenPositionSchema } from './crypto';
 export type { CryptoWallet, TokenPosition } from './crypto';
 
+// ============= IBKR =============
+export {
+  ibkrAssetCategorySchema,
+  ibkrPositionSchema,
+  ibkrCashBalanceSchema,
+  ibkrAccountSchema,
+  ibkrConfigSchema,
+} from './ibkr';
+export type {
+  IbkrAssetCategory,
+  IbkrPosition,
+  IbkrCashBalance,
+  IbkrAccount,
+  IbkrConfig,
+} from './ibkr';
+
 // ============= Backup =============
 export { demeterBackupSchema } from './backup';
 export type { DemeterBackup } from './backup';

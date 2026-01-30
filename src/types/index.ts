@@ -29,6 +29,11 @@ export type {
   ParsedTransaction,
   CryptoWallet,
   TokenPosition,
+  IbkrAssetCategory,
+  IbkrPosition,
+  IbkrCashBalance,
+  IbkrAccount,
+  IbkrConfig,
 } from '../schemas';
 
 // ============================================================

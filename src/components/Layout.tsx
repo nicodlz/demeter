@@ -25,6 +25,7 @@ const navItems: NavItem[] = [
   { to: '/', label: 'Dashboard' },
   { to: '/expenses', label: 'Expenses' },
   { to: '/crypto', label: 'Crypto' },
+  { to: '/ibkr', label: 'IBKR' },
   { to: '/net-worth', label: 'Net Worth' },
   { to: '/projections', label: 'Projections' },
   {
