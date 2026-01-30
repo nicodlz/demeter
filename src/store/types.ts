@@ -13,6 +13,7 @@ import type {
   CryptoWallet,
   TokenPosition,
 } from '../types';
+import type { IbkrPosition, IbkrCashBalance } from '../schemas/ibkr';
 
 // ============= Settings Slice =============
 export interface SettingsSlice {
@@ -95,6 +96,22 @@ export interface CryptoSlice {
   setCryptoLastSyncAt: (date: string | null) => void;
 }
 
+// ============= IBKR Slice =============
+export interface IbkrSlice {
+  ibkrPositions: IbkrPosition[];
+  ibkrCashBalances: IbkrCashBalance[];
+  ibkrLastSyncAt: string | null;
+  ibkrSyncing: boolean;
+  ibkrAccountId: string | null;
+  ibkrNav: number | null;
+  setIbkrPositions: (positions: IbkrPosition[]) => void;
+  setIbkrCashBalances: (balances: IbkrCashBalance[]) => void;
+  setIbkrSyncing: (syncing: boolean) => void;
+  setIbkrLastSyncAt: (date: string | null) => void;
+  setIbkrAccountId: (id: string | null) => void;
+  setIbkrNav: (nav: number | null) => void;
+}
+
 // ============= Combined Store State =============
 export type StoreState = SettingsSlice &
   ClientsSlice &
@@ -103,7 +120,8 @@ export type StoreState = SettingsSlice &
   NetWorthSlice &
   ExpensesSlice &
   CategoryMappingsSlice &
-  CryptoSlice;
+  CryptoSlice &
+  IbkrSlice;
 
 // ============= Persisted State (data only, no actions) =============
 export interface PersistedState {
@@ -117,5 +135,10 @@ export interface PersistedState {
   cryptoWallets: CryptoWallet[];
   cryptoPositions: TokenPosition[];
   cryptoLastSyncAt: string | null;
+  ibkrPositions: IbkrPosition[];
+  ibkrCashBalances: IbkrCashBalance[];
+  ibkrLastSyncAt: string | null;
+  ibkrAccountId: string | null;
+  ibkrNav: number | null;
   _currencies?: Record<string, { rate: number; updatedAt: number }>;
 }

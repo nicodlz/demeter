@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Upload, Database, AlertTriangle, KeyRound, Save } from 'lucide-react';
+import { Download, Upload, Database, AlertTriangle, KeyRound, Landmark, Save } from 'lucide-react';
 
 export const DataPage = () => {
   const { settings, updateSettings } = useSettings();
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [zerionApiKey, setZerionApiKey] = useState(settings.zerionApiKey || '');
+  const [ibkrFlexToken, setIbkrFlexToken] = useState(settings.ibkrFlexToken || '');
+  const [ibkrFlexQueryId, setIbkrFlexQueryId] = useState(settings.ibkrFlexQueryId || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const backupInfo = storage.exportAll();
@@ -79,7 +81,7 @@ export const DataPage = () => {
             Crypto API
           </CardTitle>
           <CardDescription>
-            Connect to Zerion to automatically track your crypto wallets & DeFi positions
+            Connect to Zerion to automatically track your crypto wallets &amp; DeFi positions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -109,6 +111,60 @@ export const DataPage = () => {
           <Button onClick={handleSaveApiKey}>
             <Save className="mr-2 h-4 w-4" />
             Save API Key
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* IBKR API */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Landmark className="h-5 w-5" />
+            IBKR (Interactive Brokers)
+          </CardTitle>
+          <CardDescription>
+            Connect to Interactive Brokers via the Flex Web Service to track your brokerage positions
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="ibkrFlexToken">Flex Token</Label>
+              <Input
+                name="ibkrFlexToken"
+                id="ibkrFlexToken"
+                type="password"
+                placeholder="Your Flex Web Service token"
+                value={ibkrFlexToken}
+                onChange={(e) => setIbkrFlexToken(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="ibkrFlexQueryId">Flex Query ID</Label>
+              <Input
+                name="ibkrFlexQueryId"
+                id="ibkrFlexQueryId"
+                placeholder="e.g. 123456"
+                value={ibkrFlexQueryId}
+                onChange={(e) => setIbkrFlexQueryId(e.target.value)}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Configure in IBKR Client Portal → Performance &amp; Reports → Flex Queries → Flex Web Service.
+            Create an Activity Flex Query with Open Positions, Cash Report and Net Asset Value sections.
+          </p>
+          <Button
+            onClick={() => {
+              updateSettings({
+                ibkrFlexToken: ibkrFlexToken || undefined,
+                ibkrFlexQueryId: ibkrFlexQueryId || undefined,
+              });
+              alert('IBKR credentials saved!');
+            }}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            Save IBKR Credentials
           </Button>
         </CardContent>
       </Card>
