@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { CategoryMapping } from '../types';
+import { categoryMappingSchema } from '../schemas';
 import { storage, STORAGE_KEYS } from '../utils/storage';
 
 /**
@@ -51,13 +52,18 @@ export const useCategoryMappings = () => {
       }
 
       // Create new
-      const newMapping: CategoryMapping = {
+      const newMapping = {
         id: crypto.randomUUID(),
         normalizedMerchant: normalized,
         category,
         createdAt: new Date().toISOString(),
       };
-      return [...prev, newMapping];
+      const result = categoryMappingSchema.safeParse(newMapping);
+      if (!result.success) {
+        console.error('[Demeter] Invalid category mapping:', result.error.issues);
+        return prev;
+      }
+      return [...prev, result.data];
     });
   };
 

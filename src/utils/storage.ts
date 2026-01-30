@@ -1,3 +1,16 @@
+import type { z } from 'zod';
+import {
+  demeterBackupSchema,
+  appSettingsSchema,
+  clientSchema,
+  invoiceSchema,
+  savedItemSchema,
+  anyNetWorthSnapshotSchema,
+  expenseSchema,
+  categoryMappingSchema,
+} from '../schemas';
+import type { DemeterBackup } from '../schemas';
+
 const STORAGE_KEYS = {
   SETTINGS: 'demeter-settings',
   CLIENTS: 'demeter-clients',
@@ -8,25 +21,49 @@ const STORAGE_KEYS = {
   CATEGORY_MAPPINGS: 'demeter-category-mappings',
 } as const;
 
-export interface DemeterBackup {
-  version: number;
-  exportedAt: string;
-  data: {
-    settings: unknown;
-    clients: unknown;
-    invoices: unknown;
-    savedItems: unknown;
-    netWorthSnapshots: unknown;
-    expenses: unknown;
-    categoryMappings: unknown;
-  };
-}
+/**
+ * Map storage keys to their Zod array schemas for automatic validation
+ * when reading from localStorage.
+ */
+const STORAGE_SCHEMAS: Record<string, z.ZodType> = {
+  [STORAGE_KEYS.SETTINGS]: appSettingsSchema,
+  [STORAGE_KEYS.CLIENTS]: clientSchema.array(),
+  [STORAGE_KEYS.INVOICES]: invoiceSchema.array(),
+  [STORAGE_KEYS.SAVED_ITEMS]: savedItemSchema.array(),
+  [STORAGE_KEYS.NET_WORTH_SNAPSHOTS]: anyNetWorthSnapshotSchema.array(),
+  [STORAGE_KEYS.EXPENSES]: expenseSchema.array(),
+  [STORAGE_KEYS.CATEGORY_MAPPINGS]: categoryMappingSchema.array(),
+};
 
 export const storage = {
-  get: <T>(key: string, defaultValue: T): T => {
+  /**
+   * Read a value from localStorage.
+   * If the key has a known schema, the parsed data is validated automatically.
+   * On validation failure the default value is returned and a warning is logged.
+   *
+   * An explicit `schema` parameter can override the built-in mapping.
+   */
+  get: <T>(key: string, defaultValue: T, schema?: z.ZodType<T>): T => {
     try {
       const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : defaultValue;
+      if (item === null) return defaultValue;
+
+      const parsed = JSON.parse(item);
+      const effectiveSchema = schema ?? STORAGE_SCHEMAS[key];
+
+      if (effectiveSchema) {
+        const result = effectiveSchema.safeParse(parsed);
+        if (result.success) {
+          return result.data as T;
+        }
+        console.warn(
+          `[Demeter] Invalid data in localStorage key "${key}", using default value.`,
+          result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
+        );
+        return defaultValue;
+      }
+
+      return parsed as T;
     } catch (error) {
       console.error(`Error reading from localStorage key "${key}":`, error);
       return defaultValue;
@@ -87,11 +124,23 @@ export const storage = {
     URL.revokeObjectURL(url);
   },
 
-  importBackup: (backup: DemeterBackup): { success: boolean; error?: string } => {
+  /**
+   * Import a backup after validating it with the Zod schema.
+   * Accepts `unknown` so callers can pass raw JSON.parse output safely.
+   */
+  importBackup: (rawData: unknown): { success: boolean; error?: string } => {
     try {
-      if (!backup.version || !backup.data) {
-        return { success: false, error: 'Invalid backup file format' };
+      const result = demeterBackupSchema.safeParse(rawData);
+
+      if (!result.success) {
+        const issues = result.error.issues
+          .map((i) => `${i.path.join('.')}: ${i.message}`)
+          .join('; ');
+        console.error('[Demeter] Backup validation failed:', result.error.issues);
+        return { success: false, error: `Invalid backup format: ${issues}` };
       }
+
+      const backup = result.data;
 
       // Import all data
       if (backup.data.settings) {
@@ -124,3 +173,4 @@ export const storage = {
 };
 
 export { STORAGE_KEYS };
+export type { DemeterBackup };

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Expense, ParsedTransaction, Currency, BankProvider } from '../types';
+import { expenseSchema } from '../schemas';
 import { storage, STORAGE_KEYS } from '../utils/storage';
 
 /**
@@ -25,14 +26,20 @@ export const useExpenses = () => {
 
   // Add single expense
   const addExpense = (expense: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>): Expense => {
-    const newExpense: Expense = {
+    const newExpense = {
       ...expense,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    setExpenses((prev) => [...prev, newExpense]);
-    return newExpense;
+    const result = expenseSchema.safeParse(newExpense);
+    if (!result.success) {
+      console.error('[Demeter] Invalid expense data:', result.error.issues);
+      // Return unvalidated to avoid breaking the UI, but don't persist
+      return newExpense as Expense;
+    }
+    setExpenses((prev) => [...prev, result.data]);
+    return result.data;
   };
 
   // Add multiple expenses (batch import)
@@ -42,33 +49,47 @@ export const useExpenses = () => {
     provider: BankProvider,
     categoryMapping?: (merchantName: string) => string | undefined
   ): Expense[] => {
-    const newExpenses: Expense[] = transactions.map((t) => ({
-      id: crypto.randomUUID(),
-      date: t.date,
-      description: t.description,
-      amount: t.amount,
-      currency: t.currency,
-      category: categoryMapping?.(t.merchantName || t.description),
-      source,
-      sourceProvider: provider,
-      merchantName: t.merchantName,
-      cardLastFour: t.cardLastFour,
-      originalLine: t.originalLine,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }));
-    setExpenses((prev) => [...prev, ...newExpenses]);
-    return newExpenses;
+    const validExpenses: Expense[] = [];
+    for (const t of transactions) {
+      const raw = {
+        id: crypto.randomUUID(),
+        date: t.date,
+        description: t.description,
+        amount: t.amount,
+        currency: t.currency,
+        category: categoryMapping?.(t.merchantName || t.description),
+        source,
+        sourceProvider: provider,
+        merchantName: t.merchantName,
+        cardLastFour: t.cardLastFour,
+        originalLine: t.originalLine,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const result = expenseSchema.safeParse(raw);
+      if (result.success) {
+        validExpenses.push(result.data);
+      } else {
+        console.warn('[Demeter] Skipping invalid expense during import:', result.error.issues);
+      }
+    }
+    setExpenses((prev) => [...prev, ...validExpenses]);
+    return validExpenses;
   };
 
   // Update expense
   const updateExpense = (id: string, data: Partial<Expense>) => {
     setExpenses((prev) =>
-      prev.map((expense) =>
-        expense.id === id
-          ? { ...expense, ...data, updatedAt: new Date().toISOString() }
-          : expense
-      )
+      prev.map((expense) => {
+        if (expense.id !== id) return expense;
+        const updated = { ...expense, ...data, updatedAt: new Date().toISOString() };
+        const result = expenseSchema.safeParse(updated);
+        if (!result.success) {
+          console.error('[Demeter] Invalid expense update:', result.error.issues);
+          return expense;
+        }
+        return result.data;
+      })
     );
   };
 

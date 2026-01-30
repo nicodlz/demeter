@@ -1,4 +1,5 @@
 import type { ParsedTransaction, Currency } from '../../types';
+import { parsedTransactionSchema } from '../../schemas';
 
 /**
  * Deblock Parser
@@ -66,7 +67,7 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
       const isCredit = operation.toLowerCase().includes('cashback') ||
                        (operation.toLowerCase().includes('virement') && !merchantMatch);
 
-      transactions.push({
+      const tx = {
         date,
         description: operation.replace(/"/g, '').trim(),
         amount,
@@ -74,7 +75,13 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
         merchantName,
         isCredit,
         originalLine: fullMatch,
-      });
+      };
+      const validated = parsedTransactionSchema.safeParse(tx);
+      if (validated.success) {
+        transactions.push(validated.data);
+      } else {
+        errors.push(`Invalid transaction: ${validated.error.issues.map(i => i.message).join(', ')}`);
+      }
     } catch {
       errors.push(`Parse error: ${match[0].substring(0, 50)}...`);
     }
