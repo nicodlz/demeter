@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { currencySchema } from './client';
 
-export const bankProviderSchema = z.enum(['deblock', 'bourso', 'gnosis_pay', 'etherfi', 'manual']);
+export const bankProviderSchema = z.enum(['deblock', 'bourso', 'gnosis_pay', 'etherfi', 'manual', 'invoice']);
 
 export const expenseTypeSchema = z.enum(['expense', 'income']);
 
