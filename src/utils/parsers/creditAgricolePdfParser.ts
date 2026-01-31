@@ -78,16 +78,23 @@ export const parseCreditAgricolePdf = async (
     }
 
     // Process each page
+    let lastKnownColumns: ColumnPositions | null = null;
+
     for (let pageNum = 0; pageNum < allItems.length; pageNum++) {
       const items = allItems[pageNum];
 
       // Find column positions by looking for header row
-      const columnPositions = findColumnPositions(items);
+      const foundColumns = findColumnPositions(items);
+      const columnPositions: ColumnPositions | null = foundColumns || lastKnownColumns;
 
       if (!columnPositions) {
-        // Not every page has headers (e.g. continuation pages with "(suite)")
-        // Try to use fallback positions
+        // No headers found and no previous columns to reuse
         continue;
+      }
+
+      // Remember column positions for subsequent pages
+      if (foundColumns) {
+        lastKnownColumns = foundColumns;
       }
 
       // Parse transactions from this page
@@ -240,19 +247,41 @@ interface ColumnPositions {
 }
 
 function findColumnPositions(items: TextItem[]): ColumnPositions | null {
-  // Look for column headers
-  const debitHeader = items.find(i => i.str.trim() === 'Débit' || i.str.trim() === 'Debit');
-  const creditHeader = items.find(i => i.str.trim() === 'Crédit' || i.str.trim() === 'Credit');
-  const dateOpeHeader = items.find(i =>
-    i.str.trim() === 'Date opé.' || i.str.trim() === 'Date' || i.str.trim().startsWith('Date op')
-  );
-  const libelleHeader = items.find(i =>
-    i.str.trim().includes('Libellé') || i.str.trim().includes('opérations')
-  );
+  // Find all "Débit" and "Crédit" occurrences
+  const debitCandidates = items.filter(i => i.str.trim() === 'Débit' || i.str.trim() === 'Debit');
+  const creditCandidates = items.filter(i => i.str.trim() === 'Crédit' || i.str.trim() === 'Credit');
+
+  if (debitCandidates.length === 0 || creditCandidates.length === 0) {
+    return null;
+  }
+
+  // Find a Débit/Crédit pair on the same row (within Y threshold)
+  let debitHeader: TextItem | null = null;
+  let creditHeader: TextItem | null = null;
+
+  for (const dh of debitCandidates) {
+    for (const ch of creditCandidates) {
+      if (Math.abs(dh.y - ch.y) < 10 && ch.x > dh.x) {
+        debitHeader = dh;
+        creditHeader = ch;
+        break;
+      }
+    }
+    if (debitHeader) break;
+  }
 
   if (!debitHeader || !creditHeader) {
     return null;
   }
+
+  const dateOpeHeader = items.find(i =>
+    Math.abs(i.y - debitHeader!.y) < 15 &&
+    (i.str.trim() === 'Date opé.' || i.str.trim() === 'Date' || i.str.trim().startsWith('Date op'))
+  );
+  const libelleHeader = items.find(i =>
+    Math.abs(i.y - debitHeader!.y) < 15 &&
+    (i.str.trim().includes('Libellé') || i.str.trim().includes('opérations'))
+  );
 
   const debitX = debitHeader.x;
   const debitRight = debitX + debitHeader.width;
@@ -366,63 +395,16 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
       };
 
       // Process items in this row by column
-      for (const item of row) {
-        const x = item.x;
-        const str = item.str.replace(/[þ¨]/g, '').trim();
-        if (!str || item === dateItem) continue;
+      processRowItems(row, dateItem, currentTransaction, cols);
 
-        // Second date (Date valeur)
-        if (x >= cols.dateValeurMin && x < cols.dateValeurMax && /^\d{2}\.\d{2}$/.test(str)) {
-          currentTransaction.dateValeur = str;
-        }
-        // Libellé column
-        else if (x >= cols.libelleMin && x < cols.libelleMax) {
-          currentTransaction.description.push(str);
-        }
-        // Débit column (expenses)
-        else if (x >= cols.debitMin && x < cols.debitMax) {
-          const amount = parseAmount(str);
-          if (amount > 0) {
-            currentTransaction.debit = amount;
-          }
-        }
-        // Crédit column (income)
-        else if (x >= cols.creditMin && x <= cols.creditMax) {
-          const amount = parseAmount(str);
-          if (amount > 0) {
-            currentTransaction.credit = amount;
-          }
-        }
-      }
+      // Fix split amounts (e.g., "1" in description + "000,00" in debit = 1000.00)
+      fixSplitAmounts(currentTransaction);
     } else if (currentTransaction) {
       // Continuation row - add to description or capture amounts
-      for (const item of row) {
-        const x = item.x;
-        const str = item.str.replace(/[þ¨]/g, '').trim();
-        if (!str) continue;
+      processRowItems(row, null, currentTransaction, cols, true);
 
-        // Skip if it looks like a page number or header
-        if (/^Page \d+/.test(str) || /^\d+\/\d+$/.test(str)) continue;
-
-        // Additional description lines
-        if (x >= cols.libelleMin && x < cols.libelleMax) {
-          currentTransaction.description.push(str);
-        }
-        // Débit amount on continuation row
-        else if (x >= cols.debitMin && x < cols.debitMax && !currentTransaction.debit) {
-          const amount = parseAmount(str);
-          if (amount > 0) {
-            currentTransaction.debit = amount;
-          }
-        }
-        // Crédit amount on continuation row
-        else if (x >= cols.creditMin && x <= cols.creditMax && !currentTransaction.credit) {
-          const amount = parseAmount(str);
-          if (amount > 0) {
-            currentTransaction.credit = amount;
-          }
-        }
-      }
+      // Fix split amounts on continuation rows too
+      fixSplitAmounts(currentTransaction);
     }
   }
 
@@ -434,10 +416,112 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
   return transactions;
 }
 
+function processRowItems(
+  row: TextItem[],
+  dateItem: TextItem | null,
+  tx: RawTransaction,
+  cols: ColumnPositions,
+  isContinuation = false
+): void {
+  for (const item of row) {
+    const x = item.x;
+    const str = item.str.replace(/[þ¨]/g, '').trim();
+    if (!str || item === dateItem) continue;
+
+    if (!isContinuation) {
+      // Second date (Date valeur)
+      if (x >= cols.dateValeurMin && x < cols.dateValeurMax && /^\d{2}\.\d{2}$/.test(str)) {
+        tx.dateValeur = str;
+        continue;
+      }
+    } else {
+      // Skip page numbers on continuation rows
+      if (/^Page \d+/.test(str) || /^\d+\/\d+$/.test(str)) continue;
+    }
+
+    // Items in the overlap zone between libellé and debit: if purely numeric, prefer debit
+    if (x >= cols.libelleMin && x < cols.debitMax) {
+      // Check if this is in the debit zone
+      if (x >= cols.debitMin) {
+        const amount = parseAmount(str);
+        if (amount > 0 && (isContinuation ? !tx.debit : true)) {
+          tx.debit = amount;
+          continue;
+        }
+      }
+      // Check if this is in the credit zone (for items positioned between debit and credit)
+      if (x >= cols.creditMin && x <= cols.creditMax) {
+        const amount = parseAmount(str);
+        if (amount > 0 && (isContinuation ? !tx.credit : true)) {
+          tx.credit = amount;
+          continue;
+        }
+      }
+      // Otherwise it's libellé
+      if (x < cols.libelleMax) {
+        tx.description.push(str);
+      }
+    }
+    // Pure debit column
+    else if (x >= cols.debitMin && x < cols.debitMax) {
+      const amount = parseAmount(str);
+      if (amount > 0 && (isContinuation ? !tx.debit : true)) {
+        tx.debit = amount;
+      }
+    }
+    // Pure credit column
+    else if (x >= cols.creditMin && x <= cols.creditMax) {
+      const amount = parseAmount(str);
+      if (amount > 0 && (isContinuation ? !tx.credit : true)) {
+        tx.credit = amount;
+      }
+    }
+  }
+}
+
+/**
+ * Fix amounts that got split across text items due to thousands separator.
+ * Example: "1 000,00" → "1" at x≈420 (near debit column) + "000,00" at x≈440 (in debit column)
+ * The "1" ends up in description because it's just left of the debit column boundary.
+ * We detect this by checking if the last description item is a number AND positioned
+ * very close to the debit/credit column (via the _lastDescX marker).
+ *
+ * Safety: only apply when the existing amount is < 1000 (the "rest" after the split).
+ * Only apply when description ends with a 1-3 digit number.
+ */
+function fixSplitAmounts(tx: RawTransaction): void {
+  if (tx.description.length === 0) return;
+
+  const lastDesc = tx.description[tx.description.length - 1];
+
+  // Check if last description element is a standalone number (1-999) that could be thousands prefix
+  if (!/^\d{1,3}$/.test(lastDesc)) return;
+
+  const prefix = parseInt(lastDesc);
+  if (prefix <= 0) return;
+
+  // Only fix when existing amount is exactly 0 (from "000,00" → 0.00)
+  // This is the strongest signal that the amount was split
+  if (tx.debit !== undefined && tx.debit === 0) {
+    tx.debit = prefix * 1000;
+    tx.description.pop();
+    return;
+  }
+
+  if (tx.credit !== undefined && tx.credit === 0) {
+    tx.credit = prefix * 1000;
+    tx.description.pop();
+    return;
+  }
+}
+
 function parseAmount(str: string): number {
   if (!str) return 0;
+  // Must contain a comma (French decimal separator) to be a valid amount
+  // This prevents parsing check numbers like "7063364" as amounts
+  if (!str.includes(',')) return 0;
   // Handle French number format: "1 264,00" or "590,00" or "3,86"
-  const cleaned = str.replace(/[\s\u00a0]/g, '').replace(',', '.');
+  const cleaned = str.replace(/[\s\u00a0.]/g, '').replace(',', '.');
   const num = parseFloat(cleaned);
   return isNaN(num) ? 0 : num;
 }
