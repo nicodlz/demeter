@@ -66,15 +66,15 @@ export const ClientsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Clients</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Clients</h2>
+          <p className="text-sm text-muted-foreground">
             Manage your clients and their information
           </p>
         </div>
         {!showForm && !editingClient && (
-          <Button onClick={() => setShowForm(true)}>
+          <Button size="sm" onClick={() => setShowForm(true)} className="min-h-[44px] sm:min-h-0 self-start">
             <Plus className="mr-2 h-4 w-4" />
             New Client
           </Button>
@@ -116,13 +116,14 @@ export const ClientsPage = () => {
               No clients yet. Start by adding your first client.
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>City</TableHead>
-                  <TableHead>Country</TableHead>
+                  <TableHead className="hidden sm:table-cell">Email</TableHead>
+                  <TableHead className="hidden md:table-cell">City</TableHead>
+                  <TableHead className="hidden md:table-cell">Country</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -130,9 +131,9 @@ export const ClientsPage = () => {
                 {clients.map((client) => (
                   <TableRow key={client.id}>
                     <TableCell className="font-medium">{client.name}</TableCell>
-                    <TableCell>{client.email}</TableCell>
-                    <TableCell>{client.city}</TableCell>
-                    <TableCell>{client.country}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{client.email}</TableCell>
+                    <TableCell className="hidden md:table-cell">{client.city}</TableCell>
+                    <TableCell className="hidden md:table-cell">{client.country}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -182,6 +183,7 @@ export const ClientsPage = () => {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

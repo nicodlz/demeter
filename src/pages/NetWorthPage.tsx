@@ -104,19 +104,19 @@ export const NetWorthPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Net Worth</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Net Worth</h2>
+          <p className="text-sm text-muted-foreground">
             Track your net worth over time with snapshots
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={exportAsJSON}>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" size="sm" onClick={exportAsJSON} className="min-h-[44px] sm:min-h-0">
             <Download className="h-4 w-4 mr-2" />
             Export JSON
           </Button>
-          <Button onClick={() => setShowForm(true)}>
+          <Button size="sm" onClick={() => setShowForm(true)} className="min-h-[44px] sm:min-h-0">
             <Plus className="h-4 w-4 mr-2" />
             New Snapshot
           </Button>
@@ -142,14 +142,15 @@ export const NetWorthPage = () => {
               </Button>
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Stocks</TableHead>
-                  <TableHead className="text-right">Crypto</TableHead>
-                  <TableHead className="text-right">Cash</TableHead>
-                  <TableHead className="text-right">Stablecoins</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">Stocks</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">Crypto</TableHead>
+                  <TableHead className="text-right hidden md:table-cell">Cash</TableHead>
+                  <TableHead className="text-right hidden md:table-cell">Stablecoins</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
@@ -165,16 +166,16 @@ export const NetWorthPage = () => {
                         </p>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right hidden sm:table-cell whitespace-nowrap">
                       {formatCurrency(getCategoryTotal(snapshot, 'stocks', convert), 'USD')}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right hidden sm:table-cell whitespace-nowrap">
                       {formatCurrency(getCategoryTotal(snapshot, 'crypto', convert), 'USD')}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right hidden md:table-cell whitespace-nowrap">
                       {formatCurrency(getCategoryTotal(snapshot, 'cash', convert), 'USD')}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right hidden md:table-cell whitespace-nowrap">
                       {formatCurrency(getCategoryTotal(snapshot, 'stablecoins', convert), 'USD')}
                     </TableCell>
                     <TableCell className="text-right font-bold">
@@ -228,6 +229,7 @@ export const NetWorthPage = () => {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

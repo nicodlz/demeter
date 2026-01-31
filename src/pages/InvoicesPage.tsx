@@ -305,15 +305,15 @@ export const InvoicesPage = () => {
   return (
     <TooltipProvider>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Invoices</h2>
-            <p className="text-muted-foreground">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Invoices</h2>
+            <p className="text-sm text-muted-foreground">
               Manage your invoices and create new ones
             </p>
           </div>
           {!showForm && !editingInvoice && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -330,19 +330,23 @@ export const InvoicesPage = () => {
               />
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => fileInputRef.current?.click()}
+                className="min-h-[44px] sm:min-h-0"
               >
                 <Upload className="mr-2 h-4 w-4" />
                 Import PDF
               </Button>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => zipInputRef.current?.click()}
+                className="min-h-[44px] sm:min-h-0"
               >
                 <FileArchive className="mr-2 h-4 w-4" />
                 Import ZIP
               </Button>
-              <Button onClick={() => setShowForm(true)}>
+              <Button size="sm" onClick={() => setShowForm(true)} className="min-h-[44px] sm:min-h-0">
                 <Plus className="mr-2 h-4 w-4" />
                 New Invoice
               </Button>
@@ -393,13 +397,14 @@ export const InvoicesPage = () => {
                 No invoices yet. Start by creating your first invoice.
               </div>
             ) : (
+              <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Invoice #</TableHead>
                     <TableHead>Client</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Due Date</TableHead>
+                    <TableHead className="hidden sm:table-cell">Date</TableHead>
+                    <TableHead className="hidden md:table-cell">Due Date</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -408,11 +413,11 @@ export const InvoicesPage = () => {
                 <TableBody>
                   {sortedInvoices.map((invoice) => (
                     <TableRow key={invoice.id}>
-                      <TableCell className="font-medium">{invoice.number}</TableCell>
-                      <TableCell>{invoice.client.name}</TableCell>
-                      <TableCell>{formatDate(invoice.date)}</TableCell>
-                      <TableCell>{formatDate(invoice.dueDate)}</TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium whitespace-nowrap">{invoice.number}</TableCell>
+                      <TableCell className="max-w-[120px] sm:max-w-none truncate">{invoice.client.name}</TableCell>
+                      <TableCell className="hidden sm:table-cell whitespace-nowrap">{formatDate(invoice.date)}</TableCell>
+                      <TableCell className="hidden md:table-cell whitespace-nowrap">{formatDate(invoice.dueDate)}</TableCell>
+                      <TableCell className="font-medium whitespace-nowrap">
                         {getCurrencySymbol(invoice.currency || 'USD')}
                         {calculateInvoiceTotal(invoice).toFixed(2)}
                       </TableCell>
@@ -523,6 +528,7 @@ export const InvoicesPage = () => {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>

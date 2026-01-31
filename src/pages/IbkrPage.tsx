@@ -100,28 +100,28 @@ export const IbkrPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             IBKR Portfolio
             {accountId && (
-              <span className="text-muted-foreground font-normal text-base ml-2">
+              <span className="text-muted-foreground font-normal text-sm sm:text-base ml-2">
                 — {accountId}
               </span>
             )}
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Interactive Brokers positions via Flex Web Service
           </p>
         </div>
         {isConfigured && positions.length > 0 && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {lastSyncAt && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground hidden sm:inline">
                 Last sync: {new Date(lastSyncAt).toLocaleString()}
               </span>
             )}
-            <Button onClick={handleSync} disabled={syncing} size="sm">
+            <Button onClick={handleSync} disabled={syncing} size="sm" className="min-h-[44px] sm:min-h-0">
               <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Syncing…' : 'Sync'}
             </Button>
@@ -190,7 +190,7 @@ export const IbkrPage = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-lg sm:text-2xl font-bold">
                 {formatCurrency(nav ?? totalPositionValue + totalCashValue, 'USD')}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -205,7 +205,7 @@ export const IbkrPage = () => {
               <Landmark className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-lg sm:text-2xl font-bold">
                 {formatCurrency(totalCashValue, 'USD')}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -221,7 +221,7 @@ export const IbkrPage = () => {
             </CardHeader>
             <CardContent>
               <div
-                className={`text-2xl font-bold ${
+                className={`text-lg sm:text-2xl font-bold ${
                   totalUnrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}
               >
@@ -241,7 +241,7 @@ export const IbkrPage = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{positions.length}</div>
+              <div className="text-lg sm:text-2xl font-bold">{positions.length}</div>
               <p className="text-xs text-muted-foreground">
                 {assetCategories.length} asset type{assetCategories.length !== 1 ? 's' : ''}
               </p>
@@ -280,16 +280,16 @@ export const IbkrPage = () => {
       {positions.length > 0 && (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <CardTitle>Positions</CardTitle>
                 <CardDescription>
                   {filteredPositions.length} of {positions.length} positions
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="w-[140px]">
+                  <SelectTrigger className="w-full sm:w-[140px]">
                     <SelectValue placeholder="Asset Type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -303,7 +303,7 @@ export const IbkrPage = () => {
                 </Select>
 
                 <Select value={filterCurrency} onValueChange={setFilterCurrency}>
-                  <SelectTrigger className="w-[120px]">
+                  <SelectTrigger className="w-full sm:w-[120px]">
                     <SelectValue placeholder="Currency" />
                   </SelectTrigger>
                   <SelectContent>
@@ -319,17 +319,18 @@ export const IbkrPage = () => {
             </div>
           </CardHeader>
           <CardContent>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Symbol</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="hidden md:table-cell">Type</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">Qty</TableHead>
+                  <TableHead className="text-right hidden lg:table-cell">Price</TableHead>
                   <TableHead className="text-right">Value</TableHead>
-                  <TableHead className="text-right">Cost</TableHead>
+                  <TableHead className="text-right hidden lg:table-cell">Cost</TableHead>
                   <TableHead className="text-right">P&L</TableHead>
-                  <TableHead className="text-right">% NAV</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">% NAV</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -341,21 +342,21 @@ export const IbkrPage = () => {
                         {pos.description}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <span className="text-xs px-2 py-0.5 rounded bg-muted">
                         {formatAssetCategory(pos.assetCategory)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-right font-mono hidden sm:table-cell">
                       {formatNumber(pos.quantity)}
                     </TableCell>
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-right font-mono hidden lg:table-cell">
                       {formatNumber(pos.markPrice)}
                     </TableCell>
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-right font-mono whitespace-nowrap">
                       {formatNumber(pos.marketValue)}
                     </TableCell>
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-right font-mono hidden lg:table-cell">
                       {formatNumber(pos.costBasisMoney)}
                     </TableCell>
                     <TableCell
@@ -366,13 +367,14 @@ export const IbkrPage = () => {
                       {pos.unrealizedPnl >= 0 ? '+' : ''}
                       {formatNumber(pos.unrealizedPnl)}
                     </TableCell>
-                    <TableCell className="text-right font-mono text-muted-foreground">
+                    <TableCell className="text-right font-mono text-muted-foreground hidden sm:table-cell">
                       {pos.percentOfNav.toFixed(1)}%
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}

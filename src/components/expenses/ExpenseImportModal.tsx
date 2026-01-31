@@ -231,7 +231,7 @@ export const ExpenseImportModal = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[calc(100vw-2rem)] sm:w-full">
         <DialogHeader>
           <DialogTitle>Import Expenses</DialogTitle>
           <DialogDescription>

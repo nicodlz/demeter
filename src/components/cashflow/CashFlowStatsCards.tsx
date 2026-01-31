@@ -24,14 +24,14 @@ export const CashFlowStatsCards = ({
   const isPositiveBalance = balance >= 0;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Income</CardTitle>
           <TrendingUp className="h-4 w-4 text-green-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-lg sm:text-2xl font-bold text-green-600">
             {mask(`+${formatCurrency(totalIncome, currency)}`)}
           </div>
           <p className="text-xs text-muted-foreground">This month</p>
@@ -44,7 +44,7 @@ export const CashFlowStatsCards = ({
           <TrendingDown className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-destructive">
+          <div className="text-lg sm:text-2xl font-bold text-destructive">
             {mask(`-${formatCurrency(totalExpenses, currency)}`)}
           </div>
           <p className="text-xs text-muted-foreground">This month</p>
@@ -58,7 +58,7 @@ export const CashFlowStatsCards = ({
         </CardHeader>
         <CardContent>
           <div
-            className={`text-2xl font-bold ${isPositiveBalance ? 'text-green-600' : 'text-destructive'}`}
+            className={`text-lg sm:text-2xl font-bold ${isPositiveBalance ? 'text-green-600' : 'text-destructive'}`}
           >
             {mask(formatCurrency(balance, currency))}
           </div>
@@ -73,7 +73,7 @@ export const CashFlowStatsCards = ({
         </CardHeader>
         <CardContent>
           <div
-            className={`text-2xl font-bold ${savingsRate >= 0 ? 'text-green-600' : 'text-destructive'}`}
+            className={`text-lg sm:text-2xl font-bold ${savingsRate >= 0 ? 'text-green-600' : 'text-destructive'}`}
           >
             {privacyMode ? '•••••' : `${savingsRate.toFixed(1)}%`}
           </div>

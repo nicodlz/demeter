@@ -23,12 +23,12 @@ interface StatCardProps {
 
 const StatCard = ({ title, value, icon, iconBg, subValue, subValueColor }: StatCardProps) => (
   <Card>
-    <CardContent className="p-6">
+    <CardContent className="p-4 sm:p-6">
       <div className="flex items-center">
-        <div className={`p-3 rounded-full ${iconBg}`}>{icon}</div>
-        <div className="ml-4">
+        <div className={`p-2 sm:p-3 rounded-full ${iconBg}`}>{icon}</div>
+        <div className="ml-3 sm:ml-4 min-w-0">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-2xl font-semibold">{value}</p>
+          <p className="text-lg sm:text-2xl font-semibold truncate">{value}</p>
           {subValue && (
             <p className={`text-sm ${subValueColor || 'text-muted-foreground'}`}>
               {subValue}
