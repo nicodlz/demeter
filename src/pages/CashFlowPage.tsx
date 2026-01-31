@@ -297,25 +297,26 @@ export const CashFlowPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Cash Flow</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Cash Flow</h1>
+          <p className="text-sm text-muted-foreground">
             Track your income and expenses
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={exportAsCSV}>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={exportAsCSV} className="min-h-[44px] sm:min-h-0 sm:size-default">
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button variant="outline" onClick={() => setShowImportModal(true)}>
+          <Button variant="outline" size="sm" onClick={() => setShowImportModal(true)} className="min-h-[44px] sm:min-h-0 sm:size-default">
             <Upload className="mr-2 h-4 w-4" />
             Import
           </Button>
           <Button
             variant="outline"
-            className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+            size="sm"
+            className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950 min-h-[44px] sm:min-h-0 sm:size-default"
             onClick={() => {
               setDefaultFormType('income');
               setShowForm(true);
@@ -324,10 +325,10 @@ export const CashFlowPage = () => {
             <TrendingUp className="mr-2 h-4 w-4" />
             New Income
           </Button>
-          <Button onClick={() => {
+          <Button size="sm" onClick={() => {
             setDefaultFormType('expense');
             setShowForm(true);
-          }}>
+          }} className="min-h-[44px] sm:min-h-0 sm:size-default">
             <Plus className="mr-2 h-4 w-4" />
             New Expense
           </Button>
@@ -354,7 +355,7 @@ export const CashFlowPage = () => {
 
       {/* Stats */}
       {activeTab === 'all' ? (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -362,7 +363,7 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-lg sm:text-2xl font-bold text-green-600">
                 +{formatCurrency(stats.totalIncome, 'EUR')}
               </div>
             </CardContent>
@@ -374,7 +375,7 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-destructive">
+              <div className="text-lg sm:text-2xl font-bold text-destructive">
                 -{formatCurrency(stats.totalExpenses, 'EUR')}
               </div>
             </CardContent>
@@ -386,7 +387,7 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${stats.totalIncome - stats.totalExpenses >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+              <div className={`text-lg sm:text-2xl font-bold ${stats.totalIncome - stats.totalExpenses >= 0 ? 'text-green-600' : 'text-destructive'}`}>
                 {formatCurrency(stats.totalIncome - stats.totalExpenses, 'EUR')}
               </div>
             </CardContent>
@@ -398,14 +399,14 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-lg sm:text-2xl font-bold">
                 {stats.totalCount}
               </div>
             </CardContent>
           </Card>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -413,7 +414,7 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${getStatColor()}`}>
+              <div className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}>
                 {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.totalAll, 'EUR')}
               </div>
             </CardContent>
@@ -425,7 +426,7 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${getStatColor()}`}>
+              <div className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}>
                 {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.lastCompleted, 'EUR')}
               </div>
               {stats.previous > 0 && (
@@ -443,7 +444,7 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-muted-foreground">
+              <div className="text-lg sm:text-2xl font-bold text-muted-foreground">
                 {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.previous, 'EUR')}
               </div>
             </CardContent>
@@ -464,9 +465,9 @@ export const CashFlowPage = () => {
       <CashFlowSankey expenses={expenses} currency="EUR" />
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap items-center gap-3">
         <Select value={filterMonth} onValueChange={setFilterMonth}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full md:w-[160px]">
             <SelectValue placeholder="All months" />
           </SelectTrigger>
           <SelectContent>
@@ -480,7 +481,7 @@ export const CashFlowPage = () => {
         </Select>
 
         <Select value={filterSource} onValueChange={setFilterSource}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full md:w-[160px]">
             <SelectValue placeholder="All sources" />
           </SelectTrigger>
           <SelectContent>
@@ -494,7 +495,7 @@ export const CashFlowPage = () => {
         </Select>
 
         <Select value={filterCategory} onValueChange={setFilterCategory}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full md:w-[160px]">
             <SelectValue placeholder="All categories" />
           </SelectTrigger>
           <SelectContent>
@@ -509,16 +510,15 @@ export const CashFlowPage = () => {
         </Select>
 
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
-            <X className="mr-1 h-4 w-4" />
-            Clear filters
-          </Button>
-        )}
-
-        {hasActiveFilters && (
-          <span className="text-sm text-muted-foreground">
-            {filteredExpenses.length} of {sortedExpenses.length} transactions
-          </span>
+          <div className="flex items-center gap-3 col-span-full md:col-span-1">
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
+              <X className="mr-1 h-4 w-4" />
+              Clear filters
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {filteredExpenses.length} of {sortedExpenses.length} transactions
+            </span>
+          </div>
         )}
       </div>
 

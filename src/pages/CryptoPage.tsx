@@ -50,10 +50,10 @@ export const CryptoPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Crypto Portfolio</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Crypto Portfolio</h2>
+          <p className="text-sm text-muted-foreground">
             Track your crypto wallets and DeFi positions
           </p>
         </div>

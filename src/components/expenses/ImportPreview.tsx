@@ -130,7 +130,7 @@ export const ImportPreview = ({
                   {formatDate(tx.date)}
                 </TableCell>
                 <TableCell>
-                  <div className="max-w-[250px] truncate" title={tx.description}>
+                  <div className="max-w-[150px] sm:max-w-[250px] truncate" title={tx.description}>
                     {tx.description}
                   </div>
                   {tx.merchantName && tx.merchantName !== tx.description && (

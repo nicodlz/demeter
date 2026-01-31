@@ -16,14 +16,14 @@ export const CryptoSummaryCards = ({
   walletCount,
 }: CryptoSummaryCardsProps) => {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Crypto</CardTitle>
           <Coins className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
+          <div className="text-lg sm:text-2xl font-bold">
             {formatCurrency(totalCryptoValue, 'USD')}
           </div>
         </CardContent>
@@ -35,7 +35,7 @@ export const CryptoSummaryCards = ({
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
+          <div className="text-lg sm:text-2xl font-bold">
             {formatCurrency(totalStablecoinValue, 'USD')}
           </div>
         </CardContent>
@@ -47,7 +47,7 @@ export const CryptoSummaryCards = ({
           <Link2 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{positionCount}</div>
+          <div className="text-lg sm:text-2xl font-bold">{positionCount}</div>
         </CardContent>
       </Card>
 
@@ -57,7 +57,7 @@ export const CryptoSummaryCards = ({
           <Wallet className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{walletCount}</div>
+          <div className="text-lg sm:text-2xl font-bold">{walletCount}</div>
         </CardContent>
       </Card>
     </div>

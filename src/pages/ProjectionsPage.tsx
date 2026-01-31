@@ -205,8 +205,8 @@ export const ProjectionsPage = () => {
       {/* Expected Returns */}
       <Card>
         <CardContent className="py-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-sm font-medium text-muted-foreground">Expected returns:</span>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            <span className="text-sm font-medium text-muted-foreground w-full sm:w-auto">Expected returns:</span>
             {(Object.keys(DEFAULT_RETURNS) as AssetClass[]).map((asset) => (
               <div key={asset} className="flex items-center gap-1">
                 <div className={`w-2 h-2 rounded-full ${ASSET_COLORS[asset]}`} />
@@ -436,22 +436,22 @@ export const ProjectionsPage = () => {
             {projection ? (
               <div className="space-y-6">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 bg-muted rounded-lg text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Final Value</p>
-                    <p className="text-2xl font-bold text-primary">
+                    <p className="text-xl sm:text-2xl font-bold text-primary">
                       {formatCurrency(projection.finalValue, currency)}
                     </p>
                   </div>
-                  <div className="p-4 bg-muted rounded-lg text-center">
+                  <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Total Contributed</p>
-                    <p className="text-2xl font-bold">
+                    <p className="text-xl sm:text-2xl font-bold">
                       {formatCurrency(projection.totalContributed, currency)}
                     </p>
                   </div>
-                  <div className="p-4 bg-muted rounded-lg text-center">
+                  <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Total Gains</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-xl sm:text-2xl font-bold text-green-600">
                       {formatCurrency(projection.totalGains, currency)}
                     </p>
                     <Badge variant="secondary" className="mt-1">
@@ -479,13 +479,14 @@ export const ProjectionsPage = () => {
             <CardTitle>Yearly Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Year</TableHead>
                   <TableHead className="text-right">Total Value</TableHead>
-                  <TableHead className="text-right">Contributed</TableHead>
-                  <TableHead className="text-right">Total Gains</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">Contributed</TableHead>
+                  <TableHead className="text-right hidden sm:table-cell">Total Gains</TableHead>
                   <TableHead className="text-right">Yearly Gains</TableHead>
                 </TableRow>
               </TableHeader>
@@ -498,10 +499,10 @@ export const ProjectionsPage = () => {
                       <TableCell className="text-right font-bold">
                         {formatCurrency(row.totalValue, currency)}
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground">
+                      <TableCell className="text-right text-muted-foreground hidden sm:table-cell whitespace-nowrap">
                         {formatCurrency(row.totalContributed, currency)}
                       </TableCell>
-                      <TableCell className="text-right text-green-600">
+                      <TableCell className="text-right text-green-600 hidden sm:table-cell whitespace-nowrap">
                         {formatCurrency(row.totalGains, currency)}
                       </TableCell>
                       <TableCell className="text-right">
@@ -511,6 +512,7 @@ export const ProjectionsPage = () => {
                   ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}

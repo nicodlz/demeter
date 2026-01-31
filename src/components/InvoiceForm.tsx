@@ -243,7 +243,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
         <CardHeader>
           <CardTitle>General Information</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-6 sm:grid-cols-4">
+        <CardContent className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
             <Label htmlFor="client">Client *</Label>
             <Select value={selectedClientId} onValueChange={setSelectedClientId}>
@@ -364,9 +364,9 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
           {lineItems.map((item) => (
             <div
               key={item.id}
-              className="grid grid-cols-12 gap-3 items-end pb-4 border-b last:border-b-0"
+              className="grid grid-cols-2 sm:grid-cols-6 lg:grid-cols-12 gap-3 items-end pb-4 border-b last:border-b-0"
             >
-              <div className={applyVAT ? "col-span-3" : "col-span-4"} ref={activeAutocomplete === item.id ? autocompleteRef : null}>
+              <div className={applyVAT ? "col-span-2 sm:col-span-6 lg:col-span-3" : "col-span-2 sm:col-span-6 lg:col-span-4"} ref={activeAutocomplete === item.id ? autocompleteRef : null}>
                 <Label className="text-xs">Description *</Label>
                 <div className="relative mt-1">
                   <Input
@@ -427,7 +427,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                 </div>
               </div>
 
-              <div className="col-span-1">
+              <div className="col-span-1 sm:col-span-1 lg:col-span-1">
                 <Label className="text-xs">Qty *</Label>
                 <Input
                   type="number"
@@ -442,7 +442,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                 />
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2 lg:col-span-2">
                 <Label className="text-xs">Unit *</Label>
                 <Select value={item.unit} onValueChange={(v) => updateLineItem(item.id, 'unit', v)}>
                   <SelectTrigger className="mt-1">
@@ -458,7 +458,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                 </Select>
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2 lg:col-span-2">
                 <Label className="text-xs">Type *</Label>
                 <Select
                   value={item.type}
@@ -476,7 +476,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                 </Select>
               </div>
 
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2 lg:col-span-2">
                 <Label className="text-xs">Price *</Label>
                 <Input
                   type="number"
@@ -492,7 +492,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
               </div>
 
               {applyVAT && (
-                <div className="col-span-1">
+                <div className="col-span-1 sm:col-span-1 lg:col-span-1">
                   <Label className="text-xs">VAT%</Label>
                   <Select
                     value={item.vatRate.toString()}
@@ -512,7 +512,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                 </div>
               )}
 
-              <div className="col-span-1 flex justify-end">
+              <div className="col-span-1 sm:col-span-1 lg:col-span-1 flex justify-end items-end">
                 {lineItems.length > 1 && (
                   <Button
                     type="button"
@@ -568,8 +568,8 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
           ) : (
             <div className="space-y-3">
               {customFields.map((field) => (
-                <div key={field.id} className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-5">
+                <div key={field.id} className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-center">
+                  <div className="sm:col-span-5">
                     <Input
                       placeholder="Field name"
                       value={field.label}
@@ -578,7 +578,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                       }
                     />
                   </div>
-                  <div className="col-span-6">
+                  <div className="sm:col-span-6">
                     <Input
                       placeholder="Value"
                       value={field.value}
@@ -587,7 +587,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                       }
                     />
                   </div>
-                  <div className="col-span-1">
+                  <div className="sm:col-span-1 flex justify-end">
                     <Button
                       type="button"
                       variant="ghost"

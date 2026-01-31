@@ -175,7 +175,7 @@ export function RecibosVerdeModal({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col w-[calc(100vw-2rem)] sm:w-full">
         <DialogHeader className="bg-gradient-to-r from-green-600 to-green-700 -m-6 mb-0 p-6 rounded-t-lg">
           <DialogTitle className="text-white text-xl">
             Recibo Verde - Part B

@@ -94,25 +94,26 @@ export const ExpenseTable = ({
   }
 
   return (
+    <div className="overflow-x-auto -mx-4 sm:mx-0">
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>
             <button
-              className="flex items-center hover:text-foreground transition-colors"
+              className="flex items-center hover:text-foreground transition-colors min-h-[44px] md:min-h-0"
               onClick={() => handleSort('date')}
             >
               Date
               <SortIcon field="date" />
             </button>
           </TableHead>
-          <TableHead>Type</TableHead>
+          <TableHead className="hidden sm:table-cell">Type</TableHead>
           <TableHead>Description</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead>Source</TableHead>
+          <TableHead className="hidden md:table-cell">Category</TableHead>
+          <TableHead className="hidden lg:table-cell">Source</TableHead>
           <TableHead className="text-right">
             <button
-              className="flex items-center ml-auto hover:text-foreground transition-colors"
+              className="flex items-center ml-auto hover:text-foreground transition-colors min-h-[44px] md:min-h-0"
               onClick={() => handleSort('amount')}
             >
               Amount
@@ -125,10 +126,22 @@ export const ExpenseTable = ({
       <TableBody>
         {sortedExpenses.map((expense) => (
           <TableRow key={expense.id}>
-            <TableCell className="font-medium">
+            <TableCell className="font-medium whitespace-nowrap">
               {formatDate(expense.date)}
+              {/* Show type badge inline on mobile */}
+              <span className="sm:hidden ml-2 inline-block align-middle">
+                {expense.type === 'income' ? (
+                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-1.5">
+                    In
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive" className="text-[10px] px-1.5">
+                    Out
+                  </Badge>
+                )}
+              </span>
             </TableCell>
-            <TableCell>
+            <TableCell className="hidden sm:table-cell">
               {expense.type === 'income' ? (
                 <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400">
                   Income
@@ -140,7 +153,7 @@ export const ExpenseTable = ({
               )}
             </TableCell>
             <TableCell>
-              <div className="max-w-[300px] truncate" title={expense.description}>
+              <div className="max-w-[150px] sm:max-w-[300px] truncate" title={expense.description}>
                 {expense.description}
               </div>
               {expense.merchantName && expense.merchantName !== expense.description && (
@@ -149,19 +162,19 @@ export const ExpenseTable = ({
                 </div>
               )}
             </TableCell>
-            <TableCell>
+            <TableCell className="hidden md:table-cell">
               <CategoryPicker
                 currentCategory={expense.category}
                 categories={categories}
                 onSelect={(category) => onCategorySelect(expense.id, category)}
               />
             </TableCell>
-            <TableCell>
+            <TableCell className="hidden lg:table-cell">
               <span className="text-sm text-muted-foreground">
                 {expense.source}
               </span>
             </TableCell>
-            <TableCell className={`text-right font-medium ${expense.type === 'income' ? 'text-green-600' : 'text-destructive'}`}>
+            <TableCell className={`text-right font-medium whitespace-nowrap ${expense.type === 'income' ? 'text-green-600' : 'text-destructive'}`}>
               {expense.type === 'income' ? '+' : '-'}{formatCurrency(expense.amount, expense.currency)}
             </TableCell>
             <TableCell className="text-right">
@@ -216,5 +229,6 @@ export const ExpenseTable = ({
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 };

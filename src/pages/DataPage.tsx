@@ -179,7 +179,7 @@ export const DataPage = () => {
           <CardDescription>Overview of your stored data</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <div className="text-center p-3 bg-muted rounded-lg">
               <div className="text-2xl font-bold">{stats.invoices}</div>
               <div className="text-xs text-muted-foreground">Invoices</div>
