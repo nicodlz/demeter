@@ -4,6 +4,7 @@ import { boursoParser } from './boursoParser';
 import { gnosisPayParser } from './gnosisPayParser';
 import { etherfiParser } from './etherfiParser';
 import { parseBoursoramaPdf } from './boursoPdfParser';
+import { parseCreditAgricolePdf } from './creditAgricolePdfParser';
 
 export interface ParserResult {
   success: boolean;
@@ -28,6 +29,29 @@ const parsers: BankParser[] = [
  * Parse a Bourso PDF file
  */
 export const parseBoursoramaPdfFile = parseBoursoramaPdf;
+
+/**
+ * Parse a Crédit Agricole PDF file
+ */
+export const parseCreditAgricolePdfFile = parseCreditAgricolePdf;
+
+/**
+ * Parse a PDF file based on provider
+ */
+export const parsePdfFile = async (
+  file: File,
+  provider: BankProvider,
+  defaultCurrency: Currency = 'EUR'
+): Promise<ParserResult> => {
+  switch (provider) {
+    case 'bourso':
+      return parseBoursoramaPdf(file, defaultCurrency);
+    case 'credit_agricole':
+      return parseCreditAgricolePdf(file, defaultCurrency);
+    default:
+      return { success: false, transactions: [], errors: [`No PDF parser for provider: ${provider}`] };
+  }
+};
 
 /**
  * Auto-detect which parser to use based on content
@@ -81,6 +105,7 @@ export const getProviderDisplayName = (provider: BankProvider): string => {
     bourso: 'Boursorama',
     gnosis_pay: 'Gnosis Pay',
     etherfi: 'Etherfi',
+    credit_agricole: 'Crédit Agricole',
     manual: 'Manual',
     invoice: 'Invoice',
   };
@@ -94,10 +119,10 @@ export const getProviderInputType = (provider: BankProvider): 'text' | 'csv' | '
   if (provider === 'gnosis_pay' || provider === 'etherfi') {
     return 'csv';
   }
-  if (provider === 'bourso') {
+  if (provider === 'bourso' || provider === 'credit_agricole') {
     return 'pdf';
   }
   return 'text';
 };
 
-export { deblockParser, boursoParser, gnosisPayParser, etherfiParser, parseBoursoramaPdf };
+export { deblockParser, boursoParser, gnosisPayParser, etherfiParser, parseBoursoramaPdf, parseCreditAgricolePdf };

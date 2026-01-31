@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import type { ParsedTransaction, BankProvider } from '@/types';
-import { parseStatements, detectProvider, getProviderDisplayName, getProviderInputType, parseBoursoramaPdf } from '@/utils/parsers';
+import { parseStatements, detectProvider, getProviderDisplayName, getProviderInputType, parsePdfFile } from '@/utils/parsers';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -38,7 +38,7 @@ interface ExpenseImportModalProps {
 
 type Step = 'input' | 'preview';
 
-const PROVIDERS: BankProvider[] = ['deblock', 'bourso', 'gnosis_pay', 'etherfi'];
+const PROVIDERS: BankProvider[] = ['deblock', 'bourso', 'gnosis_pay', 'etherfi', 'credit_agricole'];
 
 export const ExpenseImportModal = ({
   open,
@@ -145,13 +145,13 @@ export const ExpenseImportModal = ({
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !provider) return;
 
     setIsLoading(true);
     setParseError(null);
 
     try {
-      const result = await parseBoursoramaPdf(file, 'EUR');
+      const result = await parsePdfFile(file, provider, 'EUR');
 
       if (!result.success || result.transactions.length === 0) {
         setParseError(
@@ -307,7 +307,7 @@ export const ExpenseImportModal = ({
                           Drag & drop or click to upload
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          Boursorama PDF (Releve_compte_*.pdf)
+                          {getProviderDisplayName(provider)} PDF statement
                         </span>
                       </>
                     )}
