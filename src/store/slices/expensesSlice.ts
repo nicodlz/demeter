@@ -46,7 +46,7 @@ export const createExpensesSlice: StateCreator<
       merchantName: t.merchantName,
       cardLastFour: t.cardLastFour,
       originalLine: t.originalLine,
-      type: 'expense' as const,
+      type: t.isCredit ? 'income' as const : 'expense' as const,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }));

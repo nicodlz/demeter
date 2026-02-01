@@ -105,16 +105,8 @@ export const ExpenseImportModal = ({
       return;
     }
 
-    // Filter out credits (we only want debits)
-    const debitsOnly = result.transactions.filter((t) => !t.isCredit);
-
-    if (debitsOnly.length === 0) {
-      setParseError('No debit transactions found (credits are excluded).');
-      return;
-    }
-
     // Check for duplicates
-    const { unique, duplicates: dups } = findDuplicates(debitsOnly);
+    const { unique, duplicates: dups } = findDuplicates(result.transactions);
 
     setParsedTransactions(unique);
     setDuplicates(dups);
@@ -166,17 +158,8 @@ export const ExpenseImportModal = ({
         return;
       }
 
-      // Filter out credits (we only want debits)
-      const debitsOnly = result.transactions.filter((t) => !t.isCredit);
-
-      if (debitsOnly.length === 0) {
-        setParseError('No debit transactions found (credits are excluded).');
-        setIsLoading(false);
-        return;
-      }
-
       // Check for duplicates
-      const { unique, duplicates: dups } = findDuplicates(debitsOnly);
+      const { unique, duplicates: dups } = findDuplicates(result.transactions);
 
       setParsedTransactions(unique);
       setDuplicates(dups);
