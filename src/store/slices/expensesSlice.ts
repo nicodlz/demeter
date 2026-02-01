@@ -56,14 +56,25 @@ export const createExpensesSlice: StateCreator<
 
   addRecurringIncome: (baseEntry, months) => {
     const newExpenses: Expense[] = [];
-    const baseDate = new Date(baseEntry.date);
+    // Parse date parts directly from the string to avoid timezone issues
+    const [baseYear, baseMonth, baseDay] = baseEntry.date.split('-').map(Number);
 
     for (let i = 0; i < months; i++) {
-      const entryDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, baseDate.getDate());
+      // Calculate target year/month
+      const totalMonths = baseMonth - 1 + i; // 0-indexed month
+      const year = baseYear + Math.floor(totalMonths / 12);
+      const month = (totalMonths % 12) + 1; // back to 1-indexed
+
+      // Clamp day to the last day of the target month to prevent overflow
+      // (e.g. Jan 31 → Feb 28, not Mar 3)
+      const lastDayOfMonth = new Date(year, month, 0).getDate();
+      const day = Math.min(baseDay, lastDayOfMonth);
+
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       newExpenses.push({
         ...baseEntry,
         type: 'income',
-        date: entryDate.toISOString().split('T')[0],
+        date: dateStr,
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
