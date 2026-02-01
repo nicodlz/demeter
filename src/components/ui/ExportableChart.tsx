@@ -12,19 +12,24 @@ interface ExportableChartProps {
   children: ReactNode;
   /** File name (without extension). A timestamp suffix is appended automatically. */
   filename: string;
-  /** Pixel ratio for the exported image (default 3 for high-res export). */
+  /** Pixel ratio for the exported image (default 2). */
   pixelRatio?: number;
+  /** Fixed export width in px (default 1200). The chart is temporarily resized to this width, Recharts re-renders, then we capture. */
+  exportWidth?: number;
 }
 
 /**
- * Wraps any chart in a container and overlays a small download button (top-right).
- * Clicking the button captures the live chart element directly at high resolution.
- * The export button is filtered out of the capture.
+ * Wraps any chart and overlays a download button (top-right).
+ *
+ * Export strategy: temporarily force the container to a fixed width so that
+ * Recharts' ResponsiveContainer fires its ResizeObserver and re-renders the
+ * SVG at the target dimensions. Then capture, then restore original size.
  */
 export const ExportableChart = ({
   children,
   filename,
-  pixelRatio = 3,
+  pixelRatio = 2,
+  exportWidth = 1200,
 }: ExportableChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const [exporting, setExporting] = useState(false);
@@ -33,15 +38,47 @@ export const ExportableChart = ({
     if (!chartRef.current || exporting) return;
 
     setExporting(true);
+
+    const el = chartRef.current;
+
+    // Save original styles
+    const origWidth = el.style.width;
+    const origMinWidth = el.style.minWidth;
+    const origMaxWidth = el.style.maxWidth;
+    const origPosition = el.style.position;
+    const origZIndex = el.style.zIndex;
+    const origOverflow = el.parentElement?.style.overflow || '';
+
     try {
-      const dataUrl = await toPng(chartRef.current, {
+      // Prevent the parent from clipping or scrolling while we resize
+      if (el.parentElement) {
+        el.parentElement.style.overflow = 'visible';
+      }
+
+      // Force the element to the export width — Recharts will re-render via ResizeObserver
+      el.style.width = `${exportWidth}px`;
+      el.style.minWidth = `${exportWidth}px`;
+      el.style.maxWidth = `${exportWidth}px`;
+      el.style.position = 'relative';
+      el.style.zIndex = '-1';
+
+      // Wait for Recharts ResizeObserver to fire and SVG to re-render
+      // Two rAFs + a timeout ensures layout is recalculated and SVGs are painted
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(resolve, 600);
+          });
+        });
+      });
+
+      const dataUrl = await toPng(el, {
         pixelRatio,
         backgroundColor: '#ffffff',
         style: {
           padding: '24px',
         },
         filter: (node: HTMLElement) => {
-          // Filter out the export button so it doesn't appear in the PNG
           return !node?.dataset?.exportButton;
         },
       });
@@ -55,9 +92,18 @@ export const ExportableChart = ({
     } catch (err) {
       console.error('Failed to export chart as PNG:', err);
     } finally {
+      // Restore original styles
+      el.style.width = origWidth;
+      el.style.minWidth = origMinWidth;
+      el.style.maxWidth = origMaxWidth;
+      el.style.position = origPosition;
+      el.style.zIndex = origZIndex;
+      if (el.parentElement) {
+        el.parentElement.style.overflow = origOverflow;
+      }
       setExporting(false);
     }
-  }, [filename, pixelRatio, exporting]);
+  }, [filename, pixelRatio, exportWidth, exporting]);
 
   return (
     <div className="relative" ref={chartRef}>
