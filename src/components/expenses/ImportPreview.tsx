@@ -55,9 +55,10 @@ export const ImportPreview = ({
     onConfirm(selectedTransactions);
   };
 
-  const totalSelected = transactions
-    .filter((_, i) => selected.has(i))
-    .reduce((sum, t) => sum + t.amount, 0);
+  const selectedTransactionsList = transactions.filter((_, i) => selected.has(i));
+  const totalDebits = selectedTransactionsList.filter(t => !t.isCredit).reduce((sum, t) => sum + t.amount, 0);
+  const totalCredits = selectedTransactionsList.filter(t => t.isCredit).reduce((sum, t) => sum + t.amount, 0);
+  const totalSelected = totalCredits - totalDebits;
 
   const previewCurrency = transactions[0]?.currency ?? 'USD';
 
@@ -141,8 +142,8 @@ export const ImportPreview = ({
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="text-right font-medium text-destructive">
-                  -{formatCurrency(tx.amount, tx.currency)}
+                <TableCell className={`text-right font-medium ${tx.isCredit ? 'text-green-600' : 'text-destructive'}`}>
+                  {tx.isCredit ? '+' : '-'}{formatCurrency(tx.amount, tx.currency)}
                 </TableCell>
               </TableRow>
             ))}
