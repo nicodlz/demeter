@@ -59,6 +59,8 @@ export const ImportPreview = ({
     .filter((_, i) => selected.has(i))
     .reduce((sum, t) => sum + t.amount, 0);
 
+  const previewCurrency = transactions[0]?.currency ?? 'USD';
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -76,7 +78,7 @@ export const ImportPreview = ({
         <div className="text-right">
           <div className="text-sm text-muted-foreground">Total selected</div>
           <div className="font-bold text-destructive">
-            -{formatCurrency(totalSelected, 'EUR')}
+            -{formatCurrency(totalSelected, previewCurrency)}
           </div>
         </div>
       </div>

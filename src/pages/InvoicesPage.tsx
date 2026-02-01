@@ -79,7 +79,7 @@ export const InvoicesPage = () => {
     addExpense({
       type: 'income',
       amount: total,
-      currency: invoice.currency || 'EUR',
+      currency: invoice.currency,
       date: invoice.date,
       description: `Invoice ${invoice.number} - ${invoice.client.name}`,
       source: `Invoice ${invoice.number}`,

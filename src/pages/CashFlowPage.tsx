@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
-import type { Expense, ExpenseType, ParsedTransaction, BankProvider } from '@/types';
+import type { Expense, ExpenseType, ParsedTransaction, BankProvider, Currency } from '@/types';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useCategoryMappings } from '@/hooks/useCategoryMappings';
+import { useSettings } from '@/hooks/useSettings';
+import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { formatCurrency } from '@/utils/formatters';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -29,6 +32,15 @@ const CATEGORY_COLORS = [
 type TabValue = 'all' | 'expenses' | 'income';
 
 export const CashFlowPage = () => {
+  const { settings, updateSettings } = useSettings();
+  const { convert } = useExchangeRate();
+  const displayCurrency: Currency = settings.dashboardCurrency || 'USD';
+
+  const toggleCurrency = () => {
+    const newCurrency: Currency = displayCurrency === 'USD' ? 'EUR' : 'USD';
+    updateSettings({ dashboardCurrency: newCurrency });
+  };
+
   const {
     expenses,
     addExpense,
@@ -140,21 +152,21 @@ export const CashFlowPage = () => {
       return true;
     });
 
-    // Also compute totals for "all" view
+    // Also compute totals for "all" view (with currency conversion)
     const allExpensesOnly = expenses.filter((e) => !e.type || e.type === 'expense');
     const allIncomesOnly = expenses.filter((e) => e.type === 'income');
-    const totalIncome = allIncomesOnly.reduce((sum, e) => sum + e.amount, 0);
-    const totalExpensesAmount = allExpensesOnly.reduce((sum, e) => sum + e.amount, 0);
+    const totalIncome = allIncomesOnly.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
+    const totalExpensesAmount = allExpensesOnly.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
 
     if (filterMonth !== 'all') {
       const selectedMonthExpenses = tabExpenses.filter((e) => e.date.startsWith(filterMonth));
-      const selectedTotal = selectedMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+      const selectedTotal = selectedMonthExpenses.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
 
       const prevMonth = getPreviousMonth(filterMonth);
       const prevMonthExpenses = tabExpenses.filter((e) => e.date.startsWith(prevMonth));
-      const prevTotal = prevMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+      const prevTotal = prevMonthExpenses.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
 
-      const filteredTotal = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+      const filteredTotal = filteredExpenses.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
 
       return {
         totalAll: filteredTotal,
@@ -182,10 +194,10 @@ export const CashFlowPage = () => {
     const lastCompletedExpenses = tabExpenses.filter((e) => e.date.startsWith(lastCompletedMonth));
     const previousExpenses = tabExpenses.filter((e) => e.date.startsWith(previousMonth));
 
-    const lastCompletedTotal = lastCompletedExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const previousTotal = previousExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const lastCompletedTotal = lastCompletedExpenses.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
+    const previousTotal = previousExpenses.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
 
-    const totalAll = tabExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalAll = tabExpenses.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
 
     return {
       totalAll,
@@ -199,7 +211,7 @@ export const CashFlowPage = () => {
       totalIncome,
       totalExpenses: totalExpensesAmount,
     };
-  }, [expenses, activeTab, filterMonth, filteredExpenses]);
+  }, [expenses, activeTab, filterMonth, filteredExpenses, convert, displayCurrency]);
 
   // Calculate category breakdown from filtered expenses (only for expense tabs or all)
   const categoryData = useMemo(() => {
@@ -208,13 +220,13 @@ export const CashFlowPage = () => {
       ? filteredExpenses
       : filteredExpenses.filter((e) => !e.type || e.type === 'expense');
     const categoryMap = new Map<string, { total: number; count: number }>();
-    const total = expensesForChart.reduce((sum, e) => sum + e.amount, 0);
+    const total = expensesForChart.reduce((sum, e) => sum + convert(e.amount, e.currency, displayCurrency), 0);
 
     expensesForChart.forEach((expense) => {
       const category = expense.category || 'Uncategorized';
       const existing = categoryMap.get(category) || { total: 0, count: 0 };
       categoryMap.set(category, {
-        total: existing.total + expense.amount,
+        total: existing.total + convert(expense.amount, expense.currency, displayCurrency),
         count: existing.count + 1,
       });
     });
@@ -231,7 +243,7 @@ export const CashFlowPage = () => {
         .sort((a, b) => b.total - a.total),
       total,
     };
-  }, [filteredExpenses, activeTab]);
+  }, [filteredExpenses, activeTab, convert, displayCurrency]);
 
   const handleAddExpense = (data: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>) => {
     addExpense(data);
@@ -304,7 +316,14 @@ export const CashFlowPage = () => {
             Track your income and expenses
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge
+            variant="secondary"
+            className="cursor-pointer hover:bg-secondary/80 transition-colors"
+            onClick={toggleCurrency}
+          >
+            {displayCurrency}
+          </Badge>
           <Button variant="outline" size="sm" onClick={exportAsCSV} className="min-h-[44px] sm:min-h-0 sm:size-default">
             <Download className="mr-2 h-4 w-4" />
             Export
@@ -364,7 +383,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-green-600">
-                +{formatCurrency(stats.totalIncome, 'EUR')}
+                +{formatCurrency(stats.totalIncome, displayCurrency)}
               </div>
             </CardContent>
           </Card>
@@ -376,7 +395,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-destructive">
-                -{formatCurrency(stats.totalExpenses, 'EUR')}
+                -{formatCurrency(stats.totalExpenses, displayCurrency)}
               </div>
             </CardContent>
           </Card>
@@ -388,7 +407,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-lg sm:text-2xl font-bold ${stats.totalIncome - stats.totalExpenses >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-                {formatCurrency(stats.totalIncome - stats.totalExpenses, 'EUR')}
+                {formatCurrency(stats.totalIncome - stats.totalExpenses, displayCurrency)}
               </div>
             </CardContent>
           </Card>
@@ -415,7 +434,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}>
-                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.totalAll, 'EUR')}
+                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.totalAll, displayCurrency)}
               </div>
             </CardContent>
           </Card>
@@ -427,7 +446,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}>
-                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.lastCompleted, 'EUR')}
+                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.lastCompleted, displayCurrency)}
               </div>
               {stats.previous > 0 && (
                 <p className={`text-xs ${stats.lastCompleted > stats.previous ? (activeTab === 'income' ? 'text-green-500' : 'text-destructive') : (activeTab === 'income' ? 'text-destructive' : 'text-green-500')}`}>
@@ -445,7 +464,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-muted-foreground">
-                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.previous, 'EUR')}
+                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.previous, displayCurrency)}
               </div>
             </CardContent>
           </Card>
@@ -457,12 +476,12 @@ export const CashFlowPage = () => {
         <ExpenseByCategoryChart
           data={categoryData.data}
           totalAmount={categoryData.total}
-          currency="EUR"
+          currency={displayCurrency}
         />
       )}
 
       {/* Sankey Money Flow */}
-      <CashFlowSankey expenses={expenses} currency="EUR" />
+      <CashFlowSankey expenses={expenses} currency={displayCurrency} convert={convert} />
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap items-center gap-3">

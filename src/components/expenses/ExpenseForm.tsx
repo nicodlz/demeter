@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Expense, ExpenseType, Currency, BankProvider } from '@/types';
+import { useSettings } from '@/hooks/useSettings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,11 +35,12 @@ export const ExpenseForm = ({
   onCancel,
   defaultType = 'expense',
 }: ExpenseFormProps) => {
+  const { settings } = useSettings();
   const [entryType, setEntryType] = useState<ExpenseType>(expense?.type || defaultType);
   const [date, setDate] = useState(expense?.date || new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState(expense?.description || '');
   const [amount, setAmount] = useState(expense?.amount?.toString() || '');
-  const [currency, setCurrency] = useState<Currency>(expense?.currency || 'EUR');
+  const [currency, setCurrency] = useState<Currency>(expense?.currency || settings.defaultCurrency || 'USD');
   const [category, setCategory] = useState(expense?.category || '');
   const [source, setSource] = useState(expense?.source || '');
   const [merchantName, setMerchantName] = useState(expense?.merchantName || '');

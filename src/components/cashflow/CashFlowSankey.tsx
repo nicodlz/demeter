@@ -56,12 +56,21 @@ interface SankeyData {
   links: { source: number; target: number; value: number }[];
 }
 
-function buildSankeyData(expenses: Expense[]): SankeyData | null {
+function buildSankeyData(
+  expenses: Expense[],
+  convertFn?: (amount: number, from: Currency, to: Currency) => number,
+  targetCurrency?: Currency,
+): SankeyData | null {
+  const toAmount = (e: Expense) =>
+    convertFn && targetCurrency
+      ? convertFn(e.amount, e.currency, targetCurrency)
+      : e.amount;
+
   const incomes = expenses.filter((e) => e.type === 'income');
   const expenseItems = expenses.filter((e) => !e.type || e.type === 'expense');
 
-  const totalIncome = incomes.reduce((s, e) => s + e.amount, 0);
-  const totalExpenses = expenseItems.reduce((s, e) => s + e.amount, 0);
+  const totalIncome = incomes.reduce((s, e) => s + toAmount(e), 0);
+  const totalExpenses = expenseItems.reduce((s, e) => s + toAmount(e), 0);
 
   if (totalIncome === 0 && totalExpenses === 0) return null;
 
@@ -69,14 +78,14 @@ function buildSankeyData(expenses: Expense[]): SankeyData | null {
   const incomeBySource = new Map<string, number>();
   for (const inc of incomes) {
     const label = getIncomeSourceLabel(inc);
-    incomeBySource.set(label, (incomeBySource.get(label) ?? 0) + inc.amount);
+    incomeBySource.set(label, (incomeBySource.get(label) ?? 0) + toAmount(inc));
   }
 
   // Group expenses by category
   const expenseByCategory = new Map<string, number>();
   for (const exp of expenseItems) {
     const cat = exp.category || 'Uncategorized';
-    expenseByCategory.set(cat, (expenseByCategory.get(cat) ?? 0) + exp.amount);
+    expenseByCategory.set(cat, (expenseByCategory.get(cat) ?? 0) + toAmount(exp));
   }
 
   // Build nodes: income sources → Total → expense categories [+ Savings]
@@ -212,12 +221,15 @@ function CustomLink({
 
 // ── main component ──────────────────────────────────────────
 
+type ConvertFn = (amount: number, from: Currency, to: Currency) => number;
+
 interface CashFlowSankeyProps {
   expenses: Expense[];
   currency?: Currency;
+  convert?: ConvertFn;
 }
 
-export const CashFlowSankey = ({ expenses, currency = 'EUR' }: CashFlowSankeyProps) => {
+export const CashFlowSankey = ({ expenses, currency = 'EUR', convert }: CashFlowSankeyProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
 
@@ -250,7 +262,7 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR' }: CashFlowSankeyPro
     return expenses.filter((e) => e.date.startsWith(selectedMonth));
   }, [expenses, selectedMonth]);
 
-  const sankeyData = useMemo(() => buildSankeyData(filteredExpenses), [filteredExpenses]);
+  const sankeyData = useMemo(() => buildSankeyData(filteredExpenses, convert, currency), [filteredExpenses, convert, currency]);
 
   // Build colour map for expense categories
   const expenseCategoryColorMap = useMemo(() => {

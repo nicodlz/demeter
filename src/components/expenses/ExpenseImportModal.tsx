@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import type { ParsedTransaction, BankProvider } from '@/types';
+import { useSettings } from '@/hooks/useSettings';
 import { parseStatements, detectProvider, getProviderDisplayName, getProviderInputType, parsePdfFile } from '@/utils/parsers';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -46,6 +47,8 @@ export const ExpenseImportModal = ({
   onImport,
   findDuplicates,
 }: ExpenseImportModalProps) => {
+  const { settings } = useSettings();
+  const defaultCurrency = settings.defaultCurrency || 'USD';
   const [step, setStep] = useState<Step>('input');
   const [provider, setProvider] = useState<BankProvider | ''>('');
   const [textContent, setTextContent] = useState('');
@@ -91,7 +94,7 @@ export const ExpenseImportModal = ({
   const doParse = (content: string, selectedProvider: BankProvider) => {
     setParseError(null);
 
-    const result = parseStatements(content, selectedProvider, 'EUR');
+    const result = parseStatements(content, selectedProvider, defaultCurrency);
 
     if (!result.success || result.transactions.length === 0) {
       setParseError(
@@ -151,7 +154,7 @@ export const ExpenseImportModal = ({
     setParseError(null);
 
     try {
-      const result = await parsePdfFile(file, provider, 'EUR');
+      const result = await parsePdfFile(file, provider, defaultCurrency);
 
       if (!result.success || result.transactions.length === 0) {
         setParseError(
