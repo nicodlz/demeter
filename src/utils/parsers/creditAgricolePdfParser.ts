@@ -69,6 +69,9 @@ export const parseCreditAgricolePdf = async (
       allItems.push(items);
     }
 
+    // Detect currency from PDF content ("RELEVE DE COMPTES EN EUROS" / "EN DOLLARS")
+    const detectedCurrency = detectCurrencyFromContent(allItems) || defaultCurrency;
+
     // Find statement period (year info)
     const { startDate, endDate } = findStatementPeriod(allItems);
 
@@ -120,7 +123,7 @@ export const parseCreditAgricolePdf = async (
           date,
           description,
           amount,
-          currency: defaultCurrency,
+          currency: detectedCurrency,
           merchantName,
           cardLastFour,
           isCredit,
@@ -135,6 +138,19 @@ export const parseCreditAgricolePdf = async (
     return { success: false, transactions: [], errors };
   }
 };
+
+/**
+ * Detect currency from PDF content.
+ * Looks for "RELEVE DE COMPTES EN EUROS" or "EN DOLLARS" in the text.
+ */
+function detectCurrencyFromContent(allPageItems: TextItem[][]): Currency | null {
+  for (const items of allPageItems) {
+    const fullText = items.map(i => i.str).join(' ').toUpperCase();
+    if (fullText.includes('EN EUROS') || fullText.includes('EN EUR')) return 'EUR';
+    if (fullText.includes('EN DOLLARS') || fullText.includes('EN USD')) return 'USD';
+  }
+  return null;
+}
 
 interface StatementPeriod {
   startDate: { day: number; month: number; year: number } | null;
