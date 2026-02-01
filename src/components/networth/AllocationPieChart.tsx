@@ -2,6 +2,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import type { AssetAllocation, Currency } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ExportableChart } from '@/components/ui/ExportableChart';
 import {
   Table,
   TableBody,
@@ -50,13 +51,14 @@ export const AllocationPieChart = ({
     }));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Asset Allocation</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Pie Chart */}
+    <ExportableChart filename="asset-allocation">
+      <Card>
+        <CardHeader>
+          <CardTitle>Asset Allocation</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Pie Chart */}
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -127,8 +129,9 @@ export const AllocationPieChart = ({
               </TableBody>
             </Table>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </ExportableChart>
   );
 };

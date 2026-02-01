@@ -1,6 +1,7 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ExportableChart } from '@/components/ui/ExportableChart';
 import type { ExpenseCategoryData } from '@/hooks/useExpensesDashboard';
 import type { Currency } from '@/types';
 
@@ -40,15 +41,16 @@ export const ExpenseByCategoryChart = ({ data, totalAmount, currency, privacyMod
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>By Category</CardTitle>
-        <CardDescription>
-          {data.length} categories • Total: {mask(formatCurrency(totalAmount, currency))}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col lg:flex-row gap-4">
+    <ExportableChart filename="expenses-by-category">
+      <Card>
+        <CardHeader>
+          <CardTitle>By Category</CardTitle>
+          <CardDescription>
+            {data.length} categories • Total: {mask(formatCurrency(totalAmount, currency))}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col lg:flex-row gap-4">
           <div className="h-[200px] lg:h-[250px] flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -113,8 +115,9 @@ export const ExpenseByCategoryChart = ({ data, totalAmount, currency, privacyMod
               </div>
             ))}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </ExportableChart>
   );
 };

@@ -11,6 +11,7 @@ import type { ClientRevenue } from '@/hooks/useDashboardData';
 import type { Currency } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ExportableChart } from '@/components/ui/ExportableChart';
 import {
   Table,
   TableBody,
@@ -108,13 +109,14 @@ export const ClientBreakdown = ({ data, currency }: ClientBreakdownProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Revenue by Client</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Pie Chart */}
+    <ExportableChart filename="revenue-by-client">
+      <Card>
+        <CardHeader>
+          <CardTitle>Revenue by Client</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Pie Chart */}
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -210,8 +212,9 @@ export const ClientBreakdown = ({ data, currency }: ClientBreakdownProps) => {
               </TableBody>
             </Table>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </ExportableChart>
   );
 };

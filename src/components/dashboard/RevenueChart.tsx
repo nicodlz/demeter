@@ -13,6 +13,7 @@ import type { MonthlyRevenue } from '@/hooks/useDashboardData';
 import type { Currency } from '@/types';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ExportableChart } from '@/components/ui/ExportableChart';
 
 interface RevenueChartProps {
   data: MonthlyRevenue[];
@@ -46,90 +47,92 @@ export const RevenueChart = ({ data, currency }: RevenueChartProps) => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Monthly Revenue</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis
-                dataKey="monthLabel"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-              />
-              <YAxis
-                yAxisId="left"
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => formatCurrencyCompact(value, currency)}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => formatCurrencyCompact(value, currency)}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                formatter={(value, name) => [
-                  formatCurrency(value as number, currency),
-                  name === 'ht'
-                    ? 'Excl. VAT'
-                    : name === 'vat'
-                    ? 'VAT'
-                    : name === 'cumulative'
-                    ? 'Cumulative'
-                    : String(name),
-                ]}
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--popover))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: 'var(--radius)',
-                }}
-              />
-              <Legend
-                formatter={(value) =>
-                  value === 'ht'
-                    ? 'Excl. VAT'
-                    : value === 'vat'
-                    ? 'VAT'
-                    : value === 'cumulative'
-                    ? 'Cumulative'
-                    : value
-                }
-              />
-              <Bar
-                yAxisId="left"
-                dataKey="ht"
-                fill="hsl(var(--primary))"
-                radius={[4, 4, 0, 0]}
-                name="ht"
-              />
-              <Bar
-                yAxisId="left"
-                dataKey="vat"
-                fill="#10b981"
-                radius={[4, 4, 0, 0]}
-                name="vat"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="cumulative"
-                stroke="#f59e0b"
-                strokeWidth={2}
-                dot={{ fill: '#f59e0b', strokeWidth: 2 }}
-                name="cumulative"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+    <ExportableChart filename="monthly-revenue">
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Revenue</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="monthLabel"
+                  tick={{ fontSize: 12 }}
+                  tickLine={false}
+                />
+                <YAxis
+                  yAxisId="left"
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => formatCurrencyCompact(value, currency)}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => formatCurrencyCompact(value, currency)}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip
+                  formatter={(value, name) => [
+                    formatCurrency(value as number, currency),
+                    name === 'ht'
+                      ? 'Excl. VAT'
+                      : name === 'vat'
+                      ? 'VAT'
+                      : name === 'cumulative'
+                      ? 'Cumulative'
+                      : String(name),
+                  ]}
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: 'var(--radius)',
+                  }}
+                />
+                <Legend
+                  formatter={(value) =>
+                    value === 'ht'
+                      ? 'Excl. VAT'
+                      : value === 'vat'
+                      ? 'VAT'
+                      : value === 'cumulative'
+                      ? 'Cumulative'
+                      : value
+                  }
+                />
+                <Bar
+                  yAxisId="left"
+                  dataKey="ht"
+                  fill="hsl(var(--primary))"
+                  radius={[4, 4, 0, 0]}
+                  name="ht"
+                />
+                <Bar
+                  yAxisId="left"
+                  dataKey="vat"
+                  fill="#10b981"
+                  radius={[4, 4, 0, 0]}
+                  name="vat"
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="cumulative"
+                  stroke="#f59e0b"
+                  strokeWidth={2}
+                  dot={{ fill: '#f59e0b', strokeWidth: 2 }}
+                  name="cumulative"
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    </ExportableChart>
   );
 };

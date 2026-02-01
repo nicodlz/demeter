@@ -3,6 +3,7 @@ import { Sankey, Tooltip, Rectangle } from 'recharts';
 import type { Expense, Currency } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ExportableChart } from '@/components/ui/ExportableChart';
 import {
   Select,
   SelectContent,
@@ -299,26 +300,27 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert }: CashFlow
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>Money Flow</CardTitle>
-        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All Time" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Time</SelectItem>
-            {availableMonths.map((month) => (
-              <SelectItem key={month} value={month}>
-                {formatMonth(month)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </CardHeader>
-      <CardContent>
-        <div ref={containerRef} className="w-full overflow-hidden">
-          <Sankey
+    <ExportableChart filename={`cashflow-sankey${selectedMonth !== 'all' ? `-${selectedMonth}` : ''}`}>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle>Money Flow</CardTitle>
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="All Time" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              {availableMonths.map((month) => (
+                <SelectItem key={month} value={month}>
+                  {formatMonth(month)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardHeader>
+        <CardContent>
+          <div ref={containerRef} className="w-full overflow-hidden">
+            <Sankey
             width={dimensions.width}
             height={dimensions.height}
             data={sankeyData}
@@ -364,8 +366,9 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert }: CashFlow
               }}
             />
           </Sankey>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </ExportableChart>
   );
 };

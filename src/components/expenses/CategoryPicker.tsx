@@ -90,7 +90,7 @@ export const CategoryPicker = ({
       <PopoverTrigger asChild>
         {currentCategory ? (
           <button
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium cursor-pointer transition-colors ${
+            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium cursor-pointer transition-colors min-h-[32px] ${
               getCategoryColor(currentCategory, categories).bg
             } ${getCategoryColor(currentCategory, categories).text} ${
               getCategoryColor(currentCategory, categories).hover
@@ -100,26 +100,27 @@ export const CategoryPicker = ({
           </button>
         ) : (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-6 px-2 text-xs text-muted-foreground"
+            className="h-9 sm:h-7 px-3 sm:px-2 text-xs text-muted-foreground gap-1"
           >
-            + Add
+            <Plus className="h-3.5 w-3.5" />
+            <span>Category</span>
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-2" align="start">
+      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-64 p-2" align="start">
         <div className="space-y-2">
           {/* Existing categories */}
           {sortedCategories.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 max-h-[200px] overflow-y-auto">
+            <div className="flex flex-wrap gap-1.5 sm:gap-1.5 max-h-[200px] overflow-y-auto">
               {sortedCategories.map((category) => {
                 const colors = getCategoryColor(category, categories);
                 return (
                   <button
                     key={category}
                     onClick={() => handleSelect(category)}
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors ${colors.bg} ${colors.text} ${colors.hover}`}
+                    className={`inline-flex items-center rounded-full px-3 py-1.5 sm:px-2.5 sm:py-1 text-sm sm:text-xs font-medium cursor-pointer transition-colors ${colors.bg} ${colors.text} ${colors.hover}`}
                   >
                     {category}
                   </button>
@@ -141,12 +142,12 @@ export const CategoryPicker = ({
               onChange={(e) => setNewCategory(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="New category..."
-              className="h-8 text-sm"
+              className="h-10 sm:h-8 text-sm"
             />
             <Button
               size="sm"
               variant="secondary"
-              className="h-8 px-2"
+              className="h-10 w-10 sm:h-8 sm:w-auto sm:px-2"
               onClick={handleAddNew}
               disabled={!newCategory.trim()}
             >

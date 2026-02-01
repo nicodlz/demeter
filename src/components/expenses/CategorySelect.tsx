@@ -36,7 +36,7 @@ export const CategorySelect = ({
 
   if (isCreating) {
     return (
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Input
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
@@ -54,19 +54,22 @@ export const CategorySelect = ({
             }
           }}
         />
-        <Button size="sm" onClick={handleCreateCategory}>
-          Add
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => {
-            setIsCreating(false);
-            setNewCategory('');
-          }}
-        >
-          Cancel
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={handleCreateCategory} className="flex-1 sm:flex-none">
+            Add
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setIsCreating(false);
+              setNewCategory('');
+            }}
+            className="flex-1 sm:flex-none"
+          >
+            Cancel
+          </Button>
+        </div>
       </div>
     );
   }

@@ -11,6 +11,7 @@ import {
 import type { NetWorthEvolution, Currency } from '@/types';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ExportableChart } from '@/components/ui/ExportableChart';
 
 interface NetWorthEvolutionChartProps {
   data: NetWorthEvolution[];
@@ -46,14 +47,15 @@ export const NetWorthEvolutionChart = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Net Worth Evolution</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data}>
+    <ExportableChart filename="net-worth-evolution">
+      <Card>
+        <CardHeader>
+          <CardTitle>Net Worth Evolution</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="dateLabel"
@@ -130,10 +132,11 @@ export const NetWorthEvolutionChart = ({
                 fill={COLORS.stocks}
                 fillOpacity={0.6}
               />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    </ExportableChart>
   );
 };
