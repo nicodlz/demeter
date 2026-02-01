@@ -76,17 +76,18 @@ export const InvoicesPage = () => {
 
   const createIncomeFromInvoice = useCallback((invoice: Invoice, _paidAt?: string) => {
     const total = calculateInvoiceTotal(invoice);
+    const currency = invoice.currency || settings.defaultCurrency || 'USD';
     addExpense({
       type: 'income',
       amount: total,
-      currency: invoice.currency,
+      currency,
       date: invoice.date,
       description: `Invoice ${invoice.number} - ${invoice.client.name}`,
       source: `Invoice ${invoice.number}`,
       sourceProvider: 'invoice',
       category: 'invoices',
     });
-  }, [addExpense]);
+  }, [addExpense, settings.defaultCurrency]);
 
   const removeIncomeForInvoice = useCallback((invoiceNumber: string) => {
     const expenseId = invoiceIncomeMap.get(invoiceNumber);
@@ -418,7 +419,7 @@ export const InvoicesPage = () => {
                       <TableCell className="hidden sm:table-cell whitespace-nowrap">{formatDate(invoice.date)}</TableCell>
                       <TableCell className="hidden md:table-cell whitespace-nowrap">{formatDate(invoice.dueDate)}</TableCell>
                       <TableCell className="font-medium whitespace-nowrap">
-                        {getCurrencySymbol(invoice.currency || 'USD')}
+                        {getCurrencySymbol(invoice.currency || settings.defaultCurrency || 'USD')}
                         {calculateInvoiceTotal(invoice).toFixed(2)}
                       </TableCell>
                       <TableCell>
