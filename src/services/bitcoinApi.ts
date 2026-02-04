@@ -1,13 +1,21 @@
 import type { CryptoWallet, TokenPosition } from '@/types';
 
 // ============================================================
-// Bitcoin API using Blockchain.com and CoinGecko
+// Bitcoin API using Mempool.space and CoinGecko
 // ============================================================
 
-interface BlockchainBalance {
-  final_balance: number; // Balance in satoshis
-  n_tx: number;
-  total_received: number;
+interface MempoolAddressStats {
+  address: string;
+  chain_stats: {
+    funded_txo_sum: number; // Total received in satoshis
+    spent_txo_sum: number;  // Total spent in satoshis
+    tx_count: number;
+  };
+  mempool_stats: {
+    funded_txo_sum: number;
+    spent_txo_sum: number;
+    tx_count: number;
+  };
 }
 
 interface CoinGeckoPrice {
@@ -17,35 +25,49 @@ interface CoinGeckoPrice {
 }
 
 /**
- * Fetch BTC balance for a single address using Blockchain.com API
+ * Fetch BTC balance for a single address using Mempool.space API (free, no key needed)
  */
 async function fetchBtcBalance(address: string): Promise<number> {
-  const url = `https://blockchain.info/balance?active=${address}`;
+  const url = `https://mempool.space/api/address/${address}`;
   
   const response = await fetch(url);
   
   if (!response.ok) {
-    throw new Error(`Blockchain API error: ${response.status} ${response.statusText}`);
+    throw new Error(`Mempool.space API error: ${response.status} ${response.statusText}`);
   }
   
-  const data: Record<string, BlockchainBalance> = await response.json();
-  const balance = data[address];
+  const data: MempoolAddressStats = await response.json();
   
-  if (!balance) {
-    throw new Error(`Address ${address} not found`);
-  }
+  // Calculate balance: received - spent (including mempool)
+  const confirmedBalance = data.chain_stats.funded_txo_sum - data.chain_stats.spent_txo_sum;
+  const mempoolBalance = data.mempool_stats.funded_txo_sum - data.mempool_stats.spent_txo_sum;
+  const totalSatoshis = confirmedBalance + mempoolBalance;
   
   // Convert satoshis to BTC (1 BTC = 100,000,000 satoshis)
-  return balance.final_balance / 100000000;
+  return totalSatoshis / 100000000;
 }
 
 /**
- * Fetch current BTC price in USD using CoinGecko API (free, no API key needed)
+ * Fetch current BTC price in USD using CoinGecko API
+ * Free Demo API: https://www.coingecko.com/en/api/pricing
+ * - 30 calls/min
+ * - 10,000 calls/month
+ * 
+ * @param apiKey Optional CoinGecko API key (Demo or Pro plan)
  */
-async function fetchBtcPrice(): Promise<number> {
+async function fetchBtcPrice(apiKey?: string): Promise<number> {
   const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd';
   
-  const response = await fetch(url);
+  const headers: HeadersInit = {
+    'Accept': 'application/json',
+  };
+  
+  // Add API key if provided (recommended for production)
+  if (apiKey) {
+    headers['x-cg-demo-api-key'] = apiKey;
+  }
+  
+  const response = await fetch(url, { headers });
   
   if (!response.ok) {
     throw new Error(`CoinGecko API error: ${response.status} ${response.statusText}`);
