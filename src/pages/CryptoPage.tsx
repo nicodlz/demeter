@@ -34,11 +34,11 @@ export const CryptoPage = () => {
     }
   };
 
-  const handleAddWallet = (data: { label: string; address: string }) => {
+  const handleAddWallet = (data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => {
     addWallet(data);
   };
 
-  const handleEditWallet = (id: string, data: { label: string; address: string }) => {
+  const handleEditWallet = (id: string, data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => {
     updateWallet(id, data);
   };
 

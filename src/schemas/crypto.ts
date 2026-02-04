@@ -4,6 +4,7 @@ export const cryptoWalletSchema = z.object({
   id: z.string(),
   label: z.string(),
   address: z.string(),
+  type: z.enum(['evm', 'bitcoin']).default('evm'),
   createdAt: z.string(),
 });
 
