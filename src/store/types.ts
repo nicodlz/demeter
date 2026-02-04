@@ -89,9 +89,9 @@ export interface CryptoSlice {
   cryptoPositions: TokenPosition[];
   cryptoLastSyncAt: string | null;
   cryptoSyncing: boolean;
-  addCryptoWallet: (wallet: Pick<CryptoWallet, 'label' | 'address'>) => CryptoWallet;
+  addCryptoWallet: (wallet: Pick<CryptoWallet, 'label' | 'address' | 'type'>) => CryptoWallet;
   removeCryptoWallet: (id: string) => void;
-  updateCryptoWallet: (id: string, data: Partial<Pick<CryptoWallet, 'label' | 'address'>>) => void;
+  updateCryptoWallet: (id: string, data: Partial<Pick<CryptoWallet, 'label' | 'address' | 'type'>>) => void;
   setCryptoPositions: (positions: TokenPosition[]) => void;
   setCryptoSyncing: (syncing: boolean) => void;
   setCryptoLastSyncAt: (date: string | null) => void;

@@ -15,8 +15,10 @@ export const createCryptoSlice: StateCreator<
 
   addCryptoWallet: (wallet) => {
     const newWallet: CryptoWallet = {
-      ...wallet,
       id: crypto.randomUUID(),
+      label: wallet.label,
+      address: wallet.address,
+      type: wallet.type || 'evm', // Default to EVM for backward compatibility
       createdAt: new Date().toISOString(),
     };
     set((state) => ({
