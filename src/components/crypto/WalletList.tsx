@@ -24,8 +24,8 @@ function truncateAddress(address: string): string {
 
 interface WalletListProps {
   wallets: CryptoWallet[];
-  onAdd: (data: { label: string; address: string }) => void;
-  onEdit: (id: string, data: { label: string; address: string }) => void;
+  onAdd: (data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => void;
+  onEdit: (id: string, data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => void;
   onDelete: (id: string) => void;
 }
 
@@ -45,7 +45,7 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
     setFormOpen(true);
   };
 
-  const handleSubmit = (data: { label: string; address: string }) => {
+  const handleSubmit = (data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => {
     if (editingWallet) {
       onEdit(editingWallet.id, data);
     } else {
@@ -72,7 +72,7 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
       let skipped = 0;
 
       for (const line of dataLines) {
-        const [address, label] = line.split(',').map(s => s.trim());
+        const [address, label, type] = line.split(',').map(s => s.trim());
 
         if (!address || !label) {
           skipped++;
@@ -86,7 +86,10 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
           continue;
         }
 
-        onAdd({ address, label });
+        // Default to 'evm' if type not specified or invalid
+        const walletType = (type === 'bitcoin' || type === 'evm') ? type : 'evm';
+
+        onAdd({ address, label, type: walletType });
         imported++;
       }
 
@@ -173,7 +176,16 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
                   className="flex items-center justify-between p-3 rounded-lg border bg-card"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{wallet.label}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">{wallet.label}</p>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                        wallet.type === 'bitcoin' 
+                          ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                      }`}>
+                        {wallet.type === 'bitcoin' ? 'BTC' : 'EVM'}
+                      </span>
+                    </div>
                     <p className="text-xs text-muted-foreground font-mono">
                       {truncateAddress(wallet.address)}
                     </p>
