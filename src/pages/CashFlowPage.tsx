@@ -481,7 +481,13 @@ export const CashFlowPage = () => {
       )}
 
       {/* Sankey Money Flow */}
-      <CashFlowSankey expenses={expenses} currency={displayCurrency} convert={convert} />
+      <CashFlowSankey 
+        expenses={expenses} 
+        currency={displayCurrency} 
+        convert={convert}
+        taxProvisionEnabled={settings.taxProvisionEnabled}
+        taxRate={settings.taxRate}
+      />
 
       {/* Filters */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap items-center gap-3">
