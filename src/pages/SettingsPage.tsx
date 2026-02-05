@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -22,8 +21,6 @@ export const SettingsPage = () => {
   const [formData, setFormData] = useState<IssuerSettings>(settings.issuer);
   const [defaultCurrency, setDefaultCurrency] = useState<Currency>(settings.defaultCurrency || 'USD');
   const [dashboardCurrency, setDashboardCurrency] = useState<Currency>(settings.dashboardCurrency || 'USD');
-  const [taxProvisionEnabled, setTaxProvisionEnabled] = useState(settings.taxProvisionEnabled ?? false);
-  const [taxRate, setTaxRate] = useState(settings.taxRate ?? 30);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -35,12 +32,7 @@ export const SettingsPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateIssuer(formData);
-    updateSettings({ 
-      defaultCurrency, 
-      dashboardCurrency,
-      taxProvisionEnabled,
-      taxRate,
-    });
+    updateSettings({ defaultCurrency, dashboardCurrency });
     alert('Settings saved!');
   };
 
@@ -173,48 +165,6 @@ export const SettingsPage = () => {
                 All dashboard stats will be converted to this currency
               </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Tax Provision</CardTitle>
-            <CardDescription>Automatically calculate monthly tax provisions in cash flow</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="taxProvisionEnabled">Enable Tax Provision</Label>
-                <p className="text-sm text-muted-foreground">
-                  Show estimated tax provision in money flow diagram
-                </p>
-              </div>
-              <Switch
-                id="taxProvisionEnabled"
-                checked={taxProvisionEnabled}
-                onCheckedChange={setTaxProvisionEnabled}
-              />
-            </div>
-
-            {taxProvisionEnabled && (
-              <div className="space-y-2">
-                <Label htmlFor="taxRate">Tax Rate (%)</Label>
-                <Input
-                  type="number"
-                  name="taxRate"
-                  id="taxRate"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  value={taxRate}
-                  onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
-                  placeholder="30"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Percentage of income to set aside for taxes (e.g., 30% for typical freelancer rate)
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
 

@@ -5,8 +5,9 @@ import { useSettings } from '@/hooks/useSettings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Upload, Database, AlertTriangle, KeyRound, Landmark, Save } from 'lucide-react';
+import { Download, Upload, Database, AlertTriangle, KeyRound, Landmark, Save, Receipt } from 'lucide-react';
 
 export const DataPage = () => {
   const { settings, updateSettings } = useSettings();
@@ -14,6 +15,8 @@ export const DataPage = () => {
   const [zerionApiKey, setZerionApiKey] = useState(settings.zerionApiKey || '');
   const [ibkrFlexToken, setIbkrFlexToken] = useState(settings.ibkrFlexToken || '');
   const [ibkrFlexQueryId, setIbkrFlexQueryId] = useState(settings.ibkrFlexQueryId || '');
+  const [taxProvisionEnabled, setTaxProvisionEnabled] = useState(settings.taxProvisionEnabled ?? false);
+  const [taxRate, setTaxRate] = useState(settings.taxRate ?? 30);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const backupInfo = storage.exportAll();
@@ -72,6 +75,67 @@ export const DataPage = () => {
           Manage your API keys and data
         </p>
       </div>
+
+      {/* Tax Provision */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Receipt className="h-5 w-5" />
+            Tax Provision
+          </CardTitle>
+          <CardDescription>
+            Automatically calculate monthly tax provisions in cash flow
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="taxProvisionEnabled">Enable Tax Provision</Label>
+              <p className="text-sm text-muted-foreground">
+                Show estimated tax provision in money flow diagram
+              </p>
+            </div>
+            <Switch
+              id="taxProvisionEnabled"
+              checked={taxProvisionEnabled}
+              onCheckedChange={setTaxProvisionEnabled}
+            />
+          </div>
+
+          {taxProvisionEnabled && (
+            <div className="space-y-2">
+              <Label htmlFor="taxRate">Tax Rate (%)</Label>
+              <Input
+                type="number"
+                name="taxRate"
+                id="taxRate"
+                min="0"
+                max="100"
+                step="0.1"
+                value={taxRate}
+                onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                placeholder="30"
+              />
+              <p className="text-xs text-muted-foreground">
+                Percentage of income to set aside for taxes (e.g., 30% for typical freelancer rate)
+              </p>
+            </div>
+          )}
+
+          <Button
+            onClick={() => {
+              updateSettings({
+                taxProvisionEnabled,
+                taxRate,
+              });
+              alert('Tax provision settings saved!');
+            }}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            Save Tax Settings
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Crypto API */}
       <Card>
