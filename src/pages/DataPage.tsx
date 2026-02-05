@@ -98,7 +98,7 @@ export const DataPage = () => {
             <Switch
               id="taxProvisionEnabled"
               checked={taxProvisionEnabled}
-              onCheckedChange={setTaxProvisionEnabled}
+              onCheckedChange={(checked) => setTaxProvisionEnabled(checked)}
             />
           </div>
 
