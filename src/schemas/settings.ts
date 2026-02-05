@@ -40,6 +40,8 @@ export const appSettingsSchema = z.object({
   zerionApiKey: z.string().optional(),
   ibkrFlexToken: z.string().optional(),
   ibkrFlexQueryId: z.string().optional(),
+  taxProvisionEnabled: z.boolean().optional().default(false),
+  taxRate: z.number().min(0).max(100).optional().default(30),
 });
 
 export type VATRate = z.infer<typeof vatRateSchema>;

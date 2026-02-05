@@ -21,6 +21,7 @@ const EXPENSE_COLORS = [
   '#a855f7', '#ec4899', '#f43f5e', '#fb923c', '#78716c',
 ];
 const SAVINGS_COLOR = '#3b82f6'; // blue-500
+const TAX_COLOR = '#f59e0b'; // amber-500
 
 // ── helpers ─────────────────────────────────────────────────
 
@@ -46,7 +47,8 @@ function getIncomeSourceLabel(expense: Expense): string {
 
 function getNodeColor(name: string, expenseCategoryColorMap: Map<string, string>): string {
   if (name === 'Total') return TOTAL_COLOR;
-  if (name === 'Savings') return SAVINGS_COLOR;
+  if (name === 'Savings' || name === 'Net Savings') return SAVINGS_COLOR;
+  if (name === 'Tax Provision') return TAX_COLOR;
   if (expenseCategoryColorMap.has(name)) return expenseCategoryColorMap.get(name)!;
   // Income source nodes
   return INCOME_COLOR;
@@ -61,6 +63,8 @@ function buildSankeyData(
   expenses: Expense[],
   convertFn?: (amount: number, from: Currency, to: Currency) => number,
   targetCurrency?: Currency,
+  taxProvisionEnabled?: boolean,
+  taxRate?: number,
 ): SankeyData | null {
   const toAmount = (e: Expense) =>
     convertFn && targetCurrency
@@ -122,12 +126,22 @@ function buildSankeyData(
     links.push({ source: totalIdx, target: firstExpenseIdx + i, value });
   }
 
-  // Savings node if income > expenses
-  const savings = totalIncome - totalExpenses;
-  if (savings > 0) {
+  // Calculate tax provision if enabled
+  const taxProvision = taxProvisionEnabled && taxRate ? (totalIncome * taxRate) / 100 : 0;
+
+  // Tax Provision node
+  if (taxProvision > 0) {
+    const taxIdx = nodes.length;
+    nodes.push({ name: 'Tax Provision' });
+    links.push({ source: totalIdx, target: taxIdx, value: taxProvision });
+  }
+
+  // Net Savings node if income > expenses + tax
+  const netSavings = totalIncome - totalExpenses - taxProvision;
+  if (netSavings > 0) {
     const savingsIdx = nodes.length;
-    nodes.push({ name: 'Savings' });
-    links.push({ source: totalIdx, target: savingsIdx, value: savings });
+    nodes.push({ name: 'Net Savings' });
+    links.push({ source: totalIdx, target: savingsIdx, value: netSavings });
   }
 
   // Sankey requires at least 1 link with value > 0
@@ -190,8 +204,10 @@ function CustomLink({
   let color: string;
   if (targetName === 'Total') {
     color = INCOME_COLOR;
-  } else if (targetName === 'Savings') {
+  } else if (targetName === 'Savings' || targetName === 'Net Savings') {
     color = SAVINGS_COLOR;
+  } else if (targetName === 'Tax Provision') {
+    color = TAX_COLOR;
   } else if (expenseCategoryColorMap.has(targetName)) {
     color = expenseCategoryColorMap.get(targetName)!;
   } else if (sourceName === 'Total') {
@@ -228,9 +244,11 @@ interface CashFlowSankeyProps {
   expenses: Expense[];
   currency?: Currency;
   convert?: ConvertFn;
+  taxProvisionEnabled?: boolean;
+  taxRate?: number;
 }
 
-export const CashFlowSankey = ({ expenses, currency = 'EUR', convert }: CashFlowSankeyProps) => {
+export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisionEnabled = false, taxRate = 30 }: CashFlowSankeyProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
 
@@ -263,7 +281,7 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert }: CashFlow
     return expenses.filter((e) => e.date.startsWith(selectedMonth));
   }, [expenses, selectedMonth]);
 
-  const sankeyData = useMemo(() => buildSankeyData(filteredExpenses, convert, currency), [filteredExpenses, convert, currency]);
+  const sankeyData = useMemo(() => buildSankeyData(filteredExpenses, convert, currency, taxProvisionEnabled, taxRate), [filteredExpenses, convert, currency, taxProvisionEnabled, taxRate]);
 
   // Build colour map for expense categories
   const expenseCategoryColorMap = useMemo(() => {
