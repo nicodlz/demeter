@@ -154,4 +154,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   vatRates: DEFAULT_VAT_RATES,
   defaultCurrency: 'USD',
   dashboardCurrency: 'USD',
+  taxProvisionEnabled: false,
+  taxRate: 30,
 };
