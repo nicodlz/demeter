@@ -17,6 +17,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { ChevronDown, Menu } from 'lucide-react';
+import { ModeToggle } from '@/components/mode-toggle';
 
 interface NavLink {
   to: string;
@@ -148,13 +149,14 @@ export const Layout = ({ children }: LayoutProps) => {
               </div>
             </div>
 
-            {/* Mobile hamburger button */}
-            <div className="flex items-center md:hidden">
+            {/* Theme toggle and mobile menu */}
+            <div className="flex items-center gap-2">
+              <ModeToggle />
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setMobileOpen(true)}
-                className="h-10 w-10"
+                className="h-10 w-10 md:hidden"
                 aria-label="Open menu"
               >
                 <Menu className="h-6 w-6" />
