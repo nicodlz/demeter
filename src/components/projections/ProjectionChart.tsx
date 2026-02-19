@@ -12,6 +12,7 @@ import type { ProjectionYear } from '@/utils/projections';
 import type { Currency } from '@/schemas';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
 import { ExportableChart } from '@/components/ui/ExportableChart';
+import { CHART_COLORS } from '@/utils/chartTheme';
 
 interface ProjectionChartProps {
   data: ProjectionYear[];
@@ -81,16 +82,16 @@ export const ProjectionChart = ({ data, currency }: ProjectionChartProps) => {
               type="monotone"
               dataKey="contributed"
               stackId="1"
-              stroke="#3b82f6"
-              fill="#3b82f6"
+              stroke={CHART_COLORS.blue}
+              fill={CHART_COLORS.blue}
               fillOpacity={0.6}
             />
             <Area
               type="monotone"
               dataKey="gains"
               stackId="1"
-              stroke="#10b981"
-              fill="#10b981"
+              stroke={CHART_COLORS.green}
+              fill={CHART_COLORS.green}
               fillOpacity={0.6}
             />
           </AreaChart>

@@ -14,6 +14,7 @@ import type { Currency } from '@/schemas';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
+import { CHART_COLORS } from '@/utils/chartTheme';
 
 interface RevenueChartProps {
   data: MonthlyRevenue[];
@@ -115,7 +116,7 @@ export const RevenueChart = ({ data, currency }: RevenueChartProps) => {
                 <Bar
                   yAxisId="left"
                   dataKey="vat"
-                  fill="#10b981"
+                  fill={CHART_COLORS.green}
                   radius={[4, 4, 0, 0]}
                   name="vat"
                 />
@@ -123,9 +124,9 @@ export const RevenueChart = ({ data, currency }: RevenueChartProps) => {
                   yAxisId="right"
                   type="monotone"
                   dataKey="cumulative"
-                  stroke="#f59e0b"
+                  stroke={CHART_COLORS.amber}
                   strokeWidth={2}
-                  dot={{ fill: '#f59e0b', strokeWidth: 2 }}
+                  dot={{ fill: CHART_COLORS.amber, strokeWidth: 2 }}
                   name="cumulative"
                 />
               </ComposedChart>

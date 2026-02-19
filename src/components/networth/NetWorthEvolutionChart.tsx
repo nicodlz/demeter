@@ -13,6 +13,7 @@ import type { NetWorthEvolution } from '@/types';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
+import { CHART_COLORS } from '@/utils/chartTheme';
 
 interface NetWorthEvolutionChartProps {
   data: NetWorthEvolution[];
@@ -20,12 +21,6 @@ interface NetWorthEvolutionChartProps {
   privacyMode?: boolean;
 }
 
-const COLORS = {
-  stocks: '#3b82f6',
-  crypto: '#f59e0b',
-  cash: '#10b981',
-  stablecoins: '#8b5cf6',
-};
 
 export const NetWorthEvolutionChart = ({
   data,
@@ -105,32 +100,32 @@ export const NetWorthEvolutionChart = ({
                 type="monotone"
                 dataKey="stablecoins"
                 stackId="1"
-                stroke={COLORS.stablecoins}
-                fill={COLORS.stablecoins}
+                stroke={CHART_COLORS.purple}
+                fill={CHART_COLORS.purple}
                 fillOpacity={0.6}
               />
               <Area
                 type="monotone"
                 dataKey="cash"
                 stackId="1"
-                stroke={COLORS.cash}
-                fill={COLORS.cash}
+                stroke={CHART_COLORS.green}
+                fill={CHART_COLORS.green}
                 fillOpacity={0.6}
               />
               <Area
                 type="monotone"
                 dataKey="crypto"
                 stackId="1"
-                stroke={COLORS.crypto}
-                fill={COLORS.crypto}
+                stroke={CHART_COLORS.amber}
+                fill={CHART_COLORS.amber}
                 fillOpacity={0.6}
               />
               <Area
                 type="monotone"
                 dataKey="stocks"
                 stackId="1"
-                stroke={COLORS.stocks}
-                fill={COLORS.stocks}
+                stroke={CHART_COLORS.blue}
+                fill={CHART_COLORS.blue}
                 fillOpacity={0.6}
               />
               </AreaChart>

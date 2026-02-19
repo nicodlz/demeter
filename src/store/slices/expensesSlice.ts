@@ -1,3 +1,4 @@
+import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
 import type { Expense } from '../../schemas';
 import type { StoreState, ExpensesSlice } from '../types';
@@ -25,7 +26,7 @@ export const createExpensesSlice: StateCreator<
     const newExpense: Expense = {
       ...expense,
       type: expense.type || 'expense',
-      id: crypto.randomUUID(),
+      id: generateId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -35,7 +36,7 @@ export const createExpensesSlice: StateCreator<
 
   addExpenses: (transactions, source, provider, categoryMapping) => {
     const newExpenses: Expense[] = transactions.map((t) => ({
-      id: crypto.randomUUID(),
+      id: generateId(),
       date: t.date,
       description: t.description,
       amount: t.amount,
@@ -75,7 +76,7 @@ export const createExpensesSlice: StateCreator<
         ...baseEntry,
         type: 'income',
         date: dateStr,
-        id: crypto.randomUUID(),
+        id: generateId(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
