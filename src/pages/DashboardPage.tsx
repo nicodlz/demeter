@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNetWorthDashboard } from '@/hooks/useNetWorthDashboard';
 import { useExpensesDashboard } from '@/hooks/useExpensesDashboard';
-import { useCashFlowDashboard } from '@/hooks/useCashFlowDashboard';
 import { useSettings } from '@/hooks/useSettings';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { NetWorthStatsCards } from '@/components/networth/NetWorthStatsCards';
@@ -76,7 +75,6 @@ export const DashboardPage = () => {
   const [expenseDateRange, setExpenseDateRange] = useState<DateRange>('all');
 
   const networthStats = useNetWorthDashboard(displayCurrency);
-  const cashFlowStats = useCashFlowDashboard(displayCurrency, convert);
 
   const { start, end } = useMemo(() => getDateRange(expenseDateRange), [expenseDateRange]);
   const expenseStats = useExpensesDashboard(start, end, displayCurrency, convert);
@@ -141,15 +139,15 @@ export const DashboardPage = () => {
       <section className="space-y-4">
         <h3 className="text-lg font-semibold">Cash Flow</h3>
         <CashFlowStatsCards
-          totalIncome={cashFlowStats.currentMonthIncome}
-          totalExpenses={cashFlowStats.currentMonthExpenses}
-          balance={cashFlowStats.balance}
-          savingsRate={cashFlowStats.savingsRate}
+          totalIncome={expenseStats.currentMonthIncome}
+          totalExpenses={expenseStats.currentMonthExpenses}
+          balance={expenseStats.balance}
+          savingsRate={expenseStats.savingsRate}
           currency={displayCurrency}
           privacyMode={privacyMode}
         />
         <CashFlowChart
-          data={cashFlowStats.monthlyData}
+          data={expenseStats.cashFlowMonthlyData}
           currency={displayCurrency}
           privacyMode={privacyMode}
         />
