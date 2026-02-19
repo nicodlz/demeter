@@ -1,5 +1,5 @@
 import type { CryptoWallet, TokenPosition } from '@/schemas';
-import { isStablecoinSymbol, stablecoinUsdRate, isAaveReceiptToken } from '@/utils/constants';
+import { isStablecoinSymbol, stablecoinUsdRate, isAaveReceiptToken } from '@/utils/crypto';
 
 /**
  * Resolve an Aave receipt token symbol to its underlying stablecoin.
