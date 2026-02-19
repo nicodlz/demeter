@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useInvoices } from './useInvoices';
 import type { Invoice, Currency } from '../schemas';
+import { getMonthKey, getMonthLabel } from '../utils/formatters';
 
 export interface MonthlyRevenue {
   month: string;
@@ -42,19 +43,6 @@ const calculateInvoiceTotals = (invoice: Invoice) => {
       )
     : 0;
   return { ht, vat, ttc: ht + vat };
-};
-
-const getMonthKey = (date: Date): string => {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-};
-
-const getMonthLabel = (monthKey: string): string => {
-  const [year, month] = monthKey.split('-');
-  const monthNames = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
-  return `${monthNames[parseInt(month) - 1]} ${year}`;
 };
 
 type ConvertFn = (amount: number, fromCurrency: Currency, toCurrency: Currency) => number;

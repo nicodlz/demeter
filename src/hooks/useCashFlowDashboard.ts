@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useExpenses } from './useExpenses';
 import type { Currency } from '../schemas';
+import { getMonthKey, formatMonthShort } from '../utils/formatters';
 
 export interface CashFlowMonthlyData {
   month: string;
@@ -25,7 +26,7 @@ export const useCashFlowDashboard = (
 
   return useMemo(() => {
     const now = new Date();
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const currentMonth = getMonthKey(now);
 
     // Current month totals
     let currentMonthIncome = 0;
@@ -52,7 +53,7 @@ export const useCashFlowDashboard = (
     // Initialize last 12 months
     for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const key = getMonthKey(d);
       monthlyMap.set(key, { income: 0, expenses: 0 });
     }
 
@@ -75,7 +76,7 @@ export const useCashFlowDashboard = (
         const date = new Date(parseInt(year), parseInt(m) - 1);
         return {
           month,
-          monthLabel: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+          monthLabel: formatMonthShort(date),
           income: data.income,
           expenses: data.expenses,
           balance: data.income - data.expenses,

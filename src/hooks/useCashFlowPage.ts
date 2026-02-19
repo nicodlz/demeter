@@ -4,6 +4,7 @@ import { useExpenses } from '@/hooks/useExpenses';
 import { useCategoryMappings } from '@/hooks/useCategoryMappings';
 import { useSettings } from '@/hooks/useSettings';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
+import { getMonthKey, getMonthLabel, formatMonthFull } from '@/utils/formatters';
 
 export type TabValue = 'all' | 'expenses' | 'income';
 
@@ -103,24 +104,14 @@ export const useCashFlowPage = () => {
     setFilterCategory('all');
   };
 
-  const formatMonth = (month: string) => {
-    const [year, m] = month.split('-');
-    const date = new Date(parseInt(year), parseInt(m) - 1);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  };
+  const formatMonth = (month: string) => formatMonthFull(month);
 
   // Calculate stats adapted to the active tab
   const stats = useMemo(() => {
     const getPreviousMonth = (monthStr: string) => {
       const [year, month] = monthStr.split('-').map(Number);
       const prevDate = new Date(year, month - 2, 1);
-      return `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
-    };
-
-    const getMonthLabel = (monthStr: string) => {
-      const [year, month] = monthStr.split('-').map(Number);
-      const date = new Date(year, month - 1, 1);
-      return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      return getMonthKey(prevDate);
     };
 
     const tabExpenses = expenses.filter((e) => {
@@ -160,12 +151,12 @@ export const useCashFlowPage = () => {
 
     const now = new Date();
     const lastCompletedDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastCompletedMonth = `${lastCompletedDate.getFullYear()}-${String(lastCompletedDate.getMonth() + 1).padStart(2, '0')}`;
-    const lastCompletedLabel = lastCompletedDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    const lastCompletedMonth = getMonthKey(lastCompletedDate);
+    const lastCompletedLabel = getMonthLabel(lastCompletedMonth);
 
     const previousDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    const previousMonth = `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, '0')}`;
-    const previousLabel = previousDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    const previousMonth = getMonthKey(previousDate);
+    const previousLabel = getMonthLabel(previousMonth);
 
     const lastCompletedExpenses = tabExpenses.filter((e) => e.date.startsWith(lastCompletedMonth));
     const previousExpenses = tabExpenses.filter((e) => e.date.startsWith(previousMonth));

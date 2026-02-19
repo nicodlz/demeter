@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useExpenses } from './useExpenses';
 import type { Currency } from '../schemas';
+import { getMonthKey, getMonthLabel, formatMonthShort } from '../utils/formatters';
 
 export interface ExpenseMonthlyData {
   month: string;
@@ -80,7 +81,7 @@ export const useExpensesDashboard = (
         const date = new Date(parseInt(year), parseInt(m) - 1);
         return {
           month,
-          monthLabel: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+          monthLabel: formatMonthShort(date),
           total: data.total,
           count: data.count,
         };
@@ -165,11 +166,11 @@ export const useExpensesDashboard = (
 
     // Last completed month (previous month)
     const lastCompletedDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastCompletedMonth = `${lastCompletedDate.getFullYear()}-${String(lastCompletedDate.getMonth() + 1).padStart(2, '0')}`;
+    const lastCompletedMonth = getMonthKey(lastCompletedDate);
 
     // Month before that
     const previousDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    const previousMonth = `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, '0')}`;
+    const previousMonth = getMonthKey(previousDate);
 
     const lastCompletedMonthData = monthlyMap.get(lastCompletedMonth) || { total: 0, count: 0 };
     const previousMonthData = monthlyMap.get(previousMonth) || { total: 0, count: 0 };
@@ -180,8 +181,8 @@ export const useExpensesDashboard = (
       : 0;
 
     // Get month labels for display
-    const lastCompletedMonthLabel = lastCompletedDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-    const previousMonthLabel = previousDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    const lastCompletedMonthLabel = getMonthLabel(lastCompletedMonth);
+    const previousMonthLabel = getMonthLabel(previousMonth);
 
     return {
       totalAmount,

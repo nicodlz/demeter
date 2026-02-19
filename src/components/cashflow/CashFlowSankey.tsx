@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { Sankey, Tooltip, Rectangle } from 'recharts';
 import type { Expense, Currency } from '@/schemas';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency, formatMonthFull } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 import {
@@ -298,11 +298,7 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisi
     return map;
   }, [sankeyData]);
 
-  const formatMonth = (month: string) => {
-    const [year, m] = month.split('-');
-    const date = new Date(parseInt(year), parseInt(m) - 1);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  };
+  const formatMonth = (month: string) => formatMonthFull(month);
 
   if (!sankeyData) {
     return (
