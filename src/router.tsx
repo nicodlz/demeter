@@ -6,6 +6,7 @@ import {
   Outlet,
 } from '@tanstack/react-router';
 import { Layout } from '@/components/Layout';
+import { PageErrorBoundary } from '@/components/PageErrorBoundary';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { CashFlowPage } from '@/pages/CashFlowPage';
 import { NetWorthPage } from '@/pages/NetWorthPage';
@@ -33,13 +34,21 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: DashboardPage,
+  component: () => (
+    <PageErrorBoundary>
+      <DashboardPage />
+    </PageErrorBoundary>
+  ),
 });
 
 const cashFlowRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/cash-flow',
-  component: CashFlowPage,
+  component: () => (
+    <PageErrorBoundary>
+      <CashFlowPage />
+    </PageErrorBoundary>
+  ),
 });
 
 // Redirect /expenses → /cash-flow for backward compatibility
@@ -54,31 +63,51 @@ const expensesRedirectRoute = createRoute({
 const cryptoRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/crypto',
-  component: CryptoPage,
+  component: () => (
+    <PageErrorBoundary>
+      <CryptoPage />
+    </PageErrorBoundary>
+  ),
 });
 
 const netWorthRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/net-worth',
-  component: NetWorthPage,
+  component: () => (
+    <PageErrorBoundary>
+      <NetWorthPage />
+    </PageErrorBoundary>
+  ),
 });
 
 const projectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/projections',
-  component: ProjectionsPage,
+  component: () => (
+    <PageErrorBoundary>
+      <ProjectionsPage />
+    </PageErrorBoundary>
+  ),
 });
 
 const ibkrRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ibkr',
-  component: IbkrPage,
+  component: () => (
+    <PageErrorBoundary>
+      <IbkrPage />
+    </PageErrorBoundary>
+  ),
 });
 
 const configurationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/configuration',
-  component: DataPage,
+  component: () => (
+    <PageErrorBoundary>
+      <DataPage />
+    </PageErrorBoundary>
+  ),
 });
 
 // --- Billing routes ---
@@ -86,19 +115,31 @@ const configurationRoute = createRoute({
 const billingInvoicesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/billing/invoices',
-  component: InvoicesPage,
+  component: () => (
+    <PageErrorBoundary>
+      <InvoicesPage />
+    </PageErrorBoundary>
+  ),
 });
 
 const billingClientsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/billing/clients',
-  component: ClientsPage,
+  component: () => (
+    <PageErrorBoundary>
+      <ClientsPage />
+    </PageErrorBoundary>
+  ),
 });
 
 const billingSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/billing/settings',
-  component: SettingsPage,
+  component: () => (
+    <PageErrorBoundary>
+      <SettingsPage />
+    </PageErrorBoundary>
+  ),
 });
 
 // --- Route tree ---
