@@ -1,3 +1,4 @@
+import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
 import type { CategoryMapping } from '../../schemas';
 import type { StoreState, CategoryMappingsSlice } from '../types';
@@ -38,7 +39,7 @@ export const createCategoryMappingsSlice: StateCreator<
       }
 
       const newMapping: CategoryMapping = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         normalizedMerchant: normalized,
         category,
         createdAt: new Date().toISOString(),

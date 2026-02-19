@@ -1,3 +1,4 @@
+import { generateId } from '@/utils/id';
 import { useState } from 'react';
 import type { NetWorthSnapshotV2, AssetEntry, Currency, AnyNetWorthSnapshot } from '@/schemas';
 import { isV2Snapshot } from '@/types';
@@ -25,7 +26,7 @@ const convertV1ToV2Entries = (value: number, currency: Currency): AssetEntry[] =
   if (value <= 0) return [];
   return [
     {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: 'Legacy',
       amount: value,
       currency,
@@ -77,7 +78,7 @@ export const SnapshotForm = ({
 
       setCryptoEntries([
         {
-          id: globalThis.crypto.randomUUID(),
+          id: generateId(),
           name: 'Wallets (auto-synced)',
           amount: cryptoValue,
           currency: 'USD' as Currency,
@@ -85,7 +86,7 @@ export const SnapshotForm = ({
       ]);
       setStablecoins([
         {
-          id: globalThis.crypto.randomUUID(),
+          id: generateId(),
           name: 'Wallets (auto-synced)',
           amount: stablecoinValue,
           currency: 'USD' as Currency,
@@ -97,7 +98,7 @@ export const SnapshotForm = ({
     if (hasIbkrData) {
       setStocks([
         {
-          id: globalThis.crypto.randomUUID(),
+          id: generateId(),
           name: 'IBKR Positions (auto-synced)',
           amount: ibkrTotalValue,
           currency: 'USD' as Currency,
@@ -105,7 +106,7 @@ export const SnapshotForm = ({
       ]);
       setCash([
         {
-          id: globalThis.crypto.randomUUID(),
+          id: generateId(),
           name: 'IBKR Cash (auto-synced)',
           amount: ibkrCashValue,
           currency: 'USD' as Currency,

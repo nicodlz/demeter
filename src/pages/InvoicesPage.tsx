@@ -1,3 +1,4 @@
+import { generateId } from '@/utils/id';
 import { useState, useRef, useMemo, useCallback } from 'react';
 import { useInvoices } from '@/hooks/useInvoices';
 import { useSettings } from '@/hooks/useSettings';
@@ -107,7 +108,7 @@ export const InvoicesPage = () => {
 
     const invoiceToAdd: Invoice = {
       ...importedInvoice,
-      id: crypto.randomUUID(),
+      id: generateId(),
       client: existingClient || { ...importedInvoice.client, id: clientId },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

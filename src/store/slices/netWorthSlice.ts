@@ -1,3 +1,4 @@
+import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
 import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '../../schemas';
 import type { StoreState, NetWorthSlice } from '../types';
@@ -13,7 +14,7 @@ export const createNetWorthSlice: StateCreator<
   addSnapshot: (snapshotData) => {
     const newSnapshot: NetWorthSnapshotV2 = {
       ...snapshotData,
-      id: crypto.randomUUID(),
+      id: generateId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

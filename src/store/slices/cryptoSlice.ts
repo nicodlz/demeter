@@ -1,3 +1,4 @@
+import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
 import type { CryptoWallet, TokenPosition } from '../../schemas';
 import type { StoreState, CryptoSlice } from '../types';
@@ -15,7 +16,7 @@ export const createCryptoSlice: StateCreator<
 
   addCryptoWallet: (wallet) => {
     const newWallet: CryptoWallet = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       label: wallet.label,
       address: wallet.address,
       type: wallet.type || 'evm', // Default to EVM for backward compatibility

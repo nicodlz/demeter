@@ -1,3 +1,4 @@
+import { generateId } from '@/utils/id';
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import type { AssetEntry, Currency } from '@/schemas';
@@ -30,7 +31,7 @@ export const AssetCategoryInput = ({
 
   const addEntry = () => {
     const newEntry: AssetEntry = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: '',
       amount: 0,
       currency: 'USD',

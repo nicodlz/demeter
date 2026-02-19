@@ -1,3 +1,4 @@
+import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
 import type { Client } from '../../schemas';
 import type { StoreState, ClientsSlice } from '../types';
@@ -13,7 +14,7 @@ export const createClientsSlice: StateCreator<
   addClient: (client: Omit<Client, 'id'>) => {
     const newClient: Client = {
       ...client,
-      id: crypto.randomUUID(),
+      id: generateId(),
     };
     set((state) => ({ clients: [...state.clients, newClient] }));
     return newClient;

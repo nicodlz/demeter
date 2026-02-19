@@ -12,6 +12,7 @@ import {
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
+import { CHART_COLORS } from '@/utils/chartTheme';
 import type { CashFlowMonthlyData } from '@/hooks/useCashFlowDashboard';
 import type { Currency } from '@/schemas';
 
@@ -99,7 +100,7 @@ export const CashFlowChart = ({ data, currency, privacyMode = false }: CashFlowC
                 <Bar
                   dataKey="income"
                   name="Income"
-                  fill="#22c55e"
+                  fill={CHART_COLORS.lime}
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar

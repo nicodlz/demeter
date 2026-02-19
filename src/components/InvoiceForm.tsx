@@ -1,3 +1,4 @@
+import { generateId } from '@/utils/id';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import type { Invoice, LineItem, CustomField, Currency, SavedItem } from '@/schemas';
 import { useClients } from '@/hooks/useClients';
@@ -55,7 +56,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
   const [lineItems, setLineItems] = useState<LineItem[]>(
     invoice?.lineItems || [
       {
-        id: crypto.randomUUID(),
+        id: generateId(),
         description: '',
         quantity: 1,
         unit: 'day',
@@ -133,7 +134,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
     setLineItems([
       ...lineItems,
       {
-        id: crypto.randomUUID(),
+        id: generateId(),
         description: '',
         quantity: 1,
         unit: 'day',
@@ -165,7 +166,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
   const addCustomField = () => {
     setCustomFields([
       ...customFields,
-      { id: crypto.randomUUID(), label: '', value: '' },
+      { id: generateId(), label: '', value: '' },
     ]);
   };
 
@@ -214,7 +215,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
       );
 
     const newInvoice: Invoice = {
-      id: invoice?.id || crypto.randomUUID(),
+      id: invoice?.id || generateId(),
       number: invoiceNumber,
       date,
       dueDate,

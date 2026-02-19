@@ -1,3 +1,4 @@
+import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
 import type { SavedItem } from '../../schemas';
 import type { StoreState, SavedItemsSlice } from '../types';
@@ -32,7 +33,7 @@ export const createSavedItemsSlice: StateCreator<
 
     const newItem: SavedItem = {
       ...item,
-      id: crypto.randomUUID(),
+      id: generateId(),
       createdAt: new Date().toISOString(),
       usageCount: 1,
     };
