@@ -31,71 +31,40 @@ const safeJsonParse = <T>(value: string | null, fallback: T): T => {
   }
 };
 
+// ---------------------------------------------------------------------------
+// Data-driven mapping: slice key → { storageKey, defaultValue }
+// The `satisfies` check ensures every key of PersistedState (except the
+// optional _currencies field) is covered, without widening the inferred types.
+// ---------------------------------------------------------------------------
+
+const SLICE_STORAGE_MAP = {
+  settings:          { storageKey: STORAGE_KEYS.SETTINGS,            defaultValue: DEFAULT_SETTINGS },
+  clients:           { storageKey: STORAGE_KEYS.CLIENTS,             defaultValue: []               },
+  invoices:          { storageKey: STORAGE_KEYS.INVOICES,            defaultValue: []               },
+  savedItems:        { storageKey: STORAGE_KEYS.SAVED_ITEMS,         defaultValue: []               },
+  snapshots:         { storageKey: STORAGE_KEYS.NET_WORTH_SNAPSHOTS, defaultValue: []               },
+  expenses:          { storageKey: STORAGE_KEYS.EXPENSES,            defaultValue: []               },
+  mappings:          { storageKey: STORAGE_KEYS.CATEGORY_MAPPINGS,   defaultValue: []               },
+  cryptoWallets:     { storageKey: STORAGE_KEYS.CRYPTO_WALLETS,      defaultValue: []               },
+  cryptoPositions:   { storageKey: STORAGE_KEYS.CRYPTO_POSITIONS,    defaultValue: []               },
+  cryptoLastSyncAt:  { storageKey: STORAGE_KEYS.CRYPTO_LAST_SYNC,    defaultValue: null             },
+  ibkrPositions:     { storageKey: STORAGE_KEYS.IBKR_POSITIONS,      defaultValue: []               },
+  ibkrCashBalances:  { storageKey: STORAGE_KEYS.IBKR_CASH_BALANCES,  defaultValue: []               },
+  ibkrLastSyncAt:    { storageKey: STORAGE_KEYS.IBKR_LAST_SYNC,      defaultValue: null             },
+  ibkrAccountId:     { storageKey: STORAGE_KEYS.IBKR_ACCOUNT_ID,     defaultValue: null             },
+  ibkrNav:           { storageKey: STORAGE_KEYS.IBKR_NAV,            defaultValue: null             },
+} satisfies Record<keyof Omit<PersistedState, '_currencies'>, { storageKey: string; defaultValue: unknown }>;
+
 const multiKeyStorage: PersistStorage<PersistedState> = {
   getItem: (): StorageValue<PersistedState> | null => {
     try {
-      const state: PersistedState = {
-        settings: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.SETTINGS),
-          DEFAULT_SETTINGS
-        ),
-        clients: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.CLIENTS),
-          []
-        ),
-        invoices: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.INVOICES),
-          []
-        ),
-        savedItems: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.SAVED_ITEMS),
-          []
-        ),
-        snapshots: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.NET_WORTH_SNAPSHOTS),
-          []
-        ),
-        expenses: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.EXPENSES),
-          []
-        ),
-        mappings: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.CATEGORY_MAPPINGS),
-          []
-        ),
-        cryptoWallets: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.CRYPTO_WALLETS),
-          []
-        ),
-        cryptoPositions: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.CRYPTO_POSITIONS),
-          []
-        ),
-        cryptoLastSyncAt: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.CRYPTO_LAST_SYNC),
-          null
-        ),
-        ibkrPositions: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.IBKR_POSITIONS),
-          []
-        ),
-        ibkrCashBalances: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.IBKR_CASH_BALANCES),
-          []
-        ),
-        ibkrLastSyncAt: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.IBKR_LAST_SYNC),
-          null
-        ),
-        ibkrAccountId: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.IBKR_ACCOUNT_ID),
-          null
-        ),
-        ibkrNav: safeJsonParse(
-          localStorage.getItem(STORAGE_KEYS.IBKR_NAV),
-          null
-        ),
-      };
+      const state = {} as PersistedState;
+      for (const [slice, { storageKey, defaultValue }] of Object.entries(SLICE_STORAGE_MAP)) {
+        (state as Record<string, unknown>)[slice] = safeJsonParse(
+          localStorage.getItem(storageKey),
+          defaultValue,
+        );
+      }
       return { state, version: 0 };
     } catch {
       return null;
@@ -105,21 +74,12 @@ const multiKeyStorage: PersistStorage<PersistedState> = {
   setItem: (_name: string, value: StorageValue<PersistedState>): void => {
     const { state } = value;
     try {
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
-      localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(state.clients));
-      localStorage.setItem(STORAGE_KEYS.INVOICES, JSON.stringify(state.invoices));
-      localStorage.setItem(STORAGE_KEYS.SAVED_ITEMS, JSON.stringify(state.savedItems));
-      localStorage.setItem(STORAGE_KEYS.NET_WORTH_SNAPSHOTS, JSON.stringify(state.snapshots));
-      localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(state.expenses));
-      localStorage.setItem(STORAGE_KEYS.CATEGORY_MAPPINGS, JSON.stringify(state.mappings));
-      localStorage.setItem(STORAGE_KEYS.CRYPTO_WALLETS, JSON.stringify(state.cryptoWallets));
-      localStorage.setItem(STORAGE_KEYS.CRYPTO_POSITIONS, JSON.stringify(state.cryptoPositions));
-      localStorage.setItem(STORAGE_KEYS.CRYPTO_LAST_SYNC, JSON.stringify(state.cryptoLastSyncAt));
-      localStorage.setItem(STORAGE_KEYS.IBKR_POSITIONS, JSON.stringify(state.ibkrPositions));
-      localStorage.setItem(STORAGE_KEYS.IBKR_CASH_BALANCES, JSON.stringify(state.ibkrCashBalances));
-      localStorage.setItem(STORAGE_KEYS.IBKR_LAST_SYNC, JSON.stringify(state.ibkrLastSyncAt));
-      localStorage.setItem(STORAGE_KEYS.IBKR_ACCOUNT_ID, JSON.stringify(state.ibkrAccountId));
-      localStorage.setItem(STORAGE_KEYS.IBKR_NAV, JSON.stringify(state.ibkrNav));
+      for (const [slice, { storageKey }] of Object.entries(SLICE_STORAGE_MAP)) {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify((state as Record<string, unknown>)[slice]),
+        );
+      }
     } catch (error) {
       console.error('Error persisting store to localStorage:', error);
     }
