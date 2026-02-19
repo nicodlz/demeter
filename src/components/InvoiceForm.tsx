@@ -670,6 +670,9 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
               value={splitAmount}
               onChange={(e) => setSplitAmount(parseFloat(e.target.value))}
               className="w-full h-3 rounded-lg appearance-none cursor-pointer"
+              // style kept: the gradient uses splitPercentage, a runtime-computed value
+              // from the range input slider. CSS gradients with dynamic stops cannot be
+              // expressed as Tailwind classes; this pattern is the standard approach.
               style={{
                 background: `linear-gradient(to right, #f97316 0%, #f97316 ${splitPercentage}%, #10b981 ${splitPercentage}%, #10b981 100%)`
               }}

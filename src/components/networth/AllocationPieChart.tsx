@@ -107,6 +107,9 @@ export const AllocationPieChart = ({
                       <div className="flex items-center">
                         <div
                           className="w-3 h-3 rounded-full mr-2"
+                          // style kept: item.color is a hex value from data (useNetWorthDashboard),
+                          // shared with Recharts <Cell fill> which requires hex strings.
+                          // A separate Tailwind mapping would duplicate the color definition.
                           style={{ backgroundColor: item.color }}
                         />
                         <span className="text-sm">{item.label}</span>

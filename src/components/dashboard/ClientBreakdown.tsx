@@ -21,21 +21,35 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ClientBreakdownProps {
   data: ClientRevenue[];
   currency: Currency;
 }
 
+// Hex values used for Recharts SVG fill (requires hex, not Tailwind classes)
 const COLORS = [
-  '#3b82f6', // blue
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#ef4444', // red
-  '#8b5cf6', // purple
-  '#ec4899', // pink
-  '#06b6d4', // cyan
-  '#84cc16', // lime
+  '#3b82f6', // blue-500
+  '#10b981', // emerald-500
+  '#f59e0b', // amber-500
+  '#ef4444', // red-500
+  '#8b5cf6', // violet-500
+  '#ec4899', // pink-500
+  '#06b6d4', // cyan-500
+  '#84cc16', // lime-500
+];
+
+// Tailwind bg classes matching COLORS (used for color swatches in the table)
+const BG_COLORS = [
+  'bg-blue-500',
+  'bg-emerald-500',
+  'bg-amber-500',
+  'bg-red-500',
+  'bg-violet-500',
+  'bg-pink-500',
+  'bg-cyan-500',
+  'bg-lime-500',
 ];
 
 type SortField = 'totalTTC' | 'count' | 'percentage';
@@ -190,10 +204,10 @@ export const ClientBreakdown = ({ data, currency }: ClientBreakdownProps) => {
                     <TableCell>
                       <div className="flex items-center">
                         <div
-                          className="w-3 h-3 rounded-full mr-2"
-                          style={{
-                            backgroundColor: COLORS[index % COLORS.length],
-                          }}
+                          className={cn(
+                            'w-3 h-3 rounded-full mr-2',
+                            BG_COLORS[index % BG_COLORS.length],
+                          )}
                         />
                         <span className="text-sm">{client.clientName}</span>
                       </div>

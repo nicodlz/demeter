@@ -123,6 +123,9 @@ export const ProjectionsPage = () => {
                   <div
                     key={asset}
                     className={`${ASSET_COLORS[asset]} transition-all`}
+                    // style kept: width is a runtime-computed percentage from portfolio data;
+                    // Tailwind arbitrary values (e.g. w-[X%]) require build-time constants
+                    // and cannot be used with dynamic runtime values.
                     style={{ width: `${portfolioAllocation[asset]}%` }}
                   />
                 ))
@@ -168,6 +171,8 @@ export const ProjectionsPage = () => {
                 <div
                   key={asset}
                   className={`${ASSET_COLORS[asset]} transition-all`}
+                  // style kept: width is a runtime-computed percentage from the contribution
+                  // allocation slider; Tailwind arbitrary values require build-time constants.
                   style={{ width: `${contributionAllocationNumbers[asset]}%` }}
                 />
               ))}
