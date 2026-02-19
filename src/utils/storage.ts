@@ -50,6 +50,30 @@ const STORAGE_SCHEMAS: Record<string, z.ZodType> = {
   [STORAGE_KEYS.IBKR_CASH_BALANCES]: ibkrCashBalanceSchema.array(),
 };
 
+/**
+ * Data-driven mapping from each backup field name to its localStorage key and
+ * default value used during export.  Adding a new field only requires a single
+ * entry here — `exportAll` and `importBackup` both derive their behaviour from
+ * this table automatically.
+ */
+const BACKUP_FIELD_MAP = {
+  settings:          { storageKey: STORAGE_KEYS.SETTINGS,            defaultValue: null },
+  clients:           { storageKey: STORAGE_KEYS.CLIENTS,             defaultValue: [] },
+  invoices:          { storageKey: STORAGE_KEYS.INVOICES,            defaultValue: [] },
+  savedItems:        { storageKey: STORAGE_KEYS.SAVED_ITEMS,         defaultValue: [] },
+  netWorthSnapshots: { storageKey: STORAGE_KEYS.NET_WORTH_SNAPSHOTS, defaultValue: [] },
+  expenses:          { storageKey: STORAGE_KEYS.EXPENSES,            defaultValue: [] },
+  categoryMappings:  { storageKey: STORAGE_KEYS.CATEGORY_MAPPINGS,   defaultValue: [] },
+  cryptoWallets:     { storageKey: STORAGE_KEYS.CRYPTO_WALLETS,      defaultValue: [] },
+  cryptoPositions:   { storageKey: STORAGE_KEYS.CRYPTO_POSITIONS,    defaultValue: [] },
+  cryptoLastSync:    { storageKey: STORAGE_KEYS.CRYPTO_LAST_SYNC,    defaultValue: null },
+  ibkrPositions:     { storageKey: STORAGE_KEYS.IBKR_POSITIONS,      defaultValue: [] },
+  ibkrCashBalances:  { storageKey: STORAGE_KEYS.IBKR_CASH_BALANCES,  defaultValue: [] },
+  ibkrLastSync:      { storageKey: STORAGE_KEYS.IBKR_LAST_SYNC,      defaultValue: null },
+  ibkrAccountId:     { storageKey: STORAGE_KEYS.IBKR_ACCOUNT_ID,     defaultValue: null },
+  ibkrNav:           { storageKey: STORAGE_KEYS.IBKR_NAV,            defaultValue: null },
+} satisfies Record<keyof DemeterBackup['data'], { storageKey: string; defaultValue: unknown }>;
+
 export const storage = {
   /**
    * Read a value from localStorage.
@@ -110,28 +134,17 @@ export const storage = {
   },
 
   exportAll: (): DemeterBackup => {
-    const backup: DemeterBackup = {
+    const entries = (
+      Object.entries(BACKUP_FIELD_MAP) as Array<
+        [keyof DemeterBackup['data'], { storageKey: string; defaultValue: unknown }]
+      >
+    ).map(([key, { storageKey, defaultValue }]) => [key, storage.get(storageKey, defaultValue)]);
+
+    return {
       version: 1,
       exportedAt: new Date().toISOString(),
-      data: {
-        settings: storage.get(STORAGE_KEYS.SETTINGS, null),
-        clients: storage.get(STORAGE_KEYS.CLIENTS, []),
-        invoices: storage.get(STORAGE_KEYS.INVOICES, []),
-        savedItems: storage.get(STORAGE_KEYS.SAVED_ITEMS, []),
-        netWorthSnapshots: storage.get(STORAGE_KEYS.NET_WORTH_SNAPSHOTS, []),
-        expenses: storage.get(STORAGE_KEYS.EXPENSES, []),
-        categoryMappings: storage.get(STORAGE_KEYS.CATEGORY_MAPPINGS, []),
-        cryptoWallets: storage.get(STORAGE_KEYS.CRYPTO_WALLETS, []),
-        cryptoPositions: storage.get(STORAGE_KEYS.CRYPTO_POSITIONS, []),
-        cryptoLastSync: storage.get<string | null>(STORAGE_KEYS.CRYPTO_LAST_SYNC, null),
-        ibkrPositions: storage.get(STORAGE_KEYS.IBKR_POSITIONS, []),
-        ibkrCashBalances: storage.get(STORAGE_KEYS.IBKR_CASH_BALANCES, []),
-        ibkrLastSync: storage.get<string | null>(STORAGE_KEYS.IBKR_LAST_SYNC, null),
-        ibkrAccountId: storage.get<string | null>(STORAGE_KEYS.IBKR_ACCOUNT_ID, null),
-        ibkrNav: storage.get<number | null>(STORAGE_KEYS.IBKR_NAV, null),
-      },
+      data: Object.fromEntries(entries) as DemeterBackup['data'],
     };
-    return backup;
   },
 
   downloadBackup: (): void => {
@@ -165,51 +178,14 @@ export const storage = {
 
       const backup = result.data;
 
-      // Import all data
-      if (backup.data.settings) {
-        storage.set(STORAGE_KEYS.SETTINGS, backup.data.settings);
-      }
-      if (backup.data.clients) {
-        storage.set(STORAGE_KEYS.CLIENTS, backup.data.clients);
-      }
-      if (backup.data.invoices) {
-        storage.set(STORAGE_KEYS.INVOICES, backup.data.invoices);
-      }
-      if (backup.data.savedItems) {
-        storage.set(STORAGE_KEYS.SAVED_ITEMS, backup.data.savedItems);
-      }
-      if (backup.data.netWorthSnapshots) {
-        storage.set(STORAGE_KEYS.NET_WORTH_SNAPSHOTS, backup.data.netWorthSnapshots);
-      }
-      if (backup.data.expenses) {
-        storage.set(STORAGE_KEYS.EXPENSES, backup.data.expenses);
-      }
-      if (backup.data.categoryMappings) {
-        storage.set(STORAGE_KEYS.CATEGORY_MAPPINGS, backup.data.categoryMappings);
-      }
-      if (backup.data.cryptoWallets) {
-        storage.set(STORAGE_KEYS.CRYPTO_WALLETS, backup.data.cryptoWallets);
-      }
-      if (backup.data.cryptoPositions) {
-        storage.set(STORAGE_KEYS.CRYPTO_POSITIONS, backup.data.cryptoPositions);
-      }
-      if (backup.data.cryptoLastSync) {
-        storage.set(STORAGE_KEYS.CRYPTO_LAST_SYNC, backup.data.cryptoLastSync);
-      }
-      if (backup.data.ibkrPositions) {
-        storage.set(STORAGE_KEYS.IBKR_POSITIONS, backup.data.ibkrPositions);
-      }
-      if (backup.data.ibkrCashBalances) {
-        storage.set(STORAGE_KEYS.IBKR_CASH_BALANCES, backup.data.ibkrCashBalances);
-      }
-      if (backup.data.ibkrLastSync) {
-        storage.set(STORAGE_KEYS.IBKR_LAST_SYNC, backup.data.ibkrLastSync);
-      }
-      if (backup.data.ibkrAccountId) {
-        storage.set(STORAGE_KEYS.IBKR_ACCOUNT_ID, backup.data.ibkrAccountId);
-      }
-      if (backup.data.ibkrNav !== undefined && backup.data.ibkrNav !== null) {
-        storage.set(STORAGE_KEYS.IBKR_NAV, backup.data.ibkrNav);
+      // Import all fields via the shared mapping — null/undefined values are skipped.
+      for (const [key, { storageKey }] of Object.entries(BACKUP_FIELD_MAP) as Array<
+        [keyof DemeterBackup['data'], { storageKey: string }]
+      >) {
+        const value = backup.data[key];
+        if (value != null) {
+          storage.set(storageKey, value);
+        }
       }
 
       return { success: true };
