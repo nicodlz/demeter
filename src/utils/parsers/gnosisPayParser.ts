@@ -1,5 +1,5 @@
-import type { ParsedTransaction, Currency } from '../../schemas';
-import { parsedTransactionSchema } from '../../schemas';
+import type { ParsedTransaction, Currency } from '../../types';
+import { parseCSVLine, parseISODate, createTransaction } from './parserUtils';
 
 /**
  * Gnosis Pay Parser (CSV)
@@ -21,34 +21,6 @@ export const canParse = (content: string): boolean => {
          firstLine.includes('clearing_date');
 };
 
-const parseCSVLine = (line: string): string[] => {
-  const result: string[] = [];
-  let current = '';
-  let inQuotes = false;
-
-  for (const char of line) {
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  result.push(current.trim());
-  return result;
-};
-
-const parseISODate = (isoStr: string): string => {
-  try {
-    const date = new Date(isoStr);
-    return date.toISOString().split('T')[0];
-  } catch {
-    return '';
-  }
-};
-
 export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
   success: boolean;
   transactions: ParsedTransaction[];
@@ -62,7 +34,6 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
     return { success: false, transactions: [], errors: ['No data rows found'] };
   }
 
-  // Parse headers
   const headers = parseCSVLine(lines[0].toLowerCase());
   const getIndex = (name: string) => headers.indexOf(name);
 
@@ -76,20 +47,17 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
   const cardIdx = getIndex('card_last_four');
   const kindIdx = getIndex('kind');
 
-  // Process data rows
   for (let i = 1; i < lines.length; i++) {
     try {
       const values = parseCSVLine(lines[i]);
       if (values.length < headers.length) continue;
 
-      // Only process approved transactions
       const status = statusIdx >= 0 ? values[statusIdx] : '';
       if (status && status.toLowerCase() !== 'approved') continue;
 
       const date = parseISODate(values[dateIdx]);
       if (!date) continue;
 
-      // Prefer billing amount/currency, fallback to transaction
       let amount = billingAmountIdx >= 0 ? parseFloat(values[billingAmountIdx]) : parseFloat(values[amountIdx]);
       let currency = billingCurrencyIdx >= 0 ? values[billingCurrencyIdx] : values[currencyIdx];
 
@@ -99,26 +67,22 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
       const merchantName = values[merchantIdx] || '';
       const cardLastFour = cardIdx >= 0 ? values[cardIdx] : undefined;
       const kind = kindIdx >= 0 ? values[kindIdx].toLowerCase() : 'payment';
-
-      // Credit if not a payment/purchase
       const isCredit = kind !== 'payment' && !kind.includes('purchase');
 
-      const tx = {
-        date,
-        description: merchantName,
-        amount,
-        currency: currency as Currency,
-        merchantName,
-        cardLastFour,
-        isCredit,
-        originalLine: lines[i],
-      };
-      const validated = parsedTransactionSchema.safeParse(tx);
-      if (validated.success) {
-        transactions.push(validated.data);
-      } else {
-        errors.push(`Invalid transaction on line ${i + 1}: ${validated.error.issues.map(issue => issue.message).join(', ')}`);
-      }
+      const tx = createTransaction(
+        {
+          date,
+          description: merchantName,
+          amount,
+          currency: currency as Currency,
+          merchantName,
+          cardLastFour,
+          isCredit,
+          originalLine: lines[i],
+        },
+        errors
+      );
+      if (tx) transactions.push(tx);
     } catch {
       errors.push(`Parse error on line ${i + 1}`);
     }

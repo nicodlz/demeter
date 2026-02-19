@@ -1,5 +1,5 @@
-import type { ParsedTransaction, Currency } from '../../schemas';
-import { parsedTransactionSchema } from '../../schemas';
+import type { ParsedTransaction, Currency } from '../../types';
+import { parseCSVLine, parseISODate, createTransaction } from './parserUtils';
 
 /**
  * Etherfi Parser (CSV)
@@ -20,35 +20,6 @@ export const canParse = (content: string): boolean => {
          firstLine.includes('card holder');
 };
 
-const parseCSVLine = (line: string): string[] => {
-  const result: string[] = [];
-  let current = '';
-  let inQuotes = false;
-
-  for (const char of line) {
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  result.push(current.trim());
-  return result;
-};
-
-const parseTimestamp = (ts: string): string => {
-  try {
-    // Format: "2025-12-17T17:40:22.883" (no Z)
-    const date = new Date(ts.includes('Z') ? ts : ts + 'Z');
-    return date.toISOString().split('T')[0];
-  } catch {
-    return '';
-  }
-};
-
 export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
   success: boolean;
   transactions: ParsedTransaction[];
@@ -62,7 +33,6 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
     return { success: false, transactions: [], errors: ['No data rows found'] };
   }
 
-  // Parse headers (normalize spaces)
   const headers = parseCSVLine(lines[0].toLowerCase().replace(/\s+/g, ' '));
   const getIndex = (name: string) => headers.findIndex(h => h.includes(name));
 
@@ -75,20 +45,17 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
   const originalAmountIdx = getIndex('original amount');
   const originalCurrencyIdx = getIndex('original currency');
 
-  // Process data rows
   for (let i = 1; i < lines.length; i++) {
     try {
       const values = parseCSVLine(lines[i]);
       if (values.length < 5) continue;
 
-      // Only process cleared transactions
       const status = statusIdx >= 0 ? values[statusIdx] : '';
       if (status && status.toUpperCase() !== 'CLEARED') continue;
 
-      const date = parseTimestamp(values[timestampIdx]);
+      const date = parseISODate(values[timestampIdx]);
       if (!date) continue;
 
-      // Use original amount/currency if available, else USD amount
       let amount: number;
       let currency: Currency;
 
@@ -107,26 +74,22 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
       const merchantName = values[descriptionIdx] || '';
       const cardLastFour = cardIdx >= 0 ? values[cardIdx] : undefined;
       const txType = typeIdx >= 0 ? values[typeIdx].toLowerCase() : '';
-
-      // Credit if not card_spend
       const isCredit = txType !== 'card_spend';
 
-      const tx = {
-        date,
-        description: merchantName,
-        amount,
-        currency,
-        merchantName,
-        cardLastFour,
-        isCredit,
-        originalLine: lines[i],
-      };
-      const validated = parsedTransactionSchema.safeParse(tx);
-      if (validated.success) {
-        transactions.push(validated.data);
-      } else {
-        errors.push(`Invalid transaction on line ${i + 1}: ${validated.error.issues.map(issue => issue.message).join(', ')}`);
-      }
+      const tx = createTransaction(
+        {
+          date,
+          description: merchantName,
+          amount,
+          currency,
+          merchantName,
+          cardLastFour,
+          isCredit,
+          originalLine: lines[i],
+        },
+        errors
+      );
+      if (tx) transactions.push(tx);
     } catch {
       errors.push(`Parse error on line ${i + 1}`);
     }
