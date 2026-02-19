@@ -4,6 +4,7 @@ import { useInvoices } from '@/hooks/useInvoices';
 import { useSettings } from '@/hooks/useSettings';
 import { useClients } from '@/hooks/useClients';
 import { useExpenses } from '@/hooks/useExpenses';
+import { useToast } from '@/hooks/useToast';
 import type { Invoice } from '@/schemas';
 import { generateInvoicePDF, extractInvoiceFromPDF } from '@/services/pdfGenerator';
 import { calculateInvoiceTotal, calculateSplitRatio } from '@/utils/invoiceCalculations';
@@ -14,6 +15,7 @@ export const useInvoicesPage = () => {
   const { settings } = useSettings();
   const { addClient, getClientById } = useClients();
   const { expenses, addExpense, deleteExpense } = useExpenses();
+  const toast = useToast();
 
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
@@ -141,7 +143,7 @@ export const useInvoicesPage = () => {
       await downloadPDF(invoice, `Invoice_${invoice.number}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Error generating PDF');
+      toast.error('Error generating PDF');
     }
   };
 
@@ -172,7 +174,7 @@ export const useInvoicesPage = () => {
       }
     } catch (error) {
       console.error('Error generating split PDF:', error);
-      alert('Error generating split PDF');
+      toast.error('Error generating split PDF');
     }
   };
 
@@ -183,15 +185,15 @@ export const useInvoicesPage = () => {
     try {
       const metadata = await extractInvoiceFromPDF(file);
       if (!metadata) {
-        alert('Unable to extract data from PDF. The file does not contain valid metadata.');
+        toast.error('Unable to extract data from PDF. The file does not contain valid metadata.');
         return;
       }
 
       processImportedInvoice(metadata.invoice);
-      alert(`Invoice ${metadata.invoice.number} imported successfully!`);
+      toast.success(`Invoice ${metadata.invoice.number} imported successfully!`);
     } catch (error) {
       console.error('Error importing PDF:', error);
-      alert('Error importing PDF');
+      toast.error('Error importing PDF');
     } finally {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -237,20 +239,14 @@ export const useInvoicesPage = () => {
         }
       }
 
-      let message = `Import completed!\n${successCount} invoice(s) imported successfully.`;
       if (failCount > 0) {
-        message += `\n${failCount} file(s) failed.`;
-        if (errors.length > 0) {
-          message += `\n\nErrors:\n${errors.slice(0, 5).join('\n')}`;
-          if (errors.length > 5) {
-            message += `\n... and ${errors.length - 5} more errors.`;
-          }
-        }
+        toast.error(`${successCount} imported, ${failCount} file(s) failed`);
+      } else {
+        toast.success(`${successCount} invoice(s) imported successfully`);
       }
-      alert(message);
     } catch (error) {
       console.error('Error importing ZIP:', error);
-      alert('Error importing ZIP file');
+      toast.error('Error importing ZIP file');
     } finally {
       if (zipInputRef.current) {
         zipInputRef.current.value = '';

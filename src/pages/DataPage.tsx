@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { storage } from '@/utils/storage';
 import { useSettings } from '@/hooks/useSettings';
+import { useToast } from '@/hooks/useToast';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { Download, Upload, Database, AlertTriangle, KeyRound, Landmark, Save, Re
 
 export const DataPage = () => {
   const { settings, updateSettings } = useSettings();
+  const toast = useToast();
   const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [zerionApiKey, setZerionApiKey] = useState(settings.zerionApiKey || '');
   const [ibkrFlexToken, setIbkrFlexToken] = useState(settings.ibkrFlexToken || '');
@@ -64,7 +66,7 @@ export const DataPage = () => {
 
   const handleSaveApiKey = () => {
     updateSettings({ zerionApiKey: zerionApiKey || undefined });
-    alert('API key saved!');
+    toast.success('API key saved!');
   };
 
   return (
@@ -128,7 +130,7 @@ export const DataPage = () => {
                 taxProvisionEnabled,
                 taxRate,
               });
-              alert('Tax provision settings saved!');
+              toast.success('Tax provision settings saved!');
             }}
           >
             <Save className="mr-2 h-4 w-4" />
@@ -224,7 +226,7 @@ export const DataPage = () => {
                 ibkrFlexToken: ibkrFlexToken || undefined,
                 ibkrFlexQueryId: ibkrFlexQueryId || undefined,
               });
-              alert('IBKR credentials saved!');
+              toast.success('IBKR credentials saved!');
             }}
           >
             <Save className="mr-2 h-4 w-4" />
