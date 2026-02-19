@@ -69,6 +69,8 @@ export const TopMerchantsCard = ({
                 <div className="w-full bg-muted rounded-full h-1.5">
                   <div
                     className="h-1.5 rounded-full bg-destructive"
+                    // style kept: width is a runtime-computed percentage (merchant total / max);
+                    // Tailwind arbitrary values require build-time constants, not runtime math.
                     style={{ width: `${(m.total / maxTotal) * 100}%` }}
                   />
                 </div>

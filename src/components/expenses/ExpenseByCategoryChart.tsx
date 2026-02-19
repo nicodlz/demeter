@@ -93,6 +93,10 @@ export const ExpenseByCategoryChart = ({ data, totalAmount, currency, privacyMod
               <div key={cat.category} className="flex items-center gap-2">
                 <div
                   className="w-3 h-3 rounded-full shrink-0"
+                  // style kept: cat.color is a hex value from useExpensesDashboard's
+                  // CATEGORY_COLORS array, shared with Recharts <Cell fill>. A separate
+                  // Tailwind BG class mapping would duplicate color definitions across
+                  // the hook and component.
                   style={{ backgroundColor: cat.color }}
                 />
                 <div className="flex-1 min-w-0">
@@ -105,6 +109,10 @@ export const ExpenseByCategoryChart = ({ data, totalAmount, currency, privacyMod
                   <div className="w-full bg-muted rounded-full h-1.5 mt-1">
                     <div
                       className="h-1.5 rounded-full"
+                      // style kept: both values are runtime-computed from data —
+                      // width is a dynamic percentage, backgroundColor is a hex color
+                      // shared with Recharts <Cell fill>. Neither can be expressed as
+                      // static Tailwind classes.
                       style={{
                         width: `${cat.percentage}%`,
                         backgroundColor: cat.color,
