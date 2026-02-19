@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { Expense } from '../../types';
+import type { Expense } from '../../schemas';
 import type { StoreState, ExpensesSlice } from '../types';
 
 /**

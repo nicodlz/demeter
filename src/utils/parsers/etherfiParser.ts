@@ -1,4 +1,4 @@
-import type { ParsedTransaction, Currency } from '../../types';
+import type { ParsedTransaction, Currency } from '../../schemas';
 import { parsedTransactionSchema } from '../../schemas';
 
 /**

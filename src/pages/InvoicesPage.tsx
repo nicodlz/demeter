@@ -3,7 +3,7 @@ import { useInvoices } from '@/hooks/useInvoices';
 import { useSettings } from '@/hooks/useSettings';
 import { useClients } from '@/hooks/useClients';
 import { useExpenses } from '@/hooks/useExpenses';
-import type { Invoice } from '@/types';
+import type { Invoice } from '@/schemas';
 import { InvoiceForm } from '@/components/InvoiceForm';
 import { RecibosVerdeModal } from '@/components/RecibosVerdeModal';
 import { generateInvoicePDF, extractInvoiceFromPDF } from '@/services/pdfGenerator';

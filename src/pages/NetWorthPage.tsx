@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNetWorthSnapshots, getSnapshotTotal, getCategoryTotal } from '@/hooks/useNetWorthSnapshots';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { useSettings } from '@/hooks/useSettings';
-import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '@/types';
+import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '@/schemas';
 import { SnapshotForm } from '@/components/networth/SnapshotForm';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 

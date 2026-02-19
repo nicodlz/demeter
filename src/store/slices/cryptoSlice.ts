@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { CryptoWallet, TokenPosition } from '../../types';
+import type { CryptoWallet, TokenPosition } from '../../schemas';
 import type { StoreState, CryptoSlice } from '../types';
 
 export const createCryptoSlice: StateCreator<

@@ -8,7 +8,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import type { NetWorthEvolution, Currency } from '@/types';
+import type { Currency } from '@/schemas';
+import type { NetWorthEvolution } from '@/types';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';

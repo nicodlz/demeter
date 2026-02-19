@@ -1,6 +1,6 @@
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
-import type { AssetEntry, Currency } from '@/types';
+import type { AssetEntry, Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
 
 import { Button } from '@/components/ui/button';

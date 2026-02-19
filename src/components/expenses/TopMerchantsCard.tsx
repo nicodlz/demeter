@@ -3,7 +3,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 
 interface TopMerchantsCardProps {
   merchants: Array<{

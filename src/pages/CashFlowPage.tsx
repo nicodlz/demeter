@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import type { Expense, ExpenseType, ParsedTransaction, BankProvider, Currency } from '@/types';
+import type { Expense, ExpenseType, ParsedTransaction, BankProvider, Currency } from '@/schemas';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useCategoryMappings } from '@/hooks/useCategoryMappings';
 import { useSettings } from '@/hooks/useSettings';

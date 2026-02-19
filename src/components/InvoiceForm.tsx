@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import type { Invoice, LineItem, CustomField, Currency, SavedItem } from '@/types';
+import type { Invoice, LineItem, CustomField, Currency, SavedItem } from '@/schemas';
 import { useClients } from '@/hooks/useClients';
 import { useSettings } from '@/hooks/useSettings';
 import { useSavedItems } from '@/hooks/useSavedItems';

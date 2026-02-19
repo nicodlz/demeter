@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Expense, ExpenseType, Currency, BankProvider } from '@/types';
+import type { Expense, ExpenseType, Currency, BankProvider } from '@/schemas';
 import { useSettings } from '@/hooks/useSettings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

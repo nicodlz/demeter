@@ -3,7 +3,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 import type { ExpenseCategoryData } from '@/hooks/useExpensesDashboard';
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 
 interface ExpenseByCategoryChartProps {
   data: ExpenseCategoryData[];

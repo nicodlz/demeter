@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import type { CryptoWallet } from '@/types';
+import type { CryptoWallet } from '@/schemas';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

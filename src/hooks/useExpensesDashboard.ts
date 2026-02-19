@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useExpenses } from './useExpenses';
-import type { Currency } from '../types';
+import type { Currency } from '../schemas';
 
 export interface ExpenseMonthlyData {
   month: string;

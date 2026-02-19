@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useStore } from '../store';
-import type { AnyNetWorthSnapshot, Currency } from '../types';
+import type { AnyNetWorthSnapshot, Currency } from '../schemas';
 import { isV2Snapshot } from '../types';
 
 // =============================================================================

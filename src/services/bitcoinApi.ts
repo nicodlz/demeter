@@ -1,4 +1,4 @@
-import type { CryptoWallet, TokenPosition } from '@/types';
+import type { CryptoWallet, TokenPosition } from '@/schemas';
 
 // ============================================================
 // Bitcoin API using Mempool.space and CoinGecko
