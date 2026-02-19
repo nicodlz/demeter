@@ -13,7 +13,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 import { CHART_COLORS } from '@/utils/chartTheme';
-import type { CashFlowMonthlyData } from '@/hooks/useCashFlowDashboard';
+import type { CashFlowMonthlyData } from '@/hooks/useExpensesDashboard';
 import type { Currency } from '@/schemas';
 
 interface CashFlowChartProps {
