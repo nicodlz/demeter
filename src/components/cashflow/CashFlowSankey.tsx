@@ -1,5 +1,6 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { Sankey, Tooltip, Rectangle } from 'recharts';
+import { CATEGORY_COLORS } from '@/utils/chartTheme';
 import type { Expense, Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,10 +17,7 @@ import type { NodeProps, LinkProps } from 'recharts/types/chart/Sankey';
 // ── colour palette ──────────────────────────────────────────
 const INCOME_COLOR = '#22c55e'; // green-500
 const TOTAL_COLOR = '#6366f1'; // indigo-500
-const EXPENSE_COLORS = [
-  '#ef4444', '#f97316', '#eab308', '#e11d48', '#d946ef',
-  '#a855f7', '#ec4899', '#f43f5e', '#fb923c', '#78716c',
-];
+const EXPENSE_COLORS = CATEGORY_COLORS;
 const SAVINGS_COLOR = '#3b82f6'; // blue-500
 const TAX_COLOR = '#f59e0b'; // amber-500
 
