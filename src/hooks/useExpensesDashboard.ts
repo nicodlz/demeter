@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useExpenses } from './useExpenses';
+import { CATEGORY_COLORS } from '@/utils/chartTheme';
 import type { Currency } from '../schemas';
 
 export interface ExpenseMonthlyData {
@@ -32,11 +33,6 @@ export interface CashFlowMonthlyData {
   expenses: number;
   balance: number;
 }
-
-const CATEGORY_COLORS = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6',
-  '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280', '#78716c',
-];
 
 type ConvertFn = (amount: number, from: Currency, to: Currency) => number;
 

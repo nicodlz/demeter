@@ -1,16 +1,12 @@
 import { useState, useMemo } from 'react';
 import type { Expense, ExpenseType, ParsedTransaction, BankProvider, Currency } from '@/schemas';
 import { useExpenses } from '@/hooks/useExpenses';
+import { CATEGORY_COLORS } from '@/utils/chartTheme';
 import { useCategoryMappings } from '@/hooks/useCategoryMappings';
 import { useSettings } from '@/hooks/useSettings';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
 
 export type TabValue = 'all' | 'expenses' | 'income';
-
-const CATEGORY_COLORS = [
-  '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6',
-  '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280', '#78716c',
-];
 
 export const useCashFlowPage = () => {
   const { settings, updateSettings } = useSettings();
