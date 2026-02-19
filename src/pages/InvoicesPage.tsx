@@ -46,7 +46,7 @@ export const InvoicesPage = () => {
     showForm,
     setShowForm,
     editingInvoice,
-    setEditingInvoice,
+    setEditingInvoice: _setEditingInvoice,
     recibosVerdeInvoice,
     setRecibosVerdeInvoice,
     fileInputRef,

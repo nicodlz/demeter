@@ -1,4 +1,4 @@
-import type { ParsedTransaction, Currency } from '../../types';
+import type { ParsedTransaction, Currency } from '@/schemas';
 import { parseCSVLine, parseISODate, createTransaction } from './parserUtils';
 
 /**
