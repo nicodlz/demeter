@@ -24,7 +24,7 @@ interface LineItemsEditorProps {
   total: number;
   savedItemsCount: number;
   activeAutocomplete: string | null;
-  autocompleteRef: React.RefObject<HTMLDivElement>;
+  autocompleteRef: React.RefObject<HTMLDivElement | null>;
   getFilteredSavedItems: (itemId: string) => SavedItem[];
   onAddLineItem: () => void;
   onUpdateLineItem: <K extends keyof LineItem>(id: string, field: K, value: LineItem[K]) => void;

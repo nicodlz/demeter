@@ -8,6 +8,7 @@
 
 import type { CryptoWallet, TokenPosition } from '@/schemas';
 import type { Invoice, IssuerSettings, AssetClass } from '@/schemas';
+export type { AssetClass } from '@/schemas';
 import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '@/schemas';
 
 // ============================================================

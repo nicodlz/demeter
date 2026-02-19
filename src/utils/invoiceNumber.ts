@@ -20,7 +20,7 @@ export const generateInvoiceNumber = (
 /**
  * Parse invoice number to extract counter value
  */
-const parseInvoiceNumber = (invoiceNumber: string): number | null => {
+export const parseInvoiceNumber = (invoiceNumber: string): number | null => {
   // Extract the last sequence of digits
   const match = invoiceNumber.match(/(\d+)$/);
   if (match) {

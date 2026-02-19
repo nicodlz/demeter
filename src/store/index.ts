@@ -60,7 +60,7 @@ const multiKeyStorage: PersistStorage<PersistedState> = {
     try {
       const state = {} as PersistedState;
       for (const [slice, { storageKey, defaultValue }] of Object.entries(SLICE_STORAGE_MAP)) {
-        (state as Record<string, unknown>)[slice] = safeJsonParse(
+        (state as unknown as Record<string, unknown>)[slice] = safeJsonParse(
           localStorage.getItem(storageKey),
           defaultValue,
         );
@@ -77,7 +77,7 @@ const multiKeyStorage: PersistStorage<PersistedState> = {
       for (const [slice, { storageKey }] of Object.entries(SLICE_STORAGE_MAP)) {
         localStorage.setItem(
           storageKey,
-          JSON.stringify((state as Record<string, unknown>)[slice]),
+          JSON.stringify((state as unknown as Record<string, unknown>)[slice]),
         );
       }
     } catch (error) {

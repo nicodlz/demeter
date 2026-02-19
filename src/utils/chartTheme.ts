@@ -33,4 +33,4 @@ export const CHART_COLORS = {
   lime: '#22c55e',
 } as const;
 
-type ChartColorKey = keyof typeof CHART_COLORS;
+export type ChartColorKey = keyof typeof CHART_COLORS;

@@ -11,7 +11,7 @@ interface SavedItemAutocompleteProps {
   filteredItems: SavedItem[];
   savedItemsCount: number;
   currencySymbol: string;
-  autocompleteRef: React.RefObject<HTMLDivElement> | null;
+  autocompleteRef: React.RefObject<HTMLDivElement | null> | null;
   onDescriptionChange: (lineItemId: string, value: string) => void;
   onFocus: (lineItemId: string) => void;
   onApply: (lineItemId: string, savedItem: SavedItem) => void;
