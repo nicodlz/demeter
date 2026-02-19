@@ -1,4 +1,4 @@
-import type { Currency } from '../schemas';
+import type { Currency } from '@/schemas';
 
 export const getCurrencySymbol = (currency: Currency): string => {
   return currency === 'EUR' ? '€' : '$';

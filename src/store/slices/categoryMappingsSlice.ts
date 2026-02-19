@@ -1,6 +1,6 @@
 import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
-import type { CategoryMapping } from '../../schemas';
+import type { CategoryMapping } from '@/schemas';
 import type { StoreState, CategoryMappingsSlice } from '../types';
 
 /**

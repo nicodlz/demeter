@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchExchangeRate, convertAmount } from '../services/exchangeRate';
-import type { Currency } from '../schemas';
+import type { Currency } from '@/schemas';
 
 interface UseExchangeRateResult {
   rate: number;

@@ -1,6 +1,6 @@
 import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
-import type { Expense } from '../../schemas';
+import type { Expense } from '@/schemas';
 import type { StoreState, ExpensesSlice } from '../types';
 
 /**

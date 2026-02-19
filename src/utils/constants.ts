@@ -1,4 +1,4 @@
-import type { VATRate, AppSettings } from '../schemas';
+import type { VATRate, AppSettings } from '@/schemas';
 
 export const DEFAULT_VAT_RATES: VATRate[] = [
   {

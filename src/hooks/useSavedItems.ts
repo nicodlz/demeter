@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useStore } from '../store';
-import type { SavedItem } from '../schemas';
+import type { SavedItem } from '@/schemas';
 
 export function useSavedItems() {
   const savedItems = useStore((state) => state.savedItems);

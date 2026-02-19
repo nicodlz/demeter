@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import { PDFDocument } from 'pdf-lib';
-import type { Invoice, IssuerSettings } from '../schemas';
+import type { Invoice, IssuerSettings } from '@/schemas';
 import type { InvoiceMetadata } from '../types';
 import { getCurrencySymbol } from '../utils/formatters';
 

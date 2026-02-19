@@ -1,4 +1,4 @@
-import type { Invoice, LineItem } from '../schemas';
+import type { Invoice, LineItem } from '@/schemas';
 
 /**
  * Calculate subtotal (sum of all line items before VAT)

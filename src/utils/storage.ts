@@ -10,9 +10,9 @@ import {
   categoryMappingSchema,
   cryptoWalletSchema,
   tokenPositionSchema,
-} from '../schemas';
+} from '@/schemas';
 import { ibkrPositionSchema, ibkrCashBalanceSchema } from '../schemas/ibkr';
-import type { DemeterBackup } from '../schemas';
+import type { DemeterBackup } from '@/schemas';
 
 const STORAGE_KEYS = {
   SETTINGS: 'demeter-settings',

@@ -1,6 +1,6 @@
 import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
-import type { SavedItem } from '../../schemas';
+import type { SavedItem } from '@/schemas';
 import type { StoreState, SavedItemsSlice } from '../types';
 
 export const createSavedItemsSlice: StateCreator<

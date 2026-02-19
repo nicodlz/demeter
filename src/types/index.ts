@@ -6,9 +6,9 @@
 // module. This file only holds types that have no schema equivalent.
 // ============================================================
 
-import type { CryptoWallet, TokenPosition } from '../schemas';
-import type { Invoice, IssuerSettings, AssetClass } from '../schemas';
-import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '../schemas';
+import type { CryptoWallet, TokenPosition } from '@/schemas';
+import type { Invoice, IssuerSettings, AssetClass } from '@/schemas';
+import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '@/schemas';
 
 // ============================================================
 // Crypto Portfolio state (runtime only)

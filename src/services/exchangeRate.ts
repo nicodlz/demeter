@@ -1,4 +1,4 @@
-import type { Currency } from '../schemas';
+import type { Currency } from '@/schemas';
 
 interface ExchangeRateResponse {
   rates: {
