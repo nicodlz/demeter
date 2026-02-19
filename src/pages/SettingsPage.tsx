@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from '@/hooks/useSettings';
+import { useToast } from '@/hooks/useToast';
 import type { IssuerSettings, Currency } from '@/schemas';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { Save } from 'lucide-react';
 
 export const SettingsPage = () => {
   const { settings, updateIssuer, updateSettings } = useSettings();
+  const toast = useToast();
   const [formData, setFormData] = useState<IssuerSettings>(settings.issuer);
   const [defaultCurrency, setDefaultCurrency] = useState<Currency>(settings.defaultCurrency || 'USD');
   const [dashboardCurrency, setDashboardCurrency] = useState<Currency>(settings.dashboardCurrency || 'USD');
@@ -33,7 +35,7 @@ export const SettingsPage = () => {
     e.preventDefault();
     updateIssuer(formData);
     updateSettings({ defaultCurrency, dashboardCurrency });
-    alert('Settings saved!');
+    toast.success('Settings saved!');
   };
 
   return (

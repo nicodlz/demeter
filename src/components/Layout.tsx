@@ -3,6 +3,7 @@ import { Link, useLocation } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
+import { Toast } from '@/components/ui/Toast';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -217,6 +218,8 @@ export const Layout = ({ children }: LayoutProps) => {
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {children}
       </main>
+
+      <Toast />
     </div>
   );
 };
