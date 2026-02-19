@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useStore } from '../store';
 import { fetchAllWalletsPositions } from '@/services/zerionApi';
 import { fetchAllBitcoinPositions } from '@/services/bitcoinApi';
-import type { TokenPosition } from '@/types';
+import type { TokenPosition } from '@/schemas';
 
 export const useCrypto = () => {
   const wallets = useStore((s) => s.cryptoWallets);

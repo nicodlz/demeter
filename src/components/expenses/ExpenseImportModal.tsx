@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import type { ParsedTransaction, BankProvider } from '@/types';
+import type { ParsedTransaction, BankProvider } from '@/schemas';
 import { useSettings } from '@/hooks/useSettings';
 import { parseStatements, detectProvider, getProviderDisplayName, getProviderInputType, parsePdfFile } from '@/utils/parsers';
 import { Button } from '@/components/ui/button';

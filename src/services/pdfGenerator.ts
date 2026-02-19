@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import { PDFDocument } from 'pdf-lib';
-import type { Invoice, IssuerSettings, InvoiceMetadata } from '../types';
+import type { Invoice, IssuerSettings } from '../schemas';
+import type { InvoiceMetadata } from '../types';
 import { getCurrencySymbol } from '../utils/formatters';
 
 const METADATA_VERSION = '1.0.0';

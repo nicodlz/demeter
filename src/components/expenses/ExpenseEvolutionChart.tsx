@@ -12,7 +12,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 import type { ExpenseMonthlyData } from '@/hooks/useExpensesDashboard';
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 
 interface ExpenseEvolutionChartProps {
   data: ExpenseMonthlyData[];

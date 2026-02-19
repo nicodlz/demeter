@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { Client } from '../../types';
+import type { Client } from '../../schemas';
 import type { StoreState, ClientsSlice } from '../types';
 
 export const createClientsSlice: StateCreator<

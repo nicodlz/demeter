@@ -1,4 +1,4 @@
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent } from '@/components/ui/card';
 import { DollarSign, Calculator, Wallet, FileText, TrendingUp } from 'lucide-react';

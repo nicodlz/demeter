@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import type { TokenPosition, CryptoWallet } from '@/types';
+import type { TokenPosition, CryptoWallet } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
 
 import {

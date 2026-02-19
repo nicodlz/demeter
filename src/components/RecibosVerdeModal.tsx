@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Invoice } from '@/types';
+import type { Invoice } from '@/schemas';
 import { getCurrencySymbol } from '@/utils/formatters';
 import { calculateSubtotal, calculateSplitRatio } from '@/utils/invoiceCalculations';
 

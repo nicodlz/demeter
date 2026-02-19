@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { ParsedTransaction } from '@/types';
+import type { ParsedTransaction } from '@/schemas';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

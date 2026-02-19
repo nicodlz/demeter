@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Client } from '@/types';
+import type { Client } from '@/schemas';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

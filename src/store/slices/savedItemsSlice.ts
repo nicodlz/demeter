@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { SavedItem } from '../../types';
+import type { SavedItem } from '../../schemas';
 import type { StoreState, SavedItemsSlice } from '../types';
 
 export const createSavedItemsSlice: StateCreator<

@@ -8,7 +8,7 @@ import {
   Legend,
 } from 'recharts';
 import type { ClientRevenue } from '@/hooks/useDashboardData';
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';

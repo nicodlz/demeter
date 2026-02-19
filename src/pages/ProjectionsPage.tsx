@@ -9,7 +9,7 @@ import {
   formatPercent,
 } from '@/utils/projections';
 import type { ProjectionResult } from '@/utils/projections';
-import type { Currency, AssetClass } from '@/types';
+import type { Currency, AssetClass } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
 import { ProjectionChart } from '@/components/projections/ProjectionChart';
 

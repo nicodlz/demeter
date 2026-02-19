@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { ProjectionYear } from '@/utils/projections';
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 

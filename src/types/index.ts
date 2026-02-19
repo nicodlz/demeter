@@ -1,47 +1,18 @@
 // ============================================================
-// Types re-exported from Zod schemas (source of truth)
+// Runtime / display types (NOT backed by Zod schemas)
 // ============================================================
-// All data types are now derived from Zod schemas via z.infer.
-// This file re-exports them for backward compatibility so that
-// existing imports like `import type { Client } from '../types'`
-// continue to work without changes.
-// ============================================================
-
-export type {
-  Currency,
-  Client,
-  LineItem,
-  SavedItem,
-  CustomField,
-  PartBStatus,
-  Invoice,
-  VATRate,
-  IssuerSettings,
-  AppSettings,
-  AssetClass,
-  AssetEntry,
-  NetWorthSnapshot,
-  NetWorthSnapshotV2,
-  AnyNetWorthSnapshot,
-  ExpenseType,
-  BankProvider,
-  Expense,
-  CategoryMapping,
-  ParsedTransaction,
-  CryptoWallet,
-  TokenPosition,
-  IbkrAssetCategory,
-  IbkrPosition,
-  IbkrCashBalance,
-  IbkrAccount,
-  IbkrConfig,
-} from '../schemas';
-
-// ============================================================
-// Crypto Portfolio state (not schema-backed, runtime only)
+// Schema-backed types (Client, Invoice, Currency, etc.) should
+// be imported directly from '@/schemas' or the relevant schema
+// module. This file only holds types that have no schema equivalent.
 // ============================================================
 
 import type { CryptoWallet, TokenPosition } from '../schemas';
+import type { Invoice, IssuerSettings, AssetClass } from '../schemas';
+import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '../schemas';
+
+// ============================================================
+// Crypto Portfolio state (runtime only)
+// ============================================================
 
 export interface CryptoPortfolioState {
   wallets: CryptoWallet[];
@@ -51,11 +22,8 @@ export interface CryptoPortfolioState {
 }
 
 // ============================================================
-// Types NOT backed by schemas (display / derived types)
+// Display / derived types
 // ============================================================
-
-import type { Invoice, IssuerSettings, AssetClass } from '../schemas';
-import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '../schemas';
 
 export interface InvoiceMetadata {
   version: string;
@@ -82,7 +50,7 @@ export interface NetWorthEvolution {
 }
 
 // ============================================================
-// Runtime helpers (kept here for backward compatibility)
+// Runtime helpers
 // ============================================================
 
 export const isV2Snapshot = (snapshot: AnyNetWorthSnapshot): snapshot is NetWorthSnapshotV2 => {

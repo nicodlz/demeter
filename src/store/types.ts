@@ -12,7 +12,7 @@ import type {
   CategoryMapping,
   CryptoWallet,
   TokenPosition,
-} from '../types';
+} from '../schemas';
 import type { IbkrPosition, IbkrCashBalance } from '../schemas/ibkr';
 
 // ============= Settings Slice =============

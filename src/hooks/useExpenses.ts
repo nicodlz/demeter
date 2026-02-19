@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useStore } from '../store';
-import type { ParsedTransaction, Currency } from '../types';
+import type { ParsedTransaction, Currency } from '../schemas';
 
 /**
  * Normalize description for duplicate detection

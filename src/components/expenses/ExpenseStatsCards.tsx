@@ -1,7 +1,7 @@
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, TrendingUp, Wallet, Calendar, CreditCard, Calculator } from 'lucide-react';
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 
 interface ExpenseStatsCardsProps {
   totalAmount: number;

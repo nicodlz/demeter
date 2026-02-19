@@ -1,4 +1,4 @@
-import type { VATRate, AppSettings } from '../types';
+import type { VATRate, AppSettings } from '../schemas';
 
 // ============= Crypto: Stablecoin classification =============
 export const STABLECOIN_SYMBOLS = [

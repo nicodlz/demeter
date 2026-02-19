@@ -1,4 +1,4 @@
-import type { AssetClass } from '@/types';
+import type { AssetClass } from '@/schemas';
 
 // Default expected annual returns by asset class
 export const DEFAULT_RETURNS: Record<AssetClass, number> = {

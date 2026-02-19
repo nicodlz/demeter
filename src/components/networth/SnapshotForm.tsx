@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { NetWorthSnapshotV2, AssetEntry, Currency, AnyNetWorthSnapshot } from '@/types';
+import type { NetWorthSnapshotV2, AssetEntry, Currency, AnyNetWorthSnapshot } from '@/schemas';
 import { isV2Snapshot } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 import { useExchangeRate } from '@/hooks/useExchangeRate';

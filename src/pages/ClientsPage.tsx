@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useClients } from '@/hooks/useClients';
-import type { Client } from '@/types';
+import type { Client } from '@/schemas';
 import { ClientForm } from '@/components/ClientForm';
 
 import { Button } from '@/components/ui/button';

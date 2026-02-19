@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { Sankey, Tooltip, Rectangle } from 'recharts';
-import type { Expense, Currency } from '@/types';
+import type { Expense, Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from '@/hooks/useSettings';
-import type { IssuerSettings, Currency } from '@/types';
+import type { IssuerSettings, Currency } from '@/schemas';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

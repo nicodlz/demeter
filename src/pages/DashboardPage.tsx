@@ -13,7 +13,7 @@ import { ExpenseStatsCards } from '@/components/expenses/ExpenseStatsCards';
 import { ExpenseEvolutionChart } from '@/components/expenses/ExpenseEvolutionChart';
 import { ExpenseByCategoryChart } from '@/components/expenses/ExpenseByCategoryChart';
 import { TopMerchantsCard } from '@/components/expenses/TopMerchantsCard';
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

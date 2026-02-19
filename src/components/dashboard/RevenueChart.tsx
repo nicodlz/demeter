@@ -10,7 +10,7 @@ import {
   ComposedChart,
 } from 'recharts';
 import type { MonthlyRevenue } from '@/hooks/useDashboardData';
-import type { Currency } from '@/types';
+import type { Currency } from '@/schemas';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';

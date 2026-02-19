@@ -1,7 +1,7 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import type { TextItem as PdfTextItem } from 'pdfjs-dist/types/src/display/api';
-import type { ParsedTransaction, Currency } from '../../types';
+import type { ParsedTransaction, Currency } from '../../schemas';
 
 // Set worker source for Vite
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
