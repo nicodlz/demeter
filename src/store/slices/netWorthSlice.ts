@@ -1,6 +1,6 @@
 import { generateId } from '../../utils/id';
 import type { StateCreator } from 'zustand';
-import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '../../schemas';
+import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '@/schemas';
 import type { StoreState, NetWorthSlice } from '../types';
 
 export const createNetWorthSlice: StateCreator<

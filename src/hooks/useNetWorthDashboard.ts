@@ -1,6 +1,6 @@
 import { useNetWorthSnapshots, getSnapshotTotal, getCategoryTotal } from './useNetWorthSnapshots';
 import { useExchangeRate } from './useExchangeRate';
-import type { AnyNetWorthSnapshot, AssetClass, Currency } from '../schemas';
+import type { AnyNetWorthSnapshot, AssetClass, Currency } from '@/schemas';
 import type { AssetAllocation, NetWorthEvolution } from '../types';
 
 const ASSET_COLORS: Record<AssetClass, string> = {

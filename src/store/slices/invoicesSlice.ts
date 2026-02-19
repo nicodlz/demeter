@@ -1,5 +1,5 @@
 import type { StateCreator } from 'zustand';
-import type { Invoice } from '../../schemas';
+import type { Invoice } from '@/schemas';
 import type { StoreState, InvoicesSlice } from '../types';
 
 export const createInvoicesSlice: StateCreator<

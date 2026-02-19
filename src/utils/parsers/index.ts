@@ -1,4 +1,4 @@
-import type { ParsedTransaction, Currency, BankProvider } from '../../schemas';
+import type { ParsedTransaction, Currency, BankProvider } from '@/schemas';
 import { deblockParser } from './deblockParser';
 import { boursoParser } from './boursoParser';
 import { gnosisPayParser } from './gnosisPayParser';

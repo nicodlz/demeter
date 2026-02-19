@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useExpenses } from './useExpenses';
 import { CATEGORY_COLORS } from '@/utils/chartTheme';
-import type { Currency } from '../schemas';
+import type { Currency } from '@/schemas';
 
 export interface ExpenseMonthlyData {
   month: string;
