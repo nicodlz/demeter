@@ -47,7 +47,14 @@ export const parseBpiPdf = async (
 
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    // BPI statements are often encrypted (owner password only, empty user password).
+    // Try without password first, then with empty password if it fails.
+    let pdf;
+    try {
+      pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    } catch {
+      pdf = await pdfjsLib.getDocument({ data: arrayBuffer, password: '' }).promise;
+    }
 
     // Extract all text items from all pages
     const allItems: TextItem[][] = [];
@@ -75,7 +82,9 @@ export const parseBpiPdf = async (
     const { startDate, endDate } = findStatementPeriod(allItems);
 
     if (!startDate || !endDate) {
-      errors.push('Could not determine statement period (Período De ... a ...)');
+      // Debug: show what text was extracted to help diagnose
+      const sampleText = allItems.flatMap(items => items.map(i => i.str)).join(' ').slice(0, 300);
+      errors.push(`Could not determine statement period (Período De ... a ...). Extracted ${allItems.reduce((s, p) => s + p.length, 0)} text items. Sample: "${sampleText}"`);
       return { success: false, transactions: [], errors };
     }
 
