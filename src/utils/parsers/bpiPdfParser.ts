@@ -366,7 +366,25 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
         }
       }
     } else if (currentTx) {
-      // Continuation row: may have date valeur + description + amount
+      // Row without DATA MOV: could be a continuation OR a new transaction without DATA MOV.
+      // Pre-scan: if row has a VALOR amount, it's a new transaction (inheriting DATA MOV from previous).
+      const rowHasAmount = row.some(item => {
+        const x = item.x;
+        return x >= cols.valorMin && x <= cols.valorMax && parseAmount(item.str.trim()) !== null;
+      });
+
+      if (rowHasAmount && currentTx.amount !== 0) {
+        // This is a NEW transaction without its own DATA MOV date
+        transactions.push(currentTx);
+        const prevDateMov: string = currentTx.dateMov;
+        currentTx = {
+          dateMov: prevDateMov, // inherit from previous transaction
+          dateVal: '',
+          description: [],
+          amount: 0,
+        };
+      }
+
       for (const item of row) {
         const str = item.str.trim();
         if (!str) continue;
@@ -381,7 +399,7 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
         // VALOR
         if (x >= cols.valorMin && x <= cols.valorMax) {
           const amount = parseAmount(str);
-          if (amount !== null && currentTx.amount === 0) {
+          if (amount !== null) {
             currentTx.amount = amount;
             continue;
           }
