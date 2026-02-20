@@ -78,8 +78,8 @@ export const ImportPreview = ({
         </div>
         <div className="text-right">
           <div className="text-sm text-muted-foreground">Total selected</div>
-          <div className="font-bold text-destructive">
-            -{formatCurrency(totalSelected, previewCurrency)}
+          <div className={`font-bold ${totalSelected >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+            {totalSelected >= 0 ? '+' : '-'}{formatCurrency(Math.abs(totalSelected), previewCurrency)}
           </div>
         </div>
       </div>
