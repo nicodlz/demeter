@@ -82,9 +82,7 @@ export const parseBpiPdf = async (
     const { startDate, endDate } = findStatementPeriod(allItems);
 
     if (!startDate || !endDate) {
-      // Debug: show what text was extracted to help diagnose
-      const sampleText = allItems.flatMap(items => items.map(i => i.str)).join(' ').slice(0, 300);
-      errors.push(`Could not determine statement period (Período De ... a ...). Extracted ${allItems.reduce((s, p) => s + p.length, 0)} text items. Sample: "${sampleText}"`);
+      errors.push('Could not determine statement period (Período De ... a ...)');
       return { success: false, transactions: [], errors };
     }
 
@@ -140,8 +138,9 @@ function findStatementPeriod(allPageItems: TextItem[][]): StatementPeriod {
   for (const items of allPageItems) {
     const fullText = items.map(i => i.str).join(' ');
 
-    // "Período De DD/MM/YYYY a DD/MM/YYYY"
-    const match = fullText.match(/Per[ií]odo\s+De\s+(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/i);
+    // "Período De DD/MM/YYYY a DD/MM/YYYY" or just "De DD/MM/YYYY a DD/MM/YYYY"
+    // (pdfjs-dist may separate "Período" and "De" into distant text items)
+    const match = fullText.match(/(?:Per[ií]odo\s+)?De\s+(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/i);
     if (match) {
       startDate = { day: parseInt(match[1]), month: parseInt(match[2]), year: parseInt(match[3]) };
       endDate = { day: parseInt(match[4]), month: parseInt(match[5]), year: parseInt(match[6]) };
