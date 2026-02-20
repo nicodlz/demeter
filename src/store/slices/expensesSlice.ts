@@ -39,7 +39,7 @@ export const createExpensesSlice: StateCreator<
       id: generateId(),
       date: t.date,
       description: t.description,
-      amount: t.amount,
+      amount: Math.abs(t.amount),
       currency: t.currency,
       category: categoryMapping?.(t.merchantName || t.description),
       source,
