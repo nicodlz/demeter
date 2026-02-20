@@ -5,6 +5,7 @@ import { gnosisPayParser } from './gnosisPayParser';
 import { etherfiParser } from './etherfiParser';
 import { parseBoursoramaPdf } from './boursoPdfParser';
 import { parseCreditAgricolePdf } from './creditAgricolePdfParser';
+import { parseBpiPdf } from './bpiPdfParser';
 
 export interface ParserResult {
   success: boolean;
@@ -48,6 +49,8 @@ export const parsePdfFile = async (
       return parseBoursoramaPdf(file, defaultCurrency);
     case 'credit_agricole':
       return parseCreditAgricolePdf(file, defaultCurrency);
+    case 'bpi':
+      return parseBpiPdf(file, defaultCurrency);
     default:
       return { success: false, transactions: [], errors: [`No PDF parser for provider: ${provider}`] };
   }
@@ -106,6 +109,7 @@ export const getProviderDisplayName = (provider: BankProvider): string => {
     gnosis_pay: 'Gnosis Pay',
     etherfi: 'Etherfi',
     credit_agricole: 'Crédit Agricole',
+    bpi: 'BPI',
     manual: 'Manual',
     invoice: 'Invoice',
   };
@@ -119,10 +123,10 @@ export const getProviderInputType = (provider: BankProvider): 'text' | 'csv' | '
   if (provider === 'gnosis_pay' || provider === 'etherfi') {
     return 'csv';
   }
-  if (provider === 'bourso' || provider === 'credit_agricole') {
+  if (provider === 'bourso' || provider === 'credit_agricole' || provider === 'bpi') {
     return 'pdf';
   }
   return 'text';
 };
 
-export { deblockParser, boursoParser, gnosisPayParser, etherfiParser, parseBoursoramaPdf, parseCreditAgricolePdf };
+export { deblockParser, boursoParser, gnosisPayParser, etherfiParser, parseBoursoramaPdf, parseCreditAgricolePdf, parseBpiPdf };

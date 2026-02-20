@@ -39,7 +39,7 @@ interface ExpenseImportModalProps {
 
 type Step = 'input' | 'preview';
 
-const PROVIDERS: BankProvider[] = ['deblock', 'bourso', 'gnosis_pay', 'etherfi', 'credit_agricole'];
+const PROVIDERS: BankProvider[] = ['deblock', 'bourso', 'gnosis_pay', 'etherfi', 'credit_agricole', 'bpi'];
 
 export const ExpenseImportModal = ({
   open,
