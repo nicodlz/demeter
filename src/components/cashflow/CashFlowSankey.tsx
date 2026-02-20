@@ -116,7 +116,24 @@ function buildSankeyData(
   const taxProvision = taxProvisionEnabled && taxRate ? (totalIncome * taxRate) / 100 : 0;
   const netSavings = totalIncome - totalExpenses - taxProvision;
 
-  // "Total Expenses" intermediate node: Total → Total Expenses → categories
+  // Order from Total: Tax Provision (top) → Net Savings → Total Expenses (bottom)
+  // This prevents link crossings since expense categories are positioned below.
+
+  // Tax Provision node (top)
+  if (taxProvision > 0) {
+    const taxIdx = nodes.length;
+    nodes.push({ name: 'Tax Provision' });
+    links.push({ source: totalIdx, target: taxIdx, value: taxProvision });
+  }
+
+  // Net Savings node
+  if (netSavings > 0) {
+    const savingsIdx = nodes.length;
+    nodes.push({ name: 'Net Savings' });
+    links.push({ source: totalIdx, target: savingsIdx, value: netSavings });
+  }
+
+  // "Total Expenses" intermediate node (bottom) → categories
   const totalExpensesIdx = nodes.length;
   nodes.push({ name: 'Total Expenses' });
   if (totalExpenses > 0) {
@@ -133,20 +150,6 @@ function buildSankeyData(
   // Links: Total Expenses → expense categories
   for (let i = 0; i < expenseCategories.length; i++) {
     links.push({ source: totalExpensesIdx, target: firstExpenseIdx + i, value: expenseCategories[i][1] });
-  }
-
-  // Tax Provision node
-  if (taxProvision > 0) {
-    const taxIdx = nodes.length;
-    nodes.push({ name: 'Tax Provision' });
-    links.push({ source: totalIdx, target: taxIdx, value: taxProvision });
-  }
-
-  // Net Savings node if income > expenses + tax
-  if (netSavings > 0) {
-    const savingsIdx = nodes.length;
-    nodes.push({ name: 'Net Savings' });
-    links.push({ source: totalIdx, target: savingsIdx, value: netSavings });
   }
 
   // Sankey requires at least 1 link with value > 0
