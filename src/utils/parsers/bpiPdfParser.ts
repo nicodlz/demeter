@@ -439,9 +439,10 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
  */
 function parseAmount(str: string): number | null {
   if (!str) return null;
-  // Must contain comma (decimal separator)
+  // Must contain comma (decimal separator) and no letters (reject "UNIPESSOAL,LDA" etc.)
   if (!str.includes(',')) return null;
-  // Clean: remove spaces, replace comma
+  if (/[a-zA-Z]/.test(str)) return null;
+  // Clean: remove spaces and thousand separators (.), replace decimal comma
   const cleaned = str.replace(/[\s\u00a0.]/g, '').replace(',', '.');
   const num = parseFloat(cleaned);
   return isNaN(num) ? null : num;
@@ -450,14 +451,14 @@ function parseAmount(str: string): number | null {
 function extractMerchantName(description: string): string {
   const upper = description.toUpperCase();
 
-  // TRF CR SEPA+ NNNNNNN DE <MERCHANT>
-  if (upper.includes('TRF CR SEPA')) {
-    const match = description.match(/DE\s+(.+)/i);
+  // TRF CR/SEPA+ INST/CR SEPA+ NNNNNNN DE <MERCHANT>
+  if (upper.includes('TRF') && upper.includes('SEPA') && upper.includes(' DE ')) {
+    const match = description.match(/\bDE\s+(.+)/i);
     if (match) return match[1].trim();
   }
 
   // TRF DB SEPA+ ... PARA <MERCHANT>
-  if (upper.includes('TRF DB SEPA')) {
+  if (upper.includes('TRF') && upper.includes('SEPA') && upper.includes(' PARA ')) {
     const match = description.match(/PARA\s+(.+)/i);
     if (match) return match[1].trim();
   }
