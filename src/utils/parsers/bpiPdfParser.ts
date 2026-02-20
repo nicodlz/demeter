@@ -36,7 +36,7 @@ interface RawTransaction {
  */
 export const parseBpiPdf = async (
   file: File,
-  defaultCurrency: Currency = 'EUR'
+  _defaultCurrency: Currency = 'EUR' // BPI statements are always EUR
 ): Promise<{
   success: boolean;
   transactions: ParsedTransaction[];
@@ -111,7 +111,7 @@ export const parseBpiPdf = async (
           date,
           description,
           amount,
-          currency: defaultCurrency,
+          currency: 'EUR' as Currency,
           merchantName,
           isCredit,
           originalLine: `${tx.dateMov} ${description}`,
