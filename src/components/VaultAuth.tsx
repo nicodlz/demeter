@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useVault } from "@/lib/vault/context";
 
 export function VaultAuth() {
-  const { isLoading, error, supportsPasskey, signIn, signUp, clearError } = useVault();
+  const { isLoading, error, supportsPasskey, signIn, signUp, clearError, retry } = useVault();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   if (!supportsPasskey) {
@@ -52,9 +52,17 @@ export function VaultAuth() {
         {error && (
           <div className="mb-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-medium text-destructive">Authentication failed</p>
               <p className="text-xs text-destructive/80 mt-1">{error}</p>
+              <button
+                type="button"
+                onClick={retry}
+                disabled={isLoading}
+                className="text-xs text-destructive font-medium hover:underline mt-2"
+              >
+                Try again
+              </button>
             </div>
           </div>
         )}

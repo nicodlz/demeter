@@ -25,7 +25,7 @@ import {
 } from "@ursalock/client";
 import { vaultClient, SERVER_URL, VAULT_NAME } from "./client";
 import { deriveKeysFromJwk } from "./keys";
-import { startVaultSync } from "./sync";
+import { startVaultSync, clearSyncState } from "./sync";
 import { multiKeyStorage } from "@/store/storage";
 
 // ─── Types ───
@@ -44,6 +44,8 @@ interface VaultContextValue {
   signUp: () => Promise<void>;
   signOut: () => Promise<void>;
   clearError: () => void;
+  /** Retry initialization after a failure */
+  retry: () => void;
 }
 
 const VaultContext = createContext<VaultContextValue | null>(null);
@@ -57,6 +59,8 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 
   // Ref to hold sync cleanup function
   const syncCleanupRef = useRef<(() => void) | null>(null);
+  // Ref to hold last credential for retry
+  const credentialRef = useRef<ZKCredential | null>(null);
 
   const supportsPasskey = usePasskeySupport(vaultClient);
   const authState = useAuth(vaultClient);
@@ -72,6 +76,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   const initialize = useCallback(async (credential: ZKCredential) => {
     setIsInitializing(true);
     setError(null);
+    credentialRef.current = credential;
 
     try {
       // 1. Get or create vault by name
@@ -81,13 +86,15 @@ export function VaultProvider({ children }: { children: ReactNode }) {
       if (vaultRes.ok) {
         vaultUid = ((await vaultRes.json()) as { uid: string }).uid;
       } else if (vaultRes.status === 404) {
+        // First time: create vault with minimal placeholder
+        // (data + salt are required by schema but unused in document mode)
         const createRes = await vaultClient.fetch("/vault", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: VAULT_NAME,
-            data: btoa("init"),  // Placeholder blob (required by server schema)
-            salt: btoa("init"),
+            data: btoa("\0"),
+            salt: btoa("\0"),
           }),
         });
         if (!createRes.ok) throw new Error(`Failed to create vault: ${createRes.status}`);
@@ -177,12 +184,21 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 
     // Clear sensitive data from localStorage
     multiKeyStorage.removeItem("demeter-store");
+    clearSyncState();
 
+    credentialRef.current = null;
     setIsReady(false);
     setError(null);
   }, [rawSignOut]);
 
   const clearError = useCallback(() => setError(null), []);
+
+  /** Retry initialization with last credential (e.g. after network failure) */
+  const retry = useCallback(() => {
+    if (credentialRef.current && !isInitializing) {
+      void initialize(credentialRef.current);
+    }
+  }, [initialize, isInitializing]);
 
   return (
     <VaultContext.Provider value={{
@@ -194,6 +210,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
       signUp,
       signOut,
       clearError,
+      retry,
     }}>
       {children}
     </VaultContext.Provider>

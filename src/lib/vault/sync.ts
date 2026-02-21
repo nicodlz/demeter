@@ -26,6 +26,9 @@ const COLLECTION_NAME = "demeter-state";
 /** Debounce delay for push (ms) */
 const PUSH_DEBOUNCE_MS = 2_000;
 
+/** localStorage key for persisted doc UID (avoids list() on subsequent boots) */
+const DOC_UID_STORAGE_KEY = "demeter:vault:docUid";
+
 interface SyncState {
   /** Document UID in the vault (null = first sync, needs create) */
   docUid: string | null;
@@ -49,7 +52,7 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
   const collection: Collection<PersistedState> = documentClient.collection<PersistedState>(COLLECTION_NAME);
 
   const sync: SyncState = {
-    docUid: null,
+    docUid: localStorage.getItem(DOC_UID_STORAGE_KEY),
     docVersion: 0,
     lastPushedJson: "",
     pushTimer: null,
@@ -62,27 +65,41 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
 
   async function pull(): Promise<void> {
     try {
-      const docs = await collection.list();
+      let doc: Document<PersistedState> | null = null;
 
-      if (docs.length === 0) {
+      // Fast path: if we know the doc UID, fetch directly (1 request)
+      if (sync.docUid) {
+        try {
+          doc = await collection.get(sync.docUid);
+        } catch {
+          // Doc may have been deleted — fall through to list
+          sync.docUid = null;
+        }
+      }
+
+      // Slow path: list to discover the document
+      if (!doc) {
+        const docs = await collection.list({ limit: 1 });
+        doc = docs[0] ?? null;
+      }
+
+      if (!doc) {
         // No data in vault — push current localStorage state as initial seed
         await push(partialize(useStore.getState()));
         return;
       }
 
-      // Use the first (and only) document
-      const doc = docs[0];
       sync.docUid = doc.uid;
       sync.docVersion = doc.version;
+      persistDocUid(doc.uid);
 
-      // Merge vault data into store (vault wins for existing fields)
-      const currentState = partialize(useStore.getState());
-      const merged = { ...currentState, ...doc.content };
+      // Merge: vault is source of truth (it's the last synced state across devices).
+      // Local-only changes made while offline will be overwritten on next pull.
+      // This is acceptable for a single-user app — true CRDT merge is Phase 4.
+      useStore.setState(doc.content);
+      sync.lastPushedJson = JSON.stringify(doc.content);
 
-      useStore.setState(merged);
-      sync.lastPushedJson = JSON.stringify(merged);
-
-      console.log("[demeter:vault] Pulled and merged from vault");
+      console.log("[demeter:vault] Pulled from vault (v%d)", doc.version);
     } catch (err) {
       console.warn("[demeter:vault] Pull failed (offline?):", err);
     }
@@ -97,7 +114,8 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
       let doc: Document<PersistedState>;
 
       if (sync.docUid) {
-        doc = await collection.update(sync.docUid, state);
+        // replace() = single PUT, no extra GET (unlike update() which fetches first)
+        doc = await collection.replace(sync.docUid, state, sync.docVersion);
       } else {
         doc = await collection.create(state);
       }
@@ -105,6 +123,7 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
       sync.docUid = doc.uid;
       sync.docVersion = doc.version;
       sync.lastPushedJson = JSON.stringify(state);
+      persistDocUid(doc.uid);
     } catch (err) {
       // On conflict, re-pull to get fresh version then retry
       if (err instanceof Error && err.message.includes("Conflict")) {
@@ -128,6 +147,12 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
     }, PUSH_DEBOUNCE_MS);
   }
 
+  // ─── Helpers ───
+
+  function persistDocUid(uid: string): void {
+    try { localStorage.setItem(DOC_UID_STORAGE_KEY, uid); } catch { /* ignore */ }
+  }
+
   // ─── Lifecycle ───
 
   // 1. Pull on start
@@ -145,4 +170,9 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
     if (sync.pushTimer) clearTimeout(sync.pushTimer);
     if (sync.unsubscribe) sync.unsubscribe();
   };
+}
+
+/** Clear sync metadata from localStorage (called on signOut) */
+export function clearSyncState(): void {
+  try { localStorage.removeItem(DOC_UID_STORAGE_KEY); } catch { /* ignore */ }
 }
