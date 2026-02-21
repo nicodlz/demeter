@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, Upload, Database, AlertTriangle, KeyRound, Landmark, Save, Receipt } from 'lucide-react';
+import { AgentAccess } from '@/components/AgentAccess';
 
 export const DataPage = () => {
   const {
@@ -218,6 +219,9 @@ export const DataPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Agent Access */}
+      <AgentAccess />
 
       {/* Export */}
       <Card>
