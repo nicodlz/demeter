@@ -33,21 +33,23 @@ export const useExpenses = () => {
       unique: ParsedTransaction[];
       duplicates: ParsedTransaction[];
     } => {
+      // Build a Set of existing expense keys for O(1) lookup
+      const existingKeys = new Set(
+        expenses.map((e) =>
+          `${e.date}|${normalizeDescription(e.merchantName || e.description)}|${e.amount}`
+        )
+      );
+
       const unique: ParsedTransaction[] = [];
       const duplicates: ParsedTransaction[] = [];
 
       for (const transaction of transactions) {
-        const isDuplicate = expenses.some(
-          (e) =>
-            e.date === transaction.date &&
-            Math.abs(e.amount - transaction.amount) < 0.01 &&
-            normalizeDescription(e.description) ===
-              normalizeDescription(transaction.description)
-        );
+        const key = `${transaction.date}|${normalizeDescription(transaction.merchantName || transaction.description)}|${Math.abs(transaction.amount)}`;
 
-        if (isDuplicate) {
+        if (existingKeys.has(key)) {
           duplicates.push(transaction);
         } else {
+          existingKeys.add(key); // also dedup within the batch
           unique.push(transaction);
         }
       }
