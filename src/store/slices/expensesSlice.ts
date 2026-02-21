@@ -51,7 +51,32 @@ export const createExpensesSlice: StateCreator<
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }));
-    set((state) => ({ expenses: [...state.expenses, ...newExpenses] }));
+
+    set((state) => {
+      // Deduplicate: skip transactions that already exist with same
+      // date + normalized description + amount + sourceProvider
+      const existingKeys = new Set(
+        state.expenses.map((e) =>
+          `${e.date}|${normalizeDescription(e.merchantName || e.description)}|${e.amount}|${e.sourceProvider}`
+        )
+      );
+
+      const unique = newExpenses.filter((e) => {
+        const key = `${e.date}|${normalizeDescription(e.merchantName || e.description)}|${e.amount}|${e.sourceProvider}`;
+        if (existingKeys.has(key)) return false;
+        existingKeys.add(key); // also dedup within the batch itself
+        return true;
+      });
+
+      if (unique.length < newExpenses.length) {
+        console.log(
+          `[demeter] Skipped ${newExpenses.length - unique.length} duplicate transaction(s)`
+        );
+      }
+
+      return { expenses: [...state.expenses, ...unique] };
+    });
+
     return newExpenses;
   },
 
