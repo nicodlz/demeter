@@ -93,11 +93,13 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
       sync.docVersion = doc.version;
       persistDocUid(doc.uid);
 
-      // Merge: vault is source of truth (it's the last synced state across devices).
-      // Local-only changes made while offline will be overwritten on next pull.
-      // This is acceptable for a single-user app — true CRDT merge is Phase 4.
-      useStore.setState(doc.content);
-      sync.lastPushedJson = JSON.stringify(doc.content);
+      // Safe merge: vault wins, but keep local defaults for any fields missing
+      // from the vault (e.g. new slices added after last sync). This prevents
+      // the store from losing fields that the vault document doesn't know about yet.
+      // True CRDT conflict resolution is deferred to Phase 4.
+      const merged = { ...partialize(useStore.getState()), ...doc.content };
+      useStore.setState(merged);
+      sync.lastPushedJson = JSON.stringify(merged);
 
       console.log("[demeter:vault] Pulled from vault (v%d)", doc.version);
     } catch (err) {

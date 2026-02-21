@@ -61,23 +61,23 @@ export const useStore = create<StoreState>()(
       ...createIbkrSlice(...a),
     }),
     {
-    name: 'demeter-store',
-    storage: multiKeyStorage,
-    onRehydrateStorage: () => (state) => {
-      // Migration: fix negative expense amounts (sign is tracked via type field)
-      if (state?.expenses) {
-        let fixed = 0;
-        for (const e of state.expenses) {
-          if (e.amount < 0) {
-            e.amount = Math.abs(e.amount);
-            fixed++;
+      name: 'demeter-store',
+      storage: multiKeyStorage,
+      onRehydrateStorage: () => (state) => {
+        // Migration: fix negative expense amounts (sign is tracked via type field)
+        if (state?.expenses) {
+          let fixed = 0;
+          for (const e of state.expenses) {
+            if (e.amount < 0) {
+              e.amount = Math.abs(e.amount);
+              fixed++;
+            }
           }
+          if (fixed > 0) console.log(`[demeter] Fixed ${fixed} negative expense amounts`);
         }
-        if (fixed > 0) console.log(`[demeter] Fixed ${fixed} negative expense amounts`);
-      }
-    },
-    partialize,
-  })
+      },
+      partialize,
+    })
 );
 
 // Re-export
