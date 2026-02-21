@@ -1,9 +1,8 @@
 /**
  * Vault authentication context for Demeter
  *
- * Provides auth state + DocumentClient to the app tree.
- * After passkey auth, derives encryption keys and creates the DocumentClient
- * that powers the storage adapter.
+ * Provides auth state to the app tree.
+ * After passkey auth: derives keys, creates DocumentClient, starts vault sync.
  */
 
 import {
@@ -12,6 +11,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import {
@@ -23,22 +23,22 @@ import {
   DocumentClient,
   type ZKCredential,
 } from "@ursalock/client";
-import { vaultClient, SERVER_URL } from "./client";
+import { vaultClient, SERVER_URL, VAULT_NAME } from "./client";
 import { deriveKeysFromJwk } from "./keys";
+import { startVaultSync } from "./sync";
+import { multiKeyStorage } from "@/store/storage";
 
 // ─── Types ───
 
 interface VaultContextValue {
-  /** User has authenticated and keys are derived */
+  /** User is authenticated and vault sync is running */
   isReady: boolean;
-  /** Auth is in progress (initial check or sign-in) */
+  /** Auth or initialization in progress */
   isLoading: boolean;
   /** Last error message */
   error: string | null;
   /** Browser supports passkeys */
   supportsPasskey: boolean;
-  /** Initialized DocumentClient (null until auth completes) */
-  documentClient: DocumentClient | null;
   /** Auth actions */
   signIn: () => Promise<void>;
   signUp: () => Promise<void>;
@@ -50,14 +50,13 @@ const VaultContext = createContext<VaultContextValue | null>(null);
 
 // ─── Provider ───
 
-interface VaultProviderProps {
-  children: ReactNode;
-}
-
-export function VaultProvider({ children }: VaultProviderProps) {
-  const [documentClient, setDocumentClient] = useState<DocumentClient | null>(null);
+export function VaultProvider({ children }: { children: ReactNode }) {
+  const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
+
+  // Ref to hold sync cleanup function
+  const syncCleanupRef = useRef<(() => void) | null>(null);
 
   const supportsPasskey = usePasskeySupport(vaultClient);
   const authState = useAuth(vaultClient);
@@ -68,44 +67,40 @@ export function VaultProvider({ children }: VaultProviderProps) {
   const isLoading = authState.isLoading || isSigningUp || isSigningIn || isInitializing;
 
   /**
-   * After auth, derive keys and create DocumentClient.
-   * We need the vault UID — fetch it by name (auto-create on first use).
+   * After auth: get/create vault, derive keys, start sync.
    */
-  const initializeDocumentClient = useCallback(async (credential: ZKCredential) => {
+  const initialize = useCallback(async (credential: ZKCredential) => {
     setIsInitializing(true);
     setError(null);
 
     try {
-      // 1. Get or create the vault by name
-      const vaultRes = await vaultClient.fetch("/vault/by-name/demeter");
+      // 1. Get or create vault by name
+      const vaultRes = await vaultClient.fetch(`/vault/by-name/${VAULT_NAME}`);
 
       let vaultUid: string;
       if (vaultRes.ok) {
-        const vault = (await vaultRes.json()) as { uid: string };
-        vaultUid = vault.uid;
+        vaultUid = ((await vaultRes.json()) as { uid: string }).uid;
       } else if (vaultRes.status === 404) {
-        // Create the vault
         const createRes = await vaultClient.fetch("/vault", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: "demeter",
-            data: btoa("demeter-vault"), // Placeholder blob (required by schema)
-            salt: btoa("demeter-salt"),
+            name: VAULT_NAME,
+            data: btoa("init"),  // Placeholder blob (required by server schema)
+            salt: btoa("init"),
           }),
         });
         if (!createRes.ok) throw new Error(`Failed to create vault: ${createRes.status}`);
-        const created = (await createRes.json()) as { uid: string };
-        vaultUid = created.uid;
+        vaultUid = ((await createRes.json()) as { uid: string }).uid;
       } else {
         throw new Error(`Vault lookup failed: ${vaultRes.status}`);
       }
 
-      // 2. Derive encryption keys from passkey CipherJWK
+      // 2. Derive encryption keys from passkey
       const keys = await deriveKeysFromJwk(credential.cipherJwk, vaultUid);
 
       // 3. Create DocumentClient
-      const client = new DocumentClient({
+      const documentClient = new DocumentClient({
         serverUrl: SERVER_URL,
         vaultUid,
         encryptionKey: keys.encryptionKey,
@@ -113,7 +108,9 @@ export function VaultProvider({ children }: VaultProviderProps) {
         getAuthHeader: () => vaultClient.getAuthHeader(),
       });
 
-      setDocumentClient(client);
+      // 4. Start vault sync
+      syncCleanupRef.current = startVaultSync(documentClient);
+      setIsReady(true);
     } catch (err) {
       console.error("[demeter:vault] Initialization failed:", err);
       setError(err instanceof Error ? err.message : String(err));
@@ -122,12 +119,19 @@ export function VaultProvider({ children }: VaultProviderProps) {
     }
   }, []);
 
-  // Auto-initialize when we have a credential
+  // Auto-initialize when credential is available (e.g. page refresh with saved session)
   useEffect(() => {
-    if (authState.credential && !documentClient && !isInitializing && !error) {
-      void initializeDocumentClient(authState.credential);
+    if (authState.credential && !isReady && !isInitializing && !error) {
+      void initialize(authState.credential);
     }
-  }, [authState.credential, documentClient, isInitializing, error, initializeDocumentClient]);
+  }, [authState.credential, isReady, isInitializing, error, initialize]);
+
+  // Cleanup sync on unmount
+  useEffect(() => {
+    return () => {
+      syncCleanupRef.current?.();
+    };
+  }, []);
 
   // ─── Actions ───
 
@@ -140,12 +144,12 @@ export function VaultProvider({ children }: VaultProviderProps) {
         return;
       }
       if (result.credential) {
-        await initializeDocumentClient(result.credential);
+        await initialize(result.credential);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");
     }
-  }, [rawSignIn, initializeDocumentClient]);
+  }, [rawSignIn, initialize]);
 
   const signUp = useCallback(async () => {
     setError(null);
@@ -156,35 +160,41 @@ export function VaultProvider({ children }: VaultProviderProps) {
         return;
       }
       if (result.credential) {
-        await initializeDocumentClient(result.credential);
+        await initialize(result.credential);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign up failed");
     }
-  }, [rawSignUp, initializeDocumentClient]);
+  }, [rawSignUp, initialize]);
 
   const signOut = useCallback(async () => {
+    // Stop vault sync
+    syncCleanupRef.current?.();
+    syncCleanupRef.current = null;
+
+    // Sign out from server
     await rawSignOut();
-    setDocumentClient(null);
+
+    // Clear sensitive data from localStorage
+    multiKeyStorage.removeItem("demeter-store");
+
+    setIsReady(false);
     setError(null);
   }, [rawSignOut]);
 
   const clearError = useCallback(() => setError(null), []);
 
-  const value: VaultContextValue = {
-    isReady: documentClient !== null,
-    isLoading,
-    error,
-    supportsPasskey,
-    documentClient,
-    signIn,
-    signUp,
-    signOut,
-    clearError,
-  };
-
   return (
-    <VaultContext.Provider value={value}>
+    <VaultContext.Provider value={{
+      isReady,
+      isLoading,
+      error,
+      supportsPasskey,
+      signIn,
+      signUp,
+      signOut,
+      clearError,
+    }}>
       {children}
     </VaultContext.Provider>
   );

@@ -17,8 +17,9 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import { ChevronDown, Menu } from 'lucide-react';
+import { ChevronDown, Menu, LogOut } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
+import { useVault } from '@/lib/vault/context';
 
 interface NavLink {
   to: string;
@@ -62,6 +63,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const pathname = location.pathname;
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { signOut } = useVault();
 
   const isActive = (to: string) => {
     if (to === '/') return pathname === '/';
@@ -153,6 +155,16 @@ export const Layout = ({ children }: LayoutProps) => {
             {/* Theme toggle and mobile menu */}
             <div className="flex items-center gap-2">
               <ModeToggle />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => void signOut()}
+                className="h-10 w-10"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"

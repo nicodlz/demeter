@@ -106,4 +106,3 @@ export const useStore = createDemeterStore();
 
 // Re-export
 export type { StoreState, PersistedState } from './types';
-export { multiKeyStorage } from './storage';

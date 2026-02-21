@@ -1,4 +1,4 @@
-export { vaultClient, SERVER_URL } from "./client";
+export { vaultClient, SERVER_URL, VAULT_NAME } from "./client";
 export { deriveKeysFromJwk } from "./keys";
-export { createVaultStorage } from "./storage-adapter";
+export { startVaultSync } from "./sync";
 export { VaultProvider, useVault } from "./context";
