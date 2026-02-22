@@ -61,6 +61,7 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
 
   let stopped = false;
   let initialPullDone = false;
+  let lastPullTimestamp = 0;
 
   // ─── Pull: vault → store ───
 
@@ -94,19 +95,24 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
       sync.docVersion = doc.version;
       persistDocUid(doc.uid);
 
-      // Safe merge: vault wins, but keep local defaults for any fields missing
-      // from the vault (e.g. new slices added after last sync). This prevents
-      // the store from losing fields that the vault document doesn't know about yet.
-      // True CRDT conflict resolution is deferred to Phase 4.
-      const merged = { ...partialize(useStore.getState()), ...doc.content };
+      // Vault wins entirely. We spread local defaults first so new slices
+      // (not yet in the vault) keep their defaults, then vault overwrites.
+      const local = partialize(useStore.getState());
+      const merged = { ...local, ...doc.content };
+      const mergedJson = JSON.stringify(merged);
+
+      // Set lastPushedJson BEFORE setState so the subscribe (once active)
+      // sees no diff and skips the push.
+      sync.lastPushedJson = mergedJson;
+
       useStore.setState(merged);
-      sync.lastPushedJson = JSON.stringify(merged);
 
       console.log("[demeter:vault] Pulled from vault (v%d)", doc.version);
     } catch (err) {
       console.warn("[demeter:vault] Pull failed (offline?):", err);
     } finally {
       initialPullDone = true;
+      lastPullTimestamp = Date.now();
     }
   }
 
@@ -141,9 +147,13 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
   }
 
   function schedulePush(state: PersistedState): void {
-    if (!initialPullDone) return; // Don't push stale localStorage before vault pull completes
+    if (!initialPullDone) return;
     const json = JSON.stringify(state);
     if (json === sync.lastPushedJson) return;
+
+    // Extra guard: if we just pulled, skip the first change notification
+    // (it's the setState from pull itself propagating through persist middleware)
+    if (Date.now() - lastPullTimestamp < PUSH_DEBOUNCE_MS + 500) return;
 
     if (sync.pushTimer) clearTimeout(sync.pushTimer);
     sync.pushTimer = setTimeout(() => {
