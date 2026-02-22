@@ -161,14 +161,18 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
 
   // ─── Lifecycle ───
 
-  // 1. Pull on start
-  pull().catch(() => { /* handled inside */ });
-
-  // 2. Subscribe to store changes → debounced push
-  sync.unsubscribe = useStore.subscribe((state) => {
-    if (stopped) return;
-    schedulePush(partialize(state));
-  });
+  // 1. Pull on start, THEN subscribe to store changes.
+  //    Subscribing only after pull completes prevents stale localStorage
+  //    data from being pushed to the vault before we've loaded the truth.
+  pull()
+    .catch(() => { /* handled inside */ })
+    .finally(() => {
+      if (stopped) return;
+      sync.unsubscribe = useStore.subscribe((state) => {
+        if (stopped) return;
+        schedulePush(partialize(state));
+      });
+    });
 
   // 3. Cleanup
   return () => {
