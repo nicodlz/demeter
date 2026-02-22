@@ -4,7 +4,8 @@ import type { Invoice, LineItem, CustomField, Currency, SavedItem } from '@/sche
 import { useClients } from '@/hooks/useClients';
 import { useSettings } from '@/hooks/useSettings';
 import { useSavedItems } from '@/hooks/useSavedItems';
-import { generateInvoiceNumber } from '@/utils/invoiceNumber';
+import { generateInvoiceNumber, parseInvoiceNumber } from '@/utils/invoiceNumber';
+import { useInvoices } from '@/hooks/useInvoices';
 import { getCurrencySymbol } from '@/utils/formatters';
 import {
   calculateSubtotal as calcSubtotal,
@@ -20,7 +21,8 @@ interface UseInvoiceFormOptions {
 
 export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
   const { clients } = useClients();
-  const { settings, incrementInvoiceCounter } = useSettings();
+  const { settings } = useSettings();
+  const { invoices: existingInvoices } = useInvoices();
   const { savedItems, saveFromLineItem, incrementUsage, getMostUsedItems, deleteSavedItem } =
     useSavedItems();
 
@@ -204,10 +206,14 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
 
     const invoiceNumber =
       invoice?.number ||
-      generateInvoiceNumber(
-        incrementInvoiceCounter(),
-        settings.invoiceNumberFormat
-      );
+      (() => {
+        const currentYear = new Date().getFullYear().toString();
+        const maxCounter = existingInvoices
+          .filter((i) => i.number.startsWith(currentYear))
+          .map((i) => parseInvoiceNumber(i.number) || 0)
+          .reduce((max, n) => Math.max(max, n), 0);
+        return generateInvoiceNumber(maxCounter + 1, settings.invoiceNumberFormat);
+      })();
 
     const newInvoice: Invoice = {
       id: invoice?.id || generateId(),

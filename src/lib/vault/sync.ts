@@ -60,6 +60,7 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
   };
 
   let stopped = false;
+  let initialPullDone = false;
 
   // ─── Pull: vault → store ───
 
@@ -104,6 +105,8 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
       console.log("[demeter:vault] Pulled from vault (v%d)", doc.version);
     } catch (err) {
       console.warn("[demeter:vault] Pull failed (offline?):", err);
+    } finally {
+      initialPullDone = true;
     }
   }
 
@@ -138,6 +141,7 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
   }
 
   function schedulePush(state: PersistedState): void {
+    if (!initialPullDone) return; // Don't push stale localStorage before vault pull completes
     const json = JSON.stringify(state);
     if (json === sync.lastPushedJson) return;
 
