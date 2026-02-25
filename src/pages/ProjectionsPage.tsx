@@ -290,7 +290,7 @@ export const ProjectionsPage = () => {
               {yearsToTarget && (
                 <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
                   <Target className="h-4 w-4" />
-                  Reach {mask(formatCurrency(parseFloat(targetAmount), currency))} in{' '}
+                  Reach {formatCurrency(parseFloat(targetAmount), currency)} in{' '}
                   <strong>{yearsToTarget} years</strong>
                 </p>
               )}
@@ -317,19 +317,19 @@ export const ProjectionsPage = () => {
                   <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Final Value</p>
                     <p className="text-xl sm:text-2xl font-bold text-primary">
-                      {mask(formatCurrency(projection.finalValue, currency))}
+                      {formatCurrency(projection.finalValue, currency)}
                     </p>
                   </div>
                   <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Total Contributed</p>
                     <p className="text-xl sm:text-2xl font-bold">
-                      {mask(formatCurrency(projection.totalContributed, currency))}
+                      {formatCurrency(projection.totalContributed, currency)}
                     </p>
                   </div>
                   <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Total Gains</p>
                     <p className="text-xl sm:text-2xl font-bold text-green-600">
-                      {mask(formatCurrency(projection.totalGains, currency))}
+                      {formatCurrency(projection.totalGains, currency)}
                     </p>
                     <Badge variant="secondary" className="mt-1">
                       {((projection.totalGains / projection.totalContributed) * 100).toFixed(0)}% return
@@ -374,16 +374,16 @@ export const ProjectionsPage = () => {
                     <TableRow key={row.year}>
                       <TableCell className="font-medium">Year {row.year}</TableCell>
                       <TableCell className="text-right font-bold">
-                        {mask(formatCurrency(row.totalValue, currency))}
+                        {formatCurrency(row.totalValue, currency)}
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground hidden sm:table-cell whitespace-nowrap">
-                        {mask(formatCurrency(row.totalContributed, currency))}
+                        {formatCurrency(row.totalContributed, currency)}
                       </TableCell>
                       <TableCell className="text-right text-green-600 hidden sm:table-cell whitespace-nowrap">
-                        {mask(formatCurrency(row.totalGains, currency))}
+                        {formatCurrency(row.totalGains, currency)}
                       </TableCell>
                       <TableCell className="text-right">
-                        {mask(formatCurrency(row.yearlyGains, currency))}
+                        {formatCurrency(row.yearlyGains, currency)}
                       </TableCell>
                     </TableRow>
                   ))}
