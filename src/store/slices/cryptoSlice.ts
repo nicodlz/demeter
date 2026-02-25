@@ -43,6 +43,12 @@ export const createCryptoSlice: StateCreator<
     }));
   },
 
+  removeCryptoPosition: (id) => {
+    set((state) => ({
+      cryptoPositions: state.cryptoPositions.filter((p) => p.id !== id),
+    }));
+  },
+
   setCryptoPositions: (positions: TokenPosition[]) => {
     set({ cryptoPositions: positions });
   },

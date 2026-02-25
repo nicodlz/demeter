@@ -18,6 +18,7 @@ export const CryptoPage = () => {
     addWallet,
     removeWallet,
     updateWallet,
+    removePosition,
     syncAllWallets,
     getTotalCryptoValue,
     getTotalStablecoinValue,
@@ -135,6 +136,7 @@ export const CryptoPage = () => {
           positions={positions}
           wallets={wallets}
           chains={chains}
+          onRemovePosition={removePosition}
         />
       )}
     </div>

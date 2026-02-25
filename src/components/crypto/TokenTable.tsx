@@ -20,11 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 
 interface TokenTableProps {
   positions: TokenPosition[];
   wallets: CryptoWallet[];
   chains: string[];
+  onRemovePosition: (id: string) => void;
 }
 
 function formatAmount(amount: number): string {
@@ -48,7 +51,7 @@ function positionTypeBadgeVariant(type: TokenPosition['positionType']): 'default
   }
 }
 
-export const TokenTable = ({ positions, wallets, chains }: TokenTableProps) => {
+export const TokenTable = ({ positions, wallets, chains, onRemovePosition }: TokenTableProps) => {
   const { mask } = usePrivacyMode();
   const [filterChain, setFilterChain] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
@@ -162,6 +165,7 @@ export const TokenTable = ({ positions, wallets, chains }: TokenTableProps) => {
                   <TableHead>Type</TableHead>
                   <TableHead>Protocol</TableHead>
                   <TableHead>Wallet</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -211,6 +215,17 @@ export const TokenTable = ({ positions, wallets, chains }: TokenTableProps) => {
                     </TableCell>
                     <TableCell className="text-xs">
                       {walletMap.get(pos.walletId) || '?'}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => onRemovePosition(pos.id)}
+                        title="Remove position"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

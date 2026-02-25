@@ -14,6 +14,7 @@ export const useCrypto = () => {
   const addWallet = useStore((s) => s.addCryptoWallet);
   const removeWallet = useStore((s) => s.removeCryptoWallet);
   const updateWallet = useStore((s) => s.updateCryptoWallet);
+  const removePosition = useStore((s) => s.removeCryptoPosition);
   const setPositions = useStore((s) => s.setCryptoPositions);
   const setSyncing = useStore((s) => s.setCryptoSyncing);
   const setLastSyncAt = useStore((s) => s.setCryptoLastSyncAt);
@@ -100,6 +101,7 @@ export const useCrypto = () => {
     addWallet,
     removeWallet,
     updateWallet,
+    removePosition,
     syncAllWallets,
     getTotalCryptoValue,
     getTotalStablecoinValue,
