@@ -98,8 +98,8 @@ export function startVaultSync(documentClient: DocumentClient): () => void {
       // Vault wins entirely. We spread local defaults first so new slices
       // (not yet in the vault) keep their defaults, then vault overwrites.
       // Handle double-nested content (legacy documents stored the full doc wrapper)
-      const vaultData: PersistedState = (doc.content as Record<string, unknown>).content
-        ? ((doc.content as Record<string, unknown>).content as PersistedState)
+      const vaultData: PersistedState = (doc.content as unknown as Record<string, unknown>).content
+        ? ((doc.content as unknown as Record<string, unknown>).content as PersistedState)
         : doc.content;
       const local = partialize(useStore.getState());
       const merged = { ...local, ...vaultData };
