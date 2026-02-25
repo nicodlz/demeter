@@ -10,6 +10,7 @@ import {
 import type { ClientRevenue } from '@/hooks/useDashboardData';
 import type { Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 import {
@@ -56,6 +57,7 @@ type SortField = 'totalTTC' | 'count' | 'percentage';
 type SortOrder = 'asc' | 'desc';
 
 export const ClientBreakdown = ({ data, currency }: ClientBreakdownProps) => {
+  const { mask } = usePrivacyMode();
   const [sortField, setSortField] = useState<SortField>('totalTTC');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
@@ -151,7 +153,7 @@ export const ClientBreakdown = ({ data, currency }: ClientBreakdownProps) => {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value) => formatCurrency(value as number, currency)}
+                  formatter={(value) => mask(formatCurrency(value as number, currency))}
                   contentStyle={{
                     backgroundColor: 'hsl(var(--popover))',
                     border: '1px solid hsl(var(--border))',
@@ -216,7 +218,7 @@ export const ClientBreakdown = ({ data, currency }: ClientBreakdownProps) => {
                       {client.count}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatCurrency(client.totalTTC, currency)}
+                      {mask(formatCurrency(client.totalTTC, currency))}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
                       {client.percentage.toFixed(1)}%

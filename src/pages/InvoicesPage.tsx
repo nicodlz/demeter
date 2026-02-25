@@ -1,4 +1,5 @@
 import { useInvoicesPage } from '@/hooks/useInvoicesPage';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { InvoiceForm } from '@/components/InvoiceForm';
 import { RecibosVerdeModal } from '@/components/RecibosVerdeModal';
 import { getCurrencySymbol, formatDate } from '@/utils/formatters';
@@ -67,6 +68,8 @@ export const InvoicesPage = () => {
     handleImportPDF,
     handleImportZIP,
   } = useInvoicesPage();
+
+  const { mask } = usePrivacyMode();
 
   return (
     <TooltipProvider>
@@ -184,8 +187,7 @@ export const InvoicesPage = () => {
                       <TableCell className="hidden sm:table-cell whitespace-nowrap">{formatDate(invoice.date)}</TableCell>
                       <TableCell className="hidden md:table-cell whitespace-nowrap">{formatDate(invoice.dueDate)}</TableCell>
                       <TableCell className="font-medium whitespace-nowrap">
-                        {getCurrencySymbol(invoice.currency || settings.defaultCurrency || 'USD')}
-                        {calculateInvoiceTotal(invoice).toFixed(2)}
+                        {mask(`${getCurrencySymbol(invoice.currency || settings.defaultCurrency || 'USD')}${calculateInvoiceTotal(invoice).toFixed(2)}`)}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">

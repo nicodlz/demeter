@@ -1,5 +1,6 @@
 import type { Invoice } from '@/schemas';
 import { useInvoiceForm } from '@/hooks/useInvoiceForm';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ interface InvoiceFormProps {
 
 export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) => {
   const form = useInvoiceForm({ invoice, onSubmit });
+  const { mask } = usePrivacyMode();
 
   return (
     <form onSubmit={form.handleSubmit} className="space-y-6">
@@ -233,11 +235,11 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
             <div className="flex justify-between text-sm">
               <span className="font-medium text-orange-600">
                 Part B (orange): {form.currencySymbol}
-                {form.splitAmount.toFixed(2)}
+                {mask(form.splitAmount.toFixed(2))}
               </span>
               <span className="font-medium text-green-600">
                 Part A (full invoice): {form.currencySymbol}
-                {form.total.toFixed(2)}
+                {mask(form.total.toFixed(2))}
               </span>
             </div>
             <input

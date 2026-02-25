@@ -5,6 +5,7 @@ import { useSettings } from '@/hooks/useSettings';
 import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '@/schemas';
 import { SnapshotForm } from '@/components/networth/SnapshotForm';
 import { formatCurrency, formatDate } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +47,7 @@ export const NetWorthPage = () => {
   } = useNetWorthSnapshots();
   const { convert } = useExchangeRate();
   const { settings } = useSettings();
+  const { mask } = usePrivacyMode();
   const [showForm, setShowForm] = useState(false);
   const [editingSnapshot, setEditingSnapshot] = useState<AnyNetWorthSnapshot | null>(null);
 
@@ -167,19 +169,19 @@ export const NetWorthPage = () => {
                       )}
                     </TableCell>
                     <TableCell className="text-right hidden sm:table-cell whitespace-nowrap">
-                      {formatCurrency(getCategoryTotal(snapshot, 'stocks', convert), 'USD')}
+                      {mask(formatCurrency(getCategoryTotal(snapshot, 'stocks', convert), 'USD'))}
                     </TableCell>
                     <TableCell className="text-right hidden sm:table-cell whitespace-nowrap">
-                      {formatCurrency(getCategoryTotal(snapshot, 'crypto', convert), 'USD')}
+                      {mask(formatCurrency(getCategoryTotal(snapshot, 'crypto', convert), 'USD'))}
                     </TableCell>
                     <TableCell className="text-right hidden md:table-cell whitespace-nowrap">
-                      {formatCurrency(getCategoryTotal(snapshot, 'cash', convert), 'USD')}
+                      {mask(formatCurrency(getCategoryTotal(snapshot, 'cash', convert), 'USD'))}
                     </TableCell>
                     <TableCell className="text-right hidden md:table-cell whitespace-nowrap">
-                      {formatCurrency(getCategoryTotal(snapshot, 'stablecoins', convert), 'USD')}
+                      {mask(formatCurrency(getCategoryTotal(snapshot, 'stablecoins', convert), 'USD'))}
                     </TableCell>
                     <TableCell className="text-right font-bold">
-                      {formatCurrency(getSnapshotTotal(snapshot, convert), 'USD')}
+                      {mask(formatCurrency(getSnapshotTotal(snapshot, convert), 'USD'))}
                     </TableCell>
                     <TableCell>
                       <AlertDialog>

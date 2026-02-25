@@ -12,6 +12,7 @@ import {
 import type { MonthlyRevenue } from '@/hooks/useDashboardData';
 import type { Currency } from '@/schemas';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 import { CHART_COLORS } from '@/utils/chartTheme';
@@ -22,6 +23,7 @@ interface RevenueChartProps {
 }
 
 export const RevenueChart = ({ data, currency }: RevenueChartProps) => {
+  const { mask, maskShort } = usePrivacyMode();
   // Calculate cumulative TTC for trend line
   let cumulative = 0;
   const chartData = data.map((item) => {
@@ -66,7 +68,7 @@ export const RevenueChart = ({ data, currency }: RevenueChartProps) => {
                 <YAxis
                   yAxisId="left"
                   tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => formatCurrencyCompact(value, currency)}
+                  tickFormatter={(value) => maskShort(formatCurrencyCompact(value, currency))}
                   tickLine={false}
                   axisLine={false}
                 />
@@ -74,13 +76,13 @@ export const RevenueChart = ({ data, currency }: RevenueChartProps) => {
                   yAxisId="right"
                   orientation="right"
                   tick={{ fontSize: 12 }}
-                  tickFormatter={(value) => formatCurrencyCompact(value, currency)}
+                  tickFormatter={(value) => maskShort(formatCurrencyCompact(value, currency))}
                   tickLine={false}
                   axisLine={false}
                 />
                 <Tooltip
                   formatter={(value, name) => [
-                    formatCurrency(value as number, currency),
+                    mask(formatCurrency(value as number, currency)),
                     name === 'ht'
                       ? 'Excl. VAT'
                       : name === 'vat'

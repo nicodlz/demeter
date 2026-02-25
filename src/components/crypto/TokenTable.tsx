@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { TokenPosition, CryptoWallet } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 
 import {
   Table,
@@ -48,6 +49,7 @@ function positionTypeBadgeVariant(type: TokenPosition['positionType']): 'default
 }
 
 export const TokenTable = ({ positions, wallets, chains }: TokenTableProps) => {
+  const { mask } = usePrivacyMode();
   const [filterChain, setFilterChain] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterWallet, setFilterWallet] = useState<string>('all');
@@ -189,10 +191,10 @@ export const TokenTable = ({ positions, wallets, chains }: TokenTableProps) => {
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono text-sm">
-                      {formatAmount(pos.amount)}
+                      {mask(formatAmount(pos.amount))}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatCurrency(pos.usdValue, 'USD')}
+                      {mask(formatCurrency(pos.usdValue, 'USD'))}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">

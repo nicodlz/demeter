@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ParsedTransaction } from '@/schemas';
 import { formatCurrency, formatDate } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -25,6 +26,7 @@ export const ImportPreview = ({
   onConfirm,
   onCancel,
 }: ImportPreviewProps) => {
+  const { mask } = usePrivacyMode();
   // All non-duplicate transactions selected by default
   const [selected, setSelected] = useState<Set<number>>(
     new Set(transactions.map((_, i) => i))
@@ -79,7 +81,7 @@ export const ImportPreview = ({
         <div className="text-right">
           <div className="text-sm text-muted-foreground">Total selected</div>
           <div className={`font-bold ${totalSelected >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-            {totalSelected >= 0 ? '+' : '-'}{formatCurrency(Math.abs(totalSelected), previewCurrency)}
+            {mask(`${totalSelected >= 0 ? "+" : "-"}${formatCurrency(Math.abs(totalSelected), previewCurrency)}`)}
           </div>
         </div>
       </div>
@@ -92,7 +94,7 @@ export const ImportPreview = ({
           <div className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
             {duplicates.slice(0, 5).map((d, i) => (
               <div key={i} className="line-through opacity-60">
-                {formatDate(d.date)} - {d.description.substring(0, 40)}... - {formatCurrency(d.amount, d.currency)}
+                {formatDate(d.date)} - {d.description.substring(0, 40)}... - {mask(formatCurrency(d.amount, d.currency))}
               </div>
             ))}
             {duplicates.length > 5 && (
@@ -143,7 +145,7 @@ export const ImportPreview = ({
                   )}
                 </TableCell>
                 <TableCell className={`text-right font-medium ${tx.isCredit ? 'text-green-600' : 'text-destructive'}`}>
-                  {tx.isCredit ? '+' : '-'}{formatCurrency(Math.abs(tx.amount), tx.currency)}
+                  {mask(`${tx.isCredit ? '+' : '-'}${formatCurrency(Math.abs(tx.amount), tx.currency)}`)}
                 </TableCell>
               </TableRow>
             ))}

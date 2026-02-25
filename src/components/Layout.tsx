@@ -17,8 +17,9 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import { ChevronDown, Menu, LogOut } from 'lucide-react';
+import { ChevronDown, Menu, LogOut, Eye, EyeOff } from 'lucide-react';
 import { ModeToggle } from '@/components/mode-toggle';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { useVault } from '@/lib/vault/context';
 
 interface NavLink {
@@ -64,6 +65,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const pathname = location.pathname;
   const [mobileOpen, setMobileOpen] = useState(false);
   const { signOut } = useVault();
+  const { privacyMode, togglePrivacy } = usePrivacyMode();
 
   const isActive = (to: string) => {
     if (to === '/') return pathname === '/';
@@ -154,6 +156,16 @@ export const Layout = ({ children }: LayoutProps) => {
 
             {/* Theme toggle and mobile menu */}
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={togglePrivacy}
+                className="h-10 w-10"
+                aria-label={privacyMode ? 'Show amounts' : 'Hide amounts'}
+                title={privacyMode ? 'Show amounts' : 'Hide amounts'}
+              >
+                {privacyMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
               <ModeToggle />
               <Button
                 variant="ghost"

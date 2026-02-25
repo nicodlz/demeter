@@ -1,4 +1,5 @@
 import { useCashFlowPage } from '@/hooks/useCashFlowPage';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { formatCurrency } from '@/utils/formatters';
 
 import { Badge } from '@/components/ui/badge';
@@ -63,6 +64,8 @@ export const CashFlowPage = () => {
     handleCategorySelect,
     convert,
   } = useCashFlowPage();
+
+  const { mask, privacyMode } = usePrivacyMode();
 
   // Show form if adding or editing
   if (showForm || editingExpense) {
@@ -160,7 +163,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-green-600">
-                +{formatCurrency(stats.totalIncome, displayCurrency)}
+                {mask(`+${formatCurrency(stats.totalIncome, displayCurrency)}`)}
               </div>
             </CardContent>
           </Card>
@@ -172,7 +175,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-destructive">
-                -{formatCurrency(stats.totalExpenses, displayCurrency)}
+                {mask(`-${formatCurrency(stats.totalExpenses, displayCurrency)}`)}
               </div>
             </CardContent>
           </Card>
@@ -184,7 +187,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-lg sm:text-2xl font-bold ${stats.totalIncome - stats.totalExpenses >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-                {formatCurrency(stats.totalIncome - stats.totalExpenses, displayCurrency)}
+                {mask(formatCurrency(stats.totalIncome - stats.totalExpenses, displayCurrency))}
               </div>
             </CardContent>
           </Card>
@@ -211,7 +214,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}>
-                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.totalAll, displayCurrency)}
+                {mask(`${activeTab === 'income' ? '+' : '-'}${formatCurrency(stats.totalAll, displayCurrency)}`)}
               </div>
             </CardContent>
           </Card>
@@ -223,7 +226,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}>
-                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.lastCompleted, displayCurrency)}
+                {mask(`${activeTab === 'income' ? '+' : '-'}${formatCurrency(stats.lastCompleted, displayCurrency)}`)}
               </div>
               {stats.previous > 0 && (
                 <p className={`text-xs ${stats.lastCompleted > stats.previous ? (activeTab === 'income' ? 'text-green-500' : 'text-destructive') : (activeTab === 'income' ? 'text-destructive' : 'text-green-500')}`}>
@@ -241,7 +244,7 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-muted-foreground">
-                {activeTab === 'income' ? '+' : '-'}{formatCurrency(stats.previous, displayCurrency)}
+                {mask(`${activeTab === 'income' ? '+' : '-'}${formatCurrency(stats.previous, displayCurrency)}`)}
               </div>
             </CardContent>
           </Card>
@@ -254,6 +257,7 @@ export const CashFlowPage = () => {
           data={categoryData.data}
           totalAmount={categoryData.total}
           currency={displayCurrency}
+          privacyMode={privacyMode}
         />
       )}
 

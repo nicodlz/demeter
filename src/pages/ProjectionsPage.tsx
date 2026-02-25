@@ -2,6 +2,7 @@ import { useProjectionsPage } from '@/hooks/useProjectionsPage';
 import { DEFAULT_RETURNS, formatPercent } from '@/utils/projections';
 import type { AssetClass } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { ProjectionChart } from '@/components/projections/ProjectionChart';
 
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,8 @@ export const ProjectionsPage = () => {
     handleReturnChange,
   } = useProjectionsPage();
 
+  const { mask } = usePrivacyMode();
+
   return (
     <div className="space-y-6">
       <div>
@@ -110,7 +113,7 @@ export const ProjectionsPage = () => {
             </CardTitle>
             <CardDescription>
               {hasPortfolio
-                ? `Based on your latest snapshot (${formatCurrency(stats.totalNetWorth, 'USD')})`
+                ? `Based on your latest snapshot (${mask(formatCurrency(stats.totalNetWorth, 'USD'))})`
                 : 'No snapshot yet - add one to see your allocation'
               }
             </CardDescription>
@@ -287,7 +290,7 @@ export const ProjectionsPage = () => {
               {yearsToTarget && (
                 <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
                   <Target className="h-4 w-4" />
-                  Reach {formatCurrency(parseFloat(targetAmount), currency)} in{' '}
+                  Reach {mask(formatCurrency(parseFloat(targetAmount), currency))} in{' '}
                   <strong>{yearsToTarget} years</strong>
                 </p>
               )}
@@ -314,19 +317,19 @@ export const ProjectionsPage = () => {
                   <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Final Value</p>
                     <p className="text-xl sm:text-2xl font-bold text-primary">
-                      {formatCurrency(projection.finalValue, currency)}
+                      {mask(formatCurrency(projection.finalValue, currency))}
                     </p>
                   </div>
                   <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Total Contributed</p>
                     <p className="text-xl sm:text-2xl font-bold">
-                      {formatCurrency(projection.totalContributed, currency)}
+                      {mask(formatCurrency(projection.totalContributed, currency))}
                     </p>
                   </div>
                   <div className="p-3 sm:p-4 bg-muted rounded-lg text-center">
                     <p className="text-sm text-muted-foreground">Total Gains</p>
                     <p className="text-xl sm:text-2xl font-bold text-green-600">
-                      {formatCurrency(projection.totalGains, currency)}
+                      {mask(formatCurrency(projection.totalGains, currency))}
                     </p>
                     <Badge variant="secondary" className="mt-1">
                       {((projection.totalGains / projection.totalContributed) * 100).toFixed(0)}% return
@@ -371,16 +374,16 @@ export const ProjectionsPage = () => {
                     <TableRow key={row.year}>
                       <TableCell className="font-medium">Year {row.year}</TableCell>
                       <TableCell className="text-right font-bold">
-                        {formatCurrency(row.totalValue, currency)}
+                        {mask(formatCurrency(row.totalValue, currency))}
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground hidden sm:table-cell whitespace-nowrap">
-                        {formatCurrency(row.totalContributed, currency)}
+                        {mask(formatCurrency(row.totalContributed, currency))}
                       </TableCell>
                       <TableCell className="text-right text-green-600 hidden sm:table-cell whitespace-nowrap">
-                        {formatCurrency(row.totalGains, currency)}
+                        {mask(formatCurrency(row.totalGains, currency))}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(row.yearlyGains, currency)}
+                        {mask(formatCurrency(row.yearlyGains, currency))}
                       </TableCell>
                     </TableRow>
                   ))}

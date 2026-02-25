@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { Expense } from '@/schemas';
 import { formatCurrency, formatDate } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,6 +64,7 @@ const ExpenseCard = ({
   onCategorySelect: (expenseId: string, category: string) => void;
 }) => {
   const isIncome = expense.type === 'income';
+  const { mask } = usePrivacyMode();
 
   return (
     <div className="rounded-lg border bg-card p-4 space-y-3">
@@ -88,8 +90,7 @@ const ExpenseCard = ({
               isIncome ? 'text-green-600' : 'text-destructive'
             }`}
           >
-            {isIncome ? '+' : '-'}
-            {formatCurrency(expense.amount, expense.currency)}
+            {mask(`${isIncome ? '+' : '-'}${formatCurrency(expense.amount, expense.currency)}`)}
           </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -176,6 +177,7 @@ export const ExpenseTable = ({
   onClone,
   onCategorySelect,
 }: ExpenseTableProps) => {
+  const { mask } = usePrivacyMode();
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
@@ -323,7 +325,7 @@ export const ExpenseTable = ({
                 </span>
               </TableCell>
               <TableCell className={`text-right font-medium whitespace-nowrap ${expense.type === 'income' ? 'text-green-600' : 'text-destructive'}`}>
-                {expense.type === 'income' ? '+' : '-'}{formatCurrency(expense.amount, expense.currency)}
+                {mask(`${expense.type === 'income' ? '+' : '-'}${formatCurrency(expense.amount, expense.currency)}`)}
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>

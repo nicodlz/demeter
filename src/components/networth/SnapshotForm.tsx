@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { NetWorthSnapshotV2, AssetEntry, Currency, AnyNetWorthSnapshot } from '@/schemas';
 import { isV2Snapshot } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
 import { useCrypto } from '@/hooks/useCrypto';
 import { useIbkr } from '@/hooks/useIbkr';
@@ -40,6 +41,7 @@ export const SnapshotForm = ({
   onSubmit,
   onCancel,
 }: SnapshotFormProps) => {
+  const { mask } = usePrivacyMode();
   const { convert, loading: rateLoading } = useExchangeRate();
   const { getTotalCryptoValue, getTotalStablecoinValue, lastSyncAt, positions } = useCrypto();
   const {
@@ -226,7 +228,7 @@ export const SnapshotForm = ({
                 Total Net Worth
               </span>
               <span className="text-2xl font-bold">
-                {formatCurrency(total, 'USD')}
+                {mask(formatCurrency(total, 'USD'))}
               </span>
             </div>
           </div>

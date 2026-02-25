@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { Wallet, Coins, BarChart3, Link2 } from 'lucide-react';
 
 interface CryptoSummaryCardsProps {
@@ -15,6 +16,7 @@ export const CryptoSummaryCards = ({
   positionCount,
   walletCount,
 }: CryptoSummaryCardsProps) => {
+  const { mask } = usePrivacyMode();
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
@@ -24,7 +26,7 @@ export const CryptoSummaryCards = ({
         </CardHeader>
         <CardContent>
           <div className="text-lg sm:text-2xl font-bold">
-            {formatCurrency(totalCryptoValue, 'USD')}
+            {mask(formatCurrency(totalCryptoValue, 'USD'))}
           </div>
         </CardContent>
       </Card>
@@ -36,7 +38,7 @@ export const CryptoSummaryCards = ({
         </CardHeader>
         <CardContent>
           <div className="text-lg sm:text-2xl font-bold">
-            {formatCurrency(totalStablecoinValue, 'USD')}
+            {mask(formatCurrency(totalStablecoinValue, 'USD'))}
           </div>
         </CardContent>
       </Card>

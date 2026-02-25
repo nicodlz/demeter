@@ -1,5 +1,6 @@
 import type { Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { Card, CardContent } from '@/components/ui/card';
 import { DollarSign, Calculator, Wallet, FileText, TrendingUp } from 'lucide-react';
 
@@ -41,25 +42,26 @@ export const StatsCards = ({
   averageInvoice,
   currency,
 }: StatsCardsProps) => {
+  const { mask } = usePrivacyMode();
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
       <StatCard
         title="Total (incl. VAT)"
-        value={formatCurrency(totalTTC, currency)}
+        value={mask(formatCurrency(totalTTC, currency))}
         iconBg="bg-blue-100 text-blue-600"
         icon={<DollarSign className="h-6 w-6" />}
       />
 
       <StatCard
         title="Total (excl. VAT)"
-        value={formatCurrency(totalHT, currency)}
+        value={mask(formatCurrency(totalHT, currency))}
         iconBg="bg-indigo-100 text-indigo-600"
         icon={<Calculator className="h-6 w-6" />}
       />
 
       <StatCard
         title="VAT collected"
-        value={formatCurrency(totalVAT, currency)}
+        value={mask(formatCurrency(totalVAT, currency))}
         iconBg="bg-green-100 text-green-600"
         icon={<Wallet className="h-6 w-6" />}
       />
@@ -73,7 +75,7 @@ export const StatsCards = ({
 
       <StatCard
         title="Average / invoice"
-        value={formatCurrency(averageInvoice, currency)}
+        value={mask(formatCurrency(averageInvoice, currency))}
         iconBg="bg-amber-100 text-amber-600"
         icon={<TrendingUp className="h-6 w-6" />}
       />

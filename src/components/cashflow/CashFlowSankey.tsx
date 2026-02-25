@@ -3,6 +3,7 @@ import { Sankey, Tooltip, Rectangle } from 'recharts';
 import { CATEGORY_COLORS } from '@/utils/chartTheme';
 import type { Expense, Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 import {
@@ -251,6 +252,7 @@ interface CashFlowSankeyProps {
 }
 
 export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisionEnabled = false, taxRate = 30 }: CashFlowSankeyProps) => {
+  const { mask } = usePrivacyMode();
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
 
@@ -368,13 +370,13 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisi
                   if (item.name === 'Total' && sankeyData) {
                     return (
                       <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm space-y-1">
-                        <p className="font-medium">Total: {formatCurrency(sankeyData.totalIncome, currency)}</p>
-                        <p className="text-destructive">Expenses: {formatCurrency(sankeyData.totalExpenses, currency)}</p>
+                        <p className="font-medium">Total: {mask(formatCurrency(sankeyData.totalIncome, currency))}</p>
+                        <p className="text-destructive">Expenses: {mask(formatCurrency(sankeyData.totalExpenses, currency))}</p>
                         {sankeyData.taxProvision > 0 && (
-                          <p className="text-amber-500">Tax Provision: {formatCurrency(sankeyData.taxProvision, currency)}</p>
+                          <p className="text-amber-500">Tax Provision: {mask(formatCurrency(sankeyData.taxProvision, currency))}</p>
                         )}
                         {sankeyData.netSavings > 0 && (
-                          <p className="text-blue-500">Net Savings: {formatCurrency(sankeyData.netSavings, currency)}</p>
+                          <p className="text-blue-500">Net Savings: {mask(formatCurrency(sankeyData.netSavings, currency))}</p>
                         )}
                       </div>
                     );
@@ -382,7 +384,7 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisi
                   return (
                     <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm">
                       <p className="font-medium">{item.name}</p>
-                      <p>{formatCurrency(item.value ?? 0, currency)}</p>
+                      <p>{mask(formatCurrency(item.value ?? 0, currency))}</p>
                     </div>
                   );
                 }
@@ -395,7 +397,7 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisi
                     <p className="font-medium">
                       {source?.name ?? '?'} → {target?.name ?? '?'}
                     </p>
-                    <p>{formatCurrency(item.value ?? 0, currency)}</p>
+                    <p>{mask(formatCurrency(item.value ?? 0, currency))}</p>
                   </div>
                 );
               }}

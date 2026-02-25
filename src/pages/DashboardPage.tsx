@@ -3,6 +3,7 @@ import { useNetWorthDashboard } from '@/hooks/useNetWorthDashboard';
 import { useExpensesDashboard } from '@/hooks/useExpensesDashboard';
 import { useSettings } from '@/hooks/useSettings';
 import { useExchangeRate } from '@/hooks/useExchangeRate';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { NetWorthStatsCards } from '@/components/networth/NetWorthStatsCards';
 import { NetWorthEvolutionChart } from '@/components/networth/NetWorthEvolutionChart';
 import { AllocationPieChart } from '@/components/networth/AllocationPieChart';
@@ -15,7 +16,6 @@ import { TopMerchantsCard } from '@/components/expenses/TopMerchantsCard';
 import type { Currency } from '@/schemas';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -24,8 +24,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff } from 'lucide-react';
-
 type DateRange = 'all' | '30d' | '90d' | '6m' | '1y' | 'ytd';
 
 const getDateRange = (range: DateRange): { start?: string; end?: string } => {
@@ -61,6 +59,7 @@ const getDateRange = (range: DateRange): { start?: string; end?: string } => {
 export const DashboardPage = () => {
   const { settings, updateSettings } = useSettings();
   const { convert } = useExchangeRate();
+  const { privacyMode } = usePrivacyMode();
   const displayCurrency: Currency = settings.dashboardCurrency || 'USD';
 
   const toggleCurrency = () => {
@@ -68,10 +67,6 @@ export const DashboardPage = () => {
     updateSettings({ dashboardCurrency: newCurrency });
   };
 
-  const privacyMode = settings.privacyMode ?? false;
-  const togglePrivacy = () => {
-    updateSettings({ privacyMode: !privacyMode });
-  };
   const [expenseDateRange, setExpenseDateRange] = useState<DateRange>('all');
 
   const networthStats = useNetWorthDashboard(displayCurrency);
@@ -90,15 +85,6 @@ export const DashboardPage = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={togglePrivacy}
-            className="h-8 w-8"
-            title={privacyMode ? 'Show amounts' : 'Hide amounts'}
-          >
-            {privacyMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </Button>
           <Badge
             variant="secondary"
             className="cursor-pointer hover:bg-secondary/80 transition-colors"

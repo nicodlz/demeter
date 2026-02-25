@@ -3,6 +3,7 @@ import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import type { AssetEntry, Currency } from '@/schemas';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ export const AssetCategoryInput = ({
   onChange,
   convert,
 }: AssetCategoryInputProps) => {
+  const { mask } = usePrivacyMode();
   const [isExpanded, setIsExpanded] = useState(entries.length > 0);
 
   const addEntry = () => {
@@ -76,7 +78,7 @@ export const AssetCategoryInput = ({
             </span>
           )}
         </div>
-        <span className="font-semibold">{formatCurrency(totalUSD, 'USD')}</span>
+        <span className="font-semibold">{mask(formatCurrency(totalUSD, 'USD'))}</span>
       </button>
 
       {isExpanded && (

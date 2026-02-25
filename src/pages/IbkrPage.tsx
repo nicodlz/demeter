@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useIbkrPage } from '@/hooks/useIbkrPage';
 import { formatCurrency } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,6 +76,8 @@ export const IbkrPage = () => {
     totalPnlPercent,
     handleSync,
   } = useIbkrPage();
+
+  const { mask } = usePrivacyMode();
 
   return (
     <div className="space-y-6">
@@ -170,7 +173,7 @@ export const IbkrPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">
-                {formatCurrency(nav ?? totalPositionValue + totalCashValue, 'USD')}
+                {mask(formatCurrency(nav ?? totalPositionValue + totalCashValue, 'USD'))}
               </div>
               <p className="text-xs text-muted-foreground">
                 {positions.length} position{positions.length !== 1 ? 's' : ''}
@@ -185,7 +188,7 @@ export const IbkrPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">
-                {formatCurrency(totalCashValue, 'USD')}
+                {mask(formatCurrency(totalCashValue, 'USD'))}
               </div>
               <p className="text-xs text-muted-foreground">
                 {cashBalances.length} currenc{cashBalances.length !== 1 ? 'ies' : 'y'}
@@ -204,12 +207,10 @@ export const IbkrPage = () => {
                   totalUnrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}
               >
-                {totalUnrealizedPnl >= 0 ? '+' : ''}
-                {formatCurrency(totalUnrealizedPnl, 'USD')}
+                {mask(`${totalUnrealizedPnl >= 0 ? '+' : ''}${formatCurrency(totalUnrealizedPnl, 'USD')}`)}
               </div>
               <p className="text-xs text-muted-foreground">
-                {totalPnlPercent >= 0 ? '+' : ''}
-                {totalPnlPercent.toFixed(2)}%
+                {mask(`${totalPnlPercent >= 0 ? '+' : ''}${totalPnlPercent.toFixed(2)}%`)}
               </p>
             </CardContent>
           </Card>
@@ -242,10 +243,10 @@ export const IbkrPage = () => {
                   <div className="text-sm font-medium text-muted-foreground">
                     {cb.currency}
                   </div>
-                  <div className="text-lg font-bold">{formatNumber(cb.endingCash)}</div>
+                  <div className="text-lg font-bold">{mask(formatNumber(cb.endingCash))}</div>
                   {cb.endingSettledCash !== cb.endingCash && (
                     <div className="text-xs text-muted-foreground">
-                      Settled: {formatNumber(cb.endingSettledCash)}
+                      Settled: {mask(formatNumber(cb.endingSettledCash))}
                     </div>
                   )}
                 </div>
@@ -327,27 +328,26 @@ export const IbkrPage = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-right font-mono hidden sm:table-cell">
-                      {formatNumber(pos.quantity)}
+                      {mask(formatNumber(pos.quantity))}
                     </TableCell>
                     <TableCell className="text-right font-mono hidden lg:table-cell">
-                      {formatNumber(pos.markPrice)}
+                      {mask(formatNumber(pos.markPrice))}
                     </TableCell>
                     <TableCell className="text-right font-mono whitespace-nowrap">
-                      {formatNumber(pos.marketValue)}
+                      {mask(formatNumber(pos.marketValue))}
                     </TableCell>
                     <TableCell className="text-right font-mono hidden lg:table-cell">
-                      {formatNumber(pos.costBasisMoney)}
+                      {mask(formatNumber(pos.costBasisMoney))}
                     </TableCell>
                     <TableCell
                       className={`text-right font-mono ${
                         pos.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
-                      {pos.unrealizedPnl >= 0 ? '+' : ''}
-                      {formatNumber(pos.unrealizedPnl)}
+                      {mask(`${pos.unrealizedPnl >= 0 ? '+' : ''}${formatNumber(pos.unrealizedPnl)}`)}
                     </TableCell>
                     <TableCell className="text-right font-mono text-muted-foreground hidden sm:table-cell">
-                      {pos.percentOfNav.toFixed(1)}%
+                      {mask(`${pos.percentOfNav.toFixed(1)}%`)}
                     </TableCell>
                   </TableRow>
                 ))}

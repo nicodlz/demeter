@@ -1,4 +1,5 @@
 import type { LineItem, SavedItem, VATRate } from '@/schemas';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -55,6 +56,7 @@ export const LineItemsEditor = ({
   onApplySavedItem,
   onDeleteSavedItem,
 }: LineItemsEditorProps) => {
+  const { mask } = usePrivacyMode();
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -215,7 +217,7 @@ export const LineItemsEditor = ({
             <span className="text-muted-foreground">Subtotal:</span>
             <span className="font-medium">
               {currencySymbol}
-              {subtotal.toFixed(2)}
+              {mask(subtotal.toFixed(2))}
             </span>
           </div>
           {applyVAT && (
@@ -223,7 +225,7 @@ export const LineItemsEditor = ({
               <span className="text-muted-foreground">VAT:</span>
               <span className="font-medium">
                 {currencySymbol}
-                {vat.toFixed(2)}
+                {mask(vat.toFixed(2))}
               </span>
             </div>
           )}
@@ -232,7 +234,7 @@ export const LineItemsEditor = ({
             <span>Total:</span>
             <span>
               {currencySymbol}
-              {total.toFixed(2)}
+              {mask(total.toFixed(2))}
             </span>
           </div>
         </div>

@@ -11,6 +11,7 @@ import {
 import type { ProjectionYear } from '@/utils/projections';
 import type { Currency } from '@/schemas';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
+import { usePrivacyMode } from '@/hooks/usePrivacyMode';
 import { ExportableChart } from '@/components/ui/ExportableChart';
 import { CHART_COLORS } from '@/utils/chartTheme';
 
@@ -20,6 +21,7 @@ interface ProjectionChartProps {
 }
 
 export const ProjectionChart = ({ data, currency }: ProjectionChartProps) => {
+  const { maskShort, mask } = usePrivacyMode();
   if (data.length === 0) {
     return (
       <div className="h-64 flex items-center justify-center text-muted-foreground">
@@ -50,13 +52,13 @@ export const ProjectionChart = ({ data, currency }: ProjectionChartProps) => {
             />
             <YAxis
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => formatCurrencyCompact(value, currency)}
+              tickFormatter={(value) => maskShort(formatCurrencyCompact(value, currency))}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
               formatter={(value, name) => [
-                formatCurrency(value as number, currency),
+                mask(formatCurrency(value as number, currency)),
                 name === 'contributed'
                   ? 'Contributed'
                   : name === 'gains'
