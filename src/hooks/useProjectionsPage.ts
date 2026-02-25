@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useNetWorthDashboard } from '@/hooks/useNetWorthDashboard';
 import { useSettings } from '@/hooks/useSettings';
 import {
@@ -14,8 +14,6 @@ export const useProjectionsPage = () => {
   const { settings } = useSettings();
   const stats = useNetWorthDashboard();
   const currency: Currency = settings.dashboardCurrency || 'USD';
-
-  const initializedRef = useRef(false);
 
   // Custom returns per asset class (stored as percentages for display)
   const [customReturns, setCustomReturns] = useState<Record<AssetClass, string>>({
@@ -36,12 +34,6 @@ export const useProjectionsPage = () => {
   const [monthlyContribution, setMonthlyContribution] = useState<string>('2000');
   const [years, setYears] = useState<string>('10');
   const [targetAmount, setTargetAmount] = useState<string>('1000000');
-
-  // Initialize principal from snapshot once
-  if (!initializedRef.current && stats.totalNetWorth > 0) {
-    initializedRef.current = true;
-    setPrincipal(Math.round(stats.totalNetWorth).toString());
-  }
 
   // Get current portfolio allocation from snapshot
   const portfolioAllocation = useMemo(() => {
