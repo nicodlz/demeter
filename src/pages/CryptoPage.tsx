@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
-import { useCrypto } from '@/hooks/useCrypto';
-import { CryptoSummaryCards } from '@/components/crypto/CryptoSummaryCards';
-import { WalletList } from '@/components/crypto/WalletList';
-import { TokenTable } from '@/components/crypto/TokenTable';
-import { SyncButton } from '@/components/crypto/SyncButton';
-import { Card, CardContent } from '@/components/ui/card';
-import { AlertTriangle, KeyRound } from 'lucide-react';
+import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { useCrypto } from "@/hooks/useCrypto";
+import { CryptoSummaryCards } from "@/components/crypto/CryptoSummaryCards";
+import { WalletList } from "@/components/crypto/WalletList";
+import { TokenTable } from "@/components/crypto/TokenTable";
+import { SyncButton } from "@/components/crypto/SyncButton";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertTriangle, KeyRound } from "lucide-react";
 
 export const CryptoPage = () => {
   const {
@@ -35,11 +35,18 @@ export const CryptoPage = () => {
     }
   };
 
-  const handleAddWallet = (data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => {
+  const handleAddWallet = (data: {
+    label: string;
+    address: string;
+    type: "evm" | "bitcoin";
+  }) => {
     addWallet(data);
   };
 
-  const handleEditWallet = (id: string, data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => {
+  const handleEditWallet = (
+    id: string,
+    data: { label: string; address: string; type: "evm" | "bitcoin" },
+  ) => {
     updateWallet(id, data);
   };
 
@@ -48,17 +55,22 @@ export const CryptoPage = () => {
   };
 
   const hasApiKey = Boolean(zerionApiKey);
+  const hasBitcoinWallet = wallets.some((wallet) => wallet.type === "bitcoin");
+  const hasEvmWallet = wallets.some((wallet) => wallet.type !== "bitcoin");
+  const canSync = wallets.length > 0 && (hasApiKey || hasBitcoinWallet);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Crypto Portfolio</h2>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+            Crypto Portfolio
+          </h2>
           <p className="text-sm text-muted-foreground">
             Track your crypto wallets and DeFi positions
           </p>
         </div>
-        {hasApiKey && wallets.length > 0 && (
+        {canSync && (
           <SyncButton
             syncing={syncing}
             lastSyncAt={lastSyncAt}
@@ -68,18 +80,22 @@ export const CryptoPage = () => {
       </div>
 
       {/* API Key warning */}
-      {!hasApiKey && (
+      {!hasApiKey && hasEvmWallet && (
         <Card className="border-yellow-500/50 bg-yellow-500/5">
           <CardContent className="flex items-start gap-3 pt-6">
             <KeyRound className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">Zerion API Key Required</p>
               <p className="text-sm text-muted-foreground mt-1">
-                To sync wallet positions, you need to configure your Zerion API key in{' '}
-                <Link to="/configuration" className="underline text-foreground hover:text-foreground/80">
+                To sync EVM wallet positions, you need to configure your Zerion
+                API key in{" "}
+                <Link
+                  to="/configuration"
+                  className="underline text-foreground hover:text-foreground/80"
+                >
                   Configuration
                 </Link>
-                . Get a free key at{' '}
+                . Get a free key at{" "}
                 <a
                   href="https://developers.zerion.io"
                   target="_blank"

@@ -6,13 +6,33 @@
  */
 
 import { useState } from "react";
-import { Fingerprint, Loader2, AlertTriangle, ShieldX, Landmark } from "lucide-react";
+import {
+  Fingerprint,
+  Loader2,
+  AlertTriangle,
+  ShieldX,
+  Landmark,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useVault } from "@/lib/vault/context";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useVault } from "@/hooks/useVault";
 
 export function VaultAuth() {
-  const { isLoading, error, supportsPasskey, signIn, signUp, clearError, retry } = useVault();
+  const {
+    isLoading,
+    error,
+    supportsPasskey,
+    signIn,
+    signUp,
+    clearError,
+    retry,
+  } = useVault();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
 
   if (!supportsPasskey) {
@@ -24,8 +44,8 @@ export function VaultAuth() {
           </div>
           <h1 className="text-2xl font-bold mb-3">Passkeys Not Supported</h1>
           <p className="text-muted-foreground mb-6">
-            Your browser doesn&apos;t support WebAuthn passkeys.
-            Please use a modern browser like Chrome, Firefox, Safari, or Edge.
+            Your browser doesn&apos;t support WebAuthn passkeys. Please use a
+            modern browser like Chrome, Firefox, Safari, or Edge.
           </p>
         </div>
       </div>
@@ -53,7 +73,9 @@ export function VaultAuth() {
           <div className="mb-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-destructive">Authentication failed</p>
+              <p className="text-sm font-medium text-destructive">
+                Authentication failed
+              </p>
               <p className="text-xs text-destructive/80 mt-1">{error}</p>
               <button
                 type="button"
@@ -88,19 +110,25 @@ export function VaultAuth() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  {mode === "signin" ? "Authenticating..." : "Creating vault..."}
+                  {mode === "signin"
+                    ? "Authenticating..."
+                    : "Creating vault..."}
                 </>
               ) : (
                 <>
                   <Fingerprint className="w-5 h-5 mr-2" />
-                  {mode === "signin" ? "Sign in with Passkey" : "Create Passkey"}
+                  {mode === "signin"
+                    ? "Sign in with Passkey"
+                    : "Create Passkey"}
                 </>
               )}
             </Button>
 
             <div className="text-center pt-2">
               <p className="text-sm text-muted-foreground">
-                {mode === "signin" ? "Don't have a vault? " : "Already have a vault? "}
+                {mode === "signin"
+                  ? "Don't have a vault? "
+                  : "Already have a vault? "}
                 <button
                   type="button"
                   onClick={() => {

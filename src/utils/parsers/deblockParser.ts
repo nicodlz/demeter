@@ -1,5 +1,10 @@
-import type { ParsedTransaction, Currency } from '@/schemas';
-import { parseFrenchDate, FRENCH_MONTHS, FRENCH_MONTHS_PATTERN, createTransaction } from './parserUtils';
+import type { ParsedTransaction, Currency } from "@/schemas";
+import {
+  parseFrenchDate,
+  FRENCH_MONTHS,
+  FRENCH_MONTHS_PATTERN,
+  createTransaction,
+} from "./parserUtils";
 
 /**
  * Deblock Parser
@@ -9,17 +14,21 @@ import { parseFrenchDate, FRENCH_MONTHS, FRENCH_MONTHS_PATTERN, createTransactio
  */
 
 export const canParse = (content: string): boolean => {
-  const hasMonths = Object.keys(FRENCH_MONTHS).some(m =>
-    content.toLowerCase().includes(m)
+  const hasMonths = Object.keys(FRENCH_MONTHS).some((m) =>
+    content.toLowerCase().includes(m),
   );
-  const hasKeywords = content.includes('Prélèvement') ||
-                      content.includes('Paiement Carte') ||
-                      content.includes('Cashback') ||
-                      content.includes('Virement');
+  const hasKeywords =
+    content.includes("Prélèvement") ||
+    content.includes("Paiement Carte") ||
+    content.includes("Cashback") ||
+    content.includes("Virement");
   return hasMonths && hasKeywords;
 };
 
-export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
+export const parse = (
+  content: string,
+  defaultCurrency: Currency = "EUR",
+): {
   success: boolean;
   transactions: ParsedTransaction[];
   errors: string[];
@@ -29,38 +38,40 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
 
   const txRegex = new RegExp(
     `(\\d{1,2})\\s+(${FRENCH_MONTHS_PATTERN})\\s+(\\d{4})(\\d{1,2})\\s+(${FRENCH_MONTHS_PATTERN})\\s+(\\d{4})((?:Prélèvement automatique|Paiement Carte|Cashback|Virement)[^0-9]*(?:"[^"]*")?[^0-9]*)(\\d+,\\d{2})`,
-    'gi'
+    "gi",
   );
 
   let match;
   while ((match = txRegex.exec(content)) !== null) {
     try {
-      const [fullMatch, day1, month1, year1, , , , operationRaw, amountStr] = match;
+      const [fullMatch, day1, month1, year1, , , , operationRaw, amountStr] =
+        match;
 
       const date = parseFrenchDate(day1, month1, year1);
       if (!date) continue;
 
-      const amount = parseFloat(amountStr.replace(',', '.'));
+      const amount = parseFloat(amountStr.replace(",", "."));
       if (amount === 0) continue;
 
       const operation = operationRaw.trim();
       const merchantMatch = operation.match(/"([^"]+)"/);
       const merchantName = merchantMatch ? merchantMatch[1].trim() : operation;
 
-      const isCredit = operation.toLowerCase().includes('cashback') ||
-                       (operation.toLowerCase().includes('virement') && !merchantMatch);
+      const isCredit =
+        operation.toLowerCase().includes("cashback") ||
+        (operation.toLowerCase().includes("virement") && !merchantMatch);
 
       const tx = createTransaction(
         {
           date,
-          description: operation.replace(/"/g, '').trim(),
+          description: operation.replace(/"/g, "").trim(),
           amount,
           currency: defaultCurrency,
           merchantName,
           isCredit,
           originalLine: fullMatch,
         },
-        errors
+        errors,
       );
       if (tx) transactions.push(tx);
     } catch {
@@ -72,7 +83,7 @@ export const parse = (content: string, defaultCurrency: Currency = 'EUR'): {
 };
 
 export const deblockParser = {
-  provider: 'deblock' as const,
+  provider: "deblock" as const,
   canParse,
   parse,
 };

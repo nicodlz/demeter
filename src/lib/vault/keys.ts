@@ -28,7 +28,10 @@ function base64urlToBytes(b64url: string): Uint8Array {
  * @param vaultUid   Vault UID (used as HKDF context)
  * @returns          { encryptionKey, hmacKey, indexKey } — 32-byte Uint8Arrays
  */
-export async function deriveKeysFromJwk(cipherJwk: CipherJWK, vaultUid: string) {
+export async function deriveKeysFromJwk(
+  cipherJwk: CipherJWK,
+  vaultUid: string,
+) {
   const masterKey = base64urlToBytes(cipherJwk.k);
   return deriveVaultKeys(masterKey, vaultUid);
 }

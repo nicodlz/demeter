@@ -10,7 +10,11 @@
  * and set VITE_IBKR_PROXY_URL accordingly.
  */
 
-import type { IbkrPosition, IbkrCashBalance, IbkrAccount } from '@/schemas/ibkr';
+import type {
+  IbkrPosition,
+  IbkrCashBalance,
+  IbkrAccount,
+} from "@/schemas/ibkr";
 
 // ============================================================
 // Constants
@@ -18,9 +22,24 @@ import type { IbkrPosition, IbkrCashBalance, IbkrAccount } from '@/schemas/ibkr'
 
 const FLEX_BASE_URL = import.meta.env.VITE_PROXY_URL
   ? `${import.meta.env.VITE_PROXY_URL}/ibkr`
-  : '/api/ibkr';
+  : "/api/ibkr";
 
-const PROXY_KEY = import.meta.env.VITE_PROXY_KEY ?? '';
+const PROXY_KEY = import.meta.env.VITE_PROXY_KEY ?? "";
+
+/**
+ * The Flex Web Service has no CORS headers and requires the token in the query
+ * string, so it must be reached through a server-side proxy. Vite only provides
+ * that proxy in development; a production build without VITE_PROXY_URL would
+ * otherwise send requests to a non-existent `/api/ibkr` route.
+ */
+function assertFlexEndpointConfigured(): void {
+  if (import.meta.env.PROD && !import.meta.env.VITE_PROXY_URL) {
+    throw new IbkrApiError(
+      "IBKR requires a server proxy in production. Set VITE_PROXY_URL to a proxy exposing /ibkr.",
+      "PROXY_MISSING",
+    );
+  }
+}
 
 const POLL_DELAY_MS = 5_000;
 const MAX_POLL_ATTEMPTS = 6;
@@ -30,12 +49,12 @@ const MAX_POLL_ATTEMPTS = 6;
 // ============================================================
 
 function getAttr(el: Element, name: string): string {
-  return el.getAttribute(name) ?? '';
+  return el.getAttribute(name) ?? "";
 }
 
 function getNumAttr(el: Element, name: string): number {
   const v = el.getAttribute(name);
-  if (v === null || v === '') return 0;
+  if (v === null || v === "") return 0;
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 }
@@ -46,29 +65,29 @@ function getNumAttr(el: Element, name: string): number {
 
 function parsePositions(doc: Document): IbkrPosition[] {
   const positions: IbkrPosition[] = [];
-  const elements = doc.querySelectorAll('OpenPosition');
+  const elements = doc.querySelectorAll("OpenPosition");
 
   elements.forEach((el) => {
-    const fxRate = getNumAttr(el, 'fxRateToBase') || 1;
-    const marketValue = getNumAttr(el, 'positionValue');
-    const unrealizedPnl = getNumAttr(el, 'fifoPnlUnrealized');
-    const costBasisMoney = getNumAttr(el, 'costBasisMoney');
+    const fxRate = getNumAttr(el, "fxRateToBase") || 1;
+    const marketValue = getNumAttr(el, "positionValue");
+    const unrealizedPnl = getNumAttr(el, "fifoPnlUnrealized");
+    const costBasisMoney = getNumAttr(el, "costBasisMoney");
 
     positions.push({
-      accountId: getAttr(el, 'accountId'),
-      symbol: getAttr(el, 'symbol'),
-      description: getAttr(el, 'description'),
-      conid: getAttr(el, 'conid'),
-      isin: getAttr(el, 'securityID'),
-      assetCategory: getAttr(el, 'assetCategory') || 'OTHER',
-      currency: getAttr(el, 'currency'),
-      quantity: getNumAttr(el, 'position'),
-      markPrice: getNumAttr(el, 'markPrice'),
+      accountId: getAttr(el, "accountId"),
+      symbol: getAttr(el, "symbol"),
+      description: getAttr(el, "description"),
+      conid: getAttr(el, "conid"),
+      isin: getAttr(el, "securityID"),
+      assetCategory: getAttr(el, "assetCategory") || "OTHER",
+      currency: getAttr(el, "currency"),
+      quantity: getNumAttr(el, "position"),
+      markPrice: getNumAttr(el, "markPrice"),
       marketValue,
-      costBasisPrice: getNumAttr(el, 'costBasisPrice'),
+      costBasisPrice: getNumAttr(el, "costBasisPrice"),
       costBasisMoney,
       unrealizedPnl,
-      percentOfNav: getNumAttr(el, 'percentOfNAV'),
+      percentOfNav: getNumAttr(el, "percentOfNAV"),
       fxRateToBase: fxRate,
       marketValueBase: marketValue * fxRate,
       unrealizedPnlBase: unrealizedPnl * fxRate,
@@ -81,18 +100,18 @@ function parsePositions(doc: Document): IbkrPosition[] {
 
 function parseCashBalances(doc: Document): IbkrCashBalance[] {
   const balances: IbkrCashBalance[] = [];
-  const elements = doc.querySelectorAll('CashReportCurrency');
+  const elements = doc.querySelectorAll("CashReportCurrency");
 
   elements.forEach((el) => {
-    const currency = getAttr(el, 'currency');
+    const currency = getAttr(el, "currency");
     // Skip the aggregate "BASE_SUMMARY" row
-    if (!currency || currency === 'BASE_SUMMARY') return;
-    const fxRate = getNumAttr(el, 'fxRateToBase') || 1;
-    const endingCash = getNumAttr(el, 'endingCash');
+    if (!currency || currency === "BASE_SUMMARY") return;
+    const fxRate = getNumAttr(el, "fxRateToBase") || 1;
+    const endingCash = getNumAttr(el, "endingCash");
     balances.push({
       currency,
       endingCash,
-      endingSettledCash: getNumAttr(el, 'endingSettledCash'),
+      endingSettledCash: getNumAttr(el, "endingSettledCash"),
       fxRateToBase: fxRate,
       endingCashBase: endingCash * fxRate,
     });
@@ -103,33 +122,33 @@ function parseCashBalances(doc: Document): IbkrCashBalance[] {
 
 function parseNav(doc: Document): number {
   // NAV is usually an attribute on the EquitySummaryInBase or on FlexStatement
-  const eqEl = doc.querySelector('EquitySummaryByReportDateInBase');
+  const eqEl = doc.querySelector("EquitySummaryByReportDateInBase");
   if (eqEl) {
-    const total = getNumAttr(eqEl, 'total');
+    const total = getNumAttr(eqEl, "total");
     if (total !== 0) return total;
   }
   // Fallback: look for netAssetValue on the statement-level element
-  const stmtEl = doc.querySelector('FlexStatement');
+  const stmtEl = doc.querySelector("FlexStatement");
   if (stmtEl) {
-    return getNumAttr(stmtEl, 'netAssetValue');
+    return getNumAttr(stmtEl, "netAssetValue");
   }
   return 0;
 }
 
 function parseAccountId(doc: Document): string {
-  const stmtEl = doc.querySelector('FlexStatement');
+  const stmtEl = doc.querySelector("FlexStatement");
   if (stmtEl) {
-    return getAttr(stmtEl, 'accountId');
+    return getAttr(stmtEl, "accountId");
   }
   // Fallback to first position's accountId
-  const pos = doc.querySelector('OpenPosition');
-  if (pos) return getAttr(pos, 'accountId');
-  return '';
+  const pos = doc.querySelector("OpenPosition");
+  if (pos) return getAttr(pos, "accountId");
+  return "";
 }
 
 function parseFlexReport(xml: string): IbkrAccount {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, 'text/xml');
+  const doc = parser.parseFromString(xml, "text/xml");
 
   return {
     accountId: parseAccountId(doc),
@@ -149,20 +168,22 @@ export class IbkrApiError extends Error {
 
   constructor(message: string, code: string) {
     super(message);
-    this.name = 'IbkrApiError';
+    this.name = "IbkrApiError";
     this.code = code;
   }
 }
 
-function extractErrorFromXml(xml: string): { code: string; message: string } | null {
+function extractErrorFromXml(
+  xml: string,
+): { code: string; message: string } | null {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, 'text/xml');
-  const codeEl = doc.querySelector('ErrorCode');
-  const msgEl = doc.querySelector('ErrorMessage');
+  const doc = parser.parseFromString(xml, "text/xml");
+  const codeEl = doc.querySelector("ErrorCode");
+  const msgEl = doc.querySelector("ErrorMessage");
   if (codeEl?.textContent) {
     return {
       code: codeEl.textContent,
-      message: msgEl?.textContent ?? 'Unknown IBKR error',
+      message: msgEl?.textContent ?? "Unknown IBKR error",
     };
   }
   return null;
@@ -173,17 +194,17 @@ function extractErrorFromXml(xml: string): { code: string; message: string } | n
 // ============================================================
 
 async function sendRequest(token: string, queryId: string): Promise<string> {
-  // TODO: Route through backend proxy to hide token from browser
+  assertFlexEndpointConfigured();
   const url = `${FLEX_BASE_URL}/SendRequest?t=${encodeURIComponent(token)}&q=${encodeURIComponent(queryId)}&v=3`;
 
   const resp = await fetch(url, {
-    headers: { 'User-Agent': 'Demeter/1.0', ...(PROXY_KEY && { 'X-Proxy-Key': PROXY_KEY }) },
+    headers: { ...(PROXY_KEY && { "X-Proxy-Key": PROXY_KEY }) },
   });
 
   if (!resp.ok) {
     throw new IbkrApiError(
       `SendRequest HTTP error: ${resp.status} ${resp.statusText}`,
-      'HTTP_ERROR',
+      "HTTP_ERROR",
     );
   }
 
@@ -197,32 +218,35 @@ async function sendRequest(token: string, queryId: string): Promise<string> {
 
   // Extract reference code
   const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, 'text/xml');
-  const refEl = doc.querySelector('ReferenceCode');
+  const doc = parser.parseFromString(xml, "text/xml");
+  const refEl = doc.querySelector("ReferenceCode");
   const refCode = refEl?.textContent;
 
   if (!refCode) {
     throw new IbkrApiError(
-      'SendRequest: no ReferenceCode in response',
-      'NO_REF_CODE',
+      "SendRequest: no ReferenceCode in response",
+      "NO_REF_CODE",
     );
   }
 
   return refCode;
 }
 
-async function getStatement(token: string, referenceCode: string): Promise<string> {
-  // TODO: Route through backend proxy to hide token from browser
+async function getStatement(
+  token: string,
+  referenceCode: string,
+): Promise<string> {
+  assertFlexEndpointConfigured();
   const url = `${FLEX_BASE_URL}/GetStatement?t=${encodeURIComponent(token)}&q=${encodeURIComponent(referenceCode)}&v=3`;
 
   const resp = await fetch(url, {
-    headers: { 'User-Agent': 'Demeter/1.0', ...(PROXY_KEY && { 'X-Proxy-Key': PROXY_KEY }) },
+    headers: { ...(PROXY_KEY && { "X-Proxy-Key": PROXY_KEY }) },
   });
 
   if (!resp.ok) {
     throw new IbkrApiError(
       `GetStatement HTTP error: ${resp.status} ${resp.statusText}`,
-      'HTTP_ERROR',
+      "HTTP_ERROR",
     );
   }
 
@@ -250,8 +274,8 @@ export async function fetchIbkrPortfolio(
 ): Promise<IbkrAccount> {
   if (!flexToken || !flexQueryId) {
     throw new IbkrApiError(
-      'IBKR Flex token and Query ID are required. Configure them in Settings.',
-      'CONFIG_MISSING',
+      "IBKR Flex token and Query ID are required. Configure them in Settings.",
+      "CONFIG_MISSING",
     );
   }
 
@@ -267,7 +291,7 @@ export async function fetchIbkrPortfolio(
     // Error code 1019 = still generating
     const err = extractErrorFromXml(xml);
     if (err) {
-      if (err.code === '1019') {
+      if (err.code === "1019") {
         await delay(POLL_DELAY_MS);
         continue;
       }
@@ -280,6 +304,6 @@ export async function fetchIbkrPortfolio(
 
   throw new IbkrApiError(
     `Report generation timed out after ${MAX_POLL_ATTEMPTS} attempts`,
-    'TIMEOUT',
+    "TIMEOUT",
   );
 }

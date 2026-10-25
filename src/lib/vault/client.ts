@@ -5,7 +5,8 @@
 
 import { VaultClient } from "@ursalock/client";
 
-export const SERVER_URL = import.meta.env.VITE_VAULT_SERVER_URL ?? "https://vault.ndlz.net";
+export const SERVER_URL =
+  import.meta.env.VITE_VAULT_SERVER_URL ?? "https://vault.ndlz.net";
 
 /** Vault name on the server (auto-created on first use) */
 export const VAULT_NAME = "demeter";

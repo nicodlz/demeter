@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatCurrency } from '@/utils/formatters';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
-import { Wallet, Coins, BarChart3, Link2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/utils/formatters";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
+import { Wallet, Coins, BarChart3, Link2 } from "lucide-react";
 
 interface CryptoSummaryCardsProps {
   totalCryptoValue: number;
@@ -26,19 +26,21 @@ export const CryptoSummaryCards = ({
         </CardHeader>
         <CardContent>
           <div className="text-lg sm:text-2xl font-bold">
-            {mask(formatCurrency(totalCryptoValue, 'USD'))}
+            {mask(formatCurrency(totalCryptoValue, "USD"))}
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Stablecoins</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Total Stablecoins
+          </CardTitle>
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-lg sm:text-2xl font-bold">
-            {mask(formatCurrency(totalStablecoinValue, 'USD'))}
+            {mask(formatCurrency(totalStablecoinValue, "USD"))}
           </div>
         </CardContent>
       </Card>

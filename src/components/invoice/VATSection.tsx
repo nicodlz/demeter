@@ -1,42 +1,42 @@
-import type { VATRate } from '@/schemas';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { VATRate } from "@/schemas";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 const VAT_EXEMPTION_REASONS = [
-  'VAT not applicable, art. 293 B of CGI (France)',
-  'Reverse charge - B2B services outside EU',
-  'Reverse charge - Article 196 of EU VAT Directive',
-  'Intra-community supply - Article 138 of EU VAT Directive',
-  'Export outside EU - Article 146 of EU VAT Directive',
-  'VAT exempt - Article 261 of CGI (France)',
-  'Place of supply outside EU - services',
-  'VAT not applicable',
+  "VAT not applicable, art. 293 B of CGI (France)",
+  "Reverse charge - B2B services outside EU",
+  "Reverse charge - Article 196 of EU VAT Directive",
+  "Intra-community supply - Article 138 of EU VAT Directive",
+  "Export outside EU - Article 146 of EU VAT Directive",
+  "VAT exempt - Article 261 of CGI (France)",
+  "Place of supply outside EU - services",
+  "VAT not applicable",
 ] as const;
 
 const VAT_EXEMPTION_LABELS: Record<string, string> = {
-  'VAT not applicable, art. 293 B of CGI (France)':
-    'VAT not applicable, art. 293 B of CGI (France)',
-  'Reverse charge - B2B services outside EU':
-    'Reverse charge - B2B services outside EU',
-  'Reverse charge - Article 196 of EU VAT Directive':
-    'Reverse charge - Article 196 of EU VAT Directive',
-  'Intra-community supply - Article 138 of EU VAT Directive':
-    'Intra-community supply - Article 138',
-  'Export outside EU - Article 146 of EU VAT Directive':
-    'Export outside EU - Article 146',
-  'VAT exempt - Article 261 of CGI (France)':
-    'VAT exempt - Article 261 of CGI (France)',
-  'Place of supply outside EU - services':
-    'Place of supply outside EU - services',
-  'VAT not applicable': 'VAT not applicable',
+  "VAT not applicable, art. 293 B of CGI (France)":
+    "VAT not applicable, art. 293 B of CGI (France)",
+  "Reverse charge - B2B services outside EU":
+    "Reverse charge - B2B services outside EU",
+  "Reverse charge - Article 196 of EU VAT Directive":
+    "Reverse charge - Article 196 of EU VAT Directive",
+  "Intra-community supply - Article 138 of EU VAT Directive":
+    "Intra-community supply - Article 138",
+  "Export outside EU - Article 146 of EU VAT Directive":
+    "Export outside EU - Article 146",
+  "VAT exempt - Article 261 of CGI (France)":
+    "VAT exempt - Article 261 of CGI (France)",
+  "Place of supply outside EU - services":
+    "Place of supply outside EU - services",
+  "VAT not applicable": "VAT not applicable",
 };
 
 interface VATSectionProps {
@@ -94,7 +94,10 @@ export const VATSection = ({
         ) : (
           <div className="space-y-2">
             <Label htmlFor="vatExemptionReason">VAT Exemption Reason</Label>
-            <Select value={vatExemptionReason} onValueChange={onVatExemptionReasonChange}>
+            <Select
+              value={vatExemptionReason}
+              onValueChange={onVatExemptionReasonChange}
+            >
               <SelectTrigger id="vatExemptionReason">
                 <SelectValue />
               </SelectTrigger>

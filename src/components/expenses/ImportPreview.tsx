@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import type { ParsedTransaction } from '@/schemas';
-import { formatCurrency, formatDate } from '@/utils/formatters';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from "react";
+import type { ParsedTransaction } from "@/schemas";
+import { formatCurrency, formatDate } from "@/utils/formatters";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 
 interface ImportPreviewProps {
   transactions: ParsedTransaction[];
@@ -29,7 +29,7 @@ export const ImportPreview = ({
   const { mask } = usePrivacyMode();
   // All non-duplicate transactions selected by default
   const [selected, setSelected] = useState<Set<number>>(
-    new Set(transactions.map((_, i) => i))
+    new Set(transactions.map((_, i) => i)),
   );
 
   const toggleTransaction = (index: number) => {
@@ -57,12 +57,18 @@ export const ImportPreview = ({
     onConfirm(selectedTransactions);
   };
 
-  const selectedTransactionsList = transactions.filter((_, i) => selected.has(i));
-  const totalDebits = selectedTransactionsList.filter(t => !t.isCredit).reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  const totalCredits = selectedTransactionsList.filter(t => t.isCredit).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const selectedTransactionsList = transactions.filter((_, i) =>
+    selected.has(i),
+  );
+  const totalDebits = selectedTransactionsList
+    .filter((t) => !t.isCredit)
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const totalCredits = selectedTransactionsList
+    .filter((t) => t.isCredit)
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
   const totalSelected = totalCredits - totalDebits;
 
-  const previewCurrency = transactions[0]?.currency ?? 'USD';
+  const previewCurrency = transactions[0]?.currency ?? "USD";
 
   return (
     <div className="space-y-4">
@@ -80,8 +86,12 @@ export const ImportPreview = ({
         </div>
         <div className="text-right">
           <div className="text-sm text-muted-foreground">Total selected</div>
-          <div className={`font-bold ${totalSelected >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-            {mask(`${totalSelected >= 0 ? "+" : "-"}${formatCurrency(Math.abs(totalSelected), previewCurrency)}`)}
+          <div
+            className={`font-bold ${totalSelected >= 0 ? "text-green-600" : "text-destructive"}`}
+          >
+            {mask(
+              `${totalSelected >= 0 ? "+" : "-"}${formatCurrency(Math.abs(totalSelected), previewCurrency)}`,
+            )}
           </div>
         </div>
       </div>
@@ -94,7 +104,8 @@ export const ImportPreview = ({
           <div className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
             {duplicates.slice(0, 5).map((d, i) => (
               <div key={i} className="line-through opacity-60">
-                {formatDate(d.date)} - {d.description.substring(0, 40)}... - {mask(formatCurrency(d.amount, d.currency))}
+                {formatDate(d.date)} - {d.description.substring(0, 40)}... -{" "}
+                {mask(formatCurrency(d.amount, d.currency))}
               </div>
             ))}
             {duplicates.length > 5 && (
@@ -123,7 +134,7 @@ export const ImportPreview = ({
             {transactions.map((tx, index) => (
               <TableRow
                 key={index}
-                className={!selected.has(index) ? 'opacity-50' : ''}
+                className={!selected.has(index) ? "opacity-50" : ""}
               >
                 <TableCell>
                   <Checkbox
@@ -135,7 +146,10 @@ export const ImportPreview = ({
                   {formatDate(tx.date)}
                 </TableCell>
                 <TableCell>
-                  <div className="max-w-[150px] sm:max-w-[250px] truncate" title={tx.description}>
+                  <div
+                    className="max-w-[150px] sm:max-w-[250px] truncate"
+                    title={tx.description}
+                  >
                     {tx.description}
                   </div>
                   {tx.merchantName && tx.merchantName !== tx.description && (
@@ -144,8 +158,12 @@ export const ImportPreview = ({
                     </div>
                   )}
                 </TableCell>
-                <TableCell className={`text-right font-medium ${tx.isCredit ? 'text-green-600' : 'text-destructive'}`}>
-                  {mask(`${tx.isCredit ? '+' : '-'}${formatCurrency(Math.abs(tx.amount), tx.currency)}`)}
+                <TableCell
+                  className={`text-right font-medium ${tx.isCredit ? "text-green-600" : "text-destructive"}`}
+                >
+                  {mask(
+                    `${tx.isCredit ? "+" : "-"}${formatCurrency(Math.abs(tx.amount), tx.currency)}`,
+                  )}
                 </TableCell>
               </TableRow>
             ))}

@@ -1,7 +1,8 @@
-import { useCallback } from 'react';
-import { useStore } from '../store';
-import type { AnyNetWorthSnapshot, Currency } from '@/schemas';
-import { isV2Snapshot } from '../types';
+import { todayLocalISO } from "@/utils/date";
+import { useCallback } from "react";
+import { useStore } from "../store";
+import type { AnyNetWorthSnapshot, Currency } from "@/schemas";
+import { isV2Snapshot } from "../types";
 
 // =============================================================================
 // Standalone utility functions (not hook-dependent, exported for reuse)
@@ -11,27 +12,31 @@ import { isV2Snapshot } from '../types';
 export const getSnapshotTotal = (
   snapshot: AnyNetWorthSnapshot,
   convert: (amount: number, from: Currency, to: Currency) => number,
-  targetCurrency: Currency = 'USD'
+  targetCurrency: Currency = "USD",
 ): number => {
   if (isV2Snapshot(snapshot)) {
-    const categories = ['stocks', 'crypto', 'cash', 'stablecoins'] as const;
+    const categories = ["stocks", "crypto", "cash", "stablecoins"] as const;
     return categories.reduce((total, category) => {
-      return total + snapshot[category].reduce((sum, entry) => {
-        return sum + convert(entry.amount, entry.currency, targetCurrency);
-      }, 0);
+      return (
+        total +
+        snapshot[category].reduce((sum, entry) => {
+          return sum + convert(entry.amount, entry.currency, targetCurrency);
+        }, 0)
+      );
     }, 0);
   }
   // V1: assume USD and convert to target currency
-  const total = snapshot.stocks + snapshot.crypto + snapshot.cash + snapshot.stablecoins;
-  return convert(total, 'USD', targetCurrency);
+  const total =
+    snapshot.stocks + snapshot.crypto + snapshot.cash + snapshot.stablecoins;
+  return convert(total, "USD", targetCurrency);
 };
 
 /** Get category total for any snapshot format */
 export const getCategoryTotal = (
   snapshot: AnyNetWorthSnapshot,
-  category: 'stocks' | 'crypto' | 'cash' | 'stablecoins',
+  category: "stocks" | "crypto" | "cash" | "stablecoins",
   convert: (amount: number, from: Currency, to: Currency) => number,
-  targetCurrency: Currency = 'USD'
+  targetCurrency: Currency = "USD",
 ): number => {
   if (isV2Snapshot(snapshot)) {
     return snapshot[category].reduce((sum, entry) => {
@@ -39,7 +44,7 @@ export const getCategoryTotal = (
     }, 0);
   }
   // V1: assume USD and convert to target currency
-  return convert(snapshot[category], 'USD', targetCurrency);
+  return convert(snapshot[category], "USD", targetCurrency);
 };
 
 // =============================================================================
@@ -55,34 +60,34 @@ export const useNetWorthSnapshots = () => {
 
   const getSnapshotById = useCallback(
     (id: string) => snapshots.find((snapshot) => snapshot.id === id),
-    [snapshots]
+    [snapshots],
   );
 
   const getSnapshotByDate = useCallback(
     (date: string) => snapshots.find((snapshot) => snapshot.date === date),
-    [snapshots]
+    [snapshots],
   );
 
   const getLatestSnapshot = useCallback((): AnyNetWorthSnapshot | null => {
     if (snapshots.length === 0) return null;
     return [...snapshots].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     )[0];
   }, [snapshots]);
 
   const getSortedSnapshots = useCallback(() => {
     return [...snapshots].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
   }, [snapshots]);
 
   const exportAsJSON = useCallback(() => {
     const dataStr = JSON.stringify(snapshots, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
+    const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = `net-worth-snapshots-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `net-worth-snapshots-${todayLocalISO()}.json`;
     link.click();
     URL.revokeObjectURL(url);
   }, [snapshots]);

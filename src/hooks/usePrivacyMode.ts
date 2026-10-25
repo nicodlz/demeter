@@ -1,4 +1,4 @@
-import { useStore } from '../store';
+import { useStore } from "../store";
 
 /**
  * Global privacy mode hook.
@@ -13,10 +13,10 @@ export const usePrivacyMode = () => {
   const togglePrivacy = () => updateSettings({ privacyMode: !privacyMode });
 
   /** Mask a formatted string when privacy mode is on */
-  const mask = (value: string) => (privacyMode ? '•••••' : value);
+  const mask = (value: string) => (privacyMode ? "•••••" : value);
 
   /** Mask with shorter placeholder (for axis ticks, compact displays) */
-  const maskShort = (value: string) => (privacyMode ? '•••' : value);
+  const maskShort = (value: string) => (privacyMode ? "•••" : value);
 
   return { privacyMode, togglePrivacy, mask, maskShort };
 };

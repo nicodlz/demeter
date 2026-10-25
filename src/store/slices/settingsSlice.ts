@@ -1,6 +1,6 @@
-import type { StateCreator } from 'zustand';
-import type { StoreState, SettingsSlice } from '../types';
-import { DEFAULT_SETTINGS } from '../../utils/constants';
+import type { StateCreator } from "zustand";
+import type { StoreState, SettingsSlice } from "../types";
+import { DEFAULT_SETTINGS } from "../../utils/constants";
 
 export const createSettingsSlice: StateCreator<
   StoreState,

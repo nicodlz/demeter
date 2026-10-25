@@ -1,26 +1,46 @@
-import { useState, type ReactNode } from 'react';
-import { Link, useLocation } from '@tanstack/react-router';
-import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
-import { Button } from '@/components/ui/button';
-import { Toast } from '@/components/ui/Toast';
+import { useState, type ReactNode } from "react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { Button } from "@/components/ui/button";
+import { Toast } from "@/components/ui/Toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from '@/components/ui/sheet';
-import { ChevronDown, Menu, LogOut, Eye, EyeOff } from 'lucide-react';
-import { ModeToggle } from '@/components/mode-toggle';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
-import { useVault } from '@/lib/vault/context';
+} from "@/components/ui/sheet";
+import {
+  ChevronDown,
+  Menu,
+  LogOut,
+  Eye,
+  EyeOff,
+  Cloud,
+  CloudOff,
+  CloudUpload,
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ModeToggle } from "@/components/mode-toggle";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
+import { useVault } from "@/hooks/useVault";
 
 interface NavLink {
   to: string;
@@ -34,26 +54,26 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { to: '/', label: 'Dashboard' },
-  { to: '/cash-flow', label: 'Cash Flow' },
+  { to: "/", label: "Dashboard" },
+  { to: "/cash-flow", label: "Cash Flow" },
   {
-    label: 'Portfolio',
+    label: "Portfolio",
     children: [
-      { to: '/crypto', label: 'Crypto' },
-      { to: '/ibkr', label: 'IBKR' },
-      { to: '/net-worth', label: 'Net Worth' },
-      { to: '/projections', label: 'Projections' },
+      { to: "/crypto", label: "Crypto" },
+      { to: "/ibkr", label: "IBKR" },
+      { to: "/net-worth", label: "Net Worth" },
+      { to: "/projections", label: "Projections" },
     ],
   },
   {
-    label: 'Billing',
+    label: "Billing",
     children: [
-      { to: '/billing/invoices', label: 'Invoices' },
-      { to: '/billing/clients', label: 'Clients' },
-      { to: '/billing/settings', label: 'Settings' },
+      { to: "/billing/invoices", label: "Invoices" },
+      { to: "/billing/clients", label: "Clients" },
+      { to: "/billing/settings", label: "Settings" },
     ],
   },
-  { to: '/configuration', label: 'Configuration' },
+  { to: "/configuration", label: "Configuration" },
 ];
 
 interface LayoutProps {
@@ -64,32 +84,32 @@ export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const pathname = location.pathname;
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { signOut } = useVault();
+  const { signOut, syncStatus } = useVault();
   const { privacyMode, togglePrivacy } = usePrivacyMode();
 
   const isActive = (to: string) => {
-    if (to === '/') return pathname === '/';
+    if (to === "/") return pathname === "/";
     return pathname === to;
   };
 
-  const portfolioPaths = ['/crypto', '/ibkr', '/net-worth', '/projections'];
+  const portfolioPaths = ["/crypto", "/ibkr", "/net-worth", "/projections"];
   const isPortfolioActive = () => portfolioPaths.some((p) => pathname === p);
-  const isBillingActive = () => pathname.startsWith('/billing');
+  const isBillingActive = () => pathname.startsWith("/billing");
 
   const isDropdownActive = (label: string) => {
-    if (label === 'Portfolio') return isPortfolioActive();
-    if (label === 'Billing') return isBillingActive();
+    if (label === "Portfolio") return isPortfolioActive();
+    if (label === "Billing") return isBillingActive();
     return false;
   };
 
   const linkBaseClass = cn(
-    buttonVariants({ variant: 'ghost' }),
-    'h-16 rounded-none border-b-2 px-4'
+    buttonVariants({ variant: "ghost" }),
+    "h-16 rounded-none border-b-2 px-4",
   );
 
-  const activeLinkClass = 'border-primary text-foreground';
+  const activeLinkClass = "border-primary text-foreground";
   const inactiveLinkClass =
-    'border-transparent text-muted-foreground hover:text-foreground hover:border-border';
+    "border-transparent text-muted-foreground hover:text-foreground hover:border-border";
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,7 +133,7 @@ export const Layout = ({ children }: LayoutProps) => {
                             linkBaseClass,
                             isDropdownActive(item.label)
                               ? activeLinkClass
-                              : inactiveLinkClass
+                              : inactiveLinkClass,
                           )}
                         >
                           {item.label}
@@ -126,8 +146,8 @@ export const Layout = ({ children }: LayoutProps) => {
                             <Link
                               to={child.to}
                               className={cn(
-                                'w-full cursor-pointer',
-                                isActive(child.to) && 'bg-accent'
+                                "w-full cursor-pointer",
+                                isActive(child.to) && "bg-accent",
                               )}
                             >
                               {child.label}
@@ -144,39 +164,89 @@ export const Layout = ({ children }: LayoutProps) => {
                         linkBaseClass,
                         isActive(item.to!)
                           ? activeLinkClass
-                          : inactiveLinkClass
+                          : inactiveLinkClass,
                       )}
                     >
                       {item.label}
                     </Link>
-                  )
+                  ),
                 )}
               </div>
             </div>
 
             {/* Theme toggle and mobile menu */}
             <div className="flex items-center gap-2">
+              <span
+                className="hidden sm:inline-flex h-10 w-10 items-center justify-center"
+                role="status"
+                aria-live="polite"
+                title={
+                  syncStatus === "synced"
+                    ? "All changes saved to the encrypted vault"
+                    : syncStatus === "syncing"
+                      ? "Saving to the encrypted vault…"
+                      : syncStatus === "pulling"
+                        ? "Loading from the encrypted vault…"
+                        : syncStatus === "offline"
+                          ? "Vault offline — changes are kept locally"
+                          : syncStatus === "error"
+                            ? "Last vault save failed — retrying"
+                            : "Vault not connected"
+                }
+              >
+                {syncStatus === "synced" ? (
+                  <Cloud className="h-4 w-4 text-green-600" />
+                ) : syncStatus === "syncing" || syncStatus === "pulling" ? (
+                  <CloudUpload className="h-4 w-4 animate-pulse text-muted-foreground" />
+                ) : syncStatus === "offline" || syncStatus === "error" ? (
+                  <CloudOff className="h-4 w-4 text-destructive" />
+                ) : (
+                  <Cloud className="h-4 w-4 text-muted-foreground" />
+                )}
+              </span>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={togglePrivacy}
                 className="h-10 w-10"
-                aria-label={privacyMode ? 'Show amounts' : 'Hide amounts'}
-                title={privacyMode ? 'Show amounts' : 'Hide amounts'}
+                aria-label={privacyMode ? "Show amounts" : "Hide amounts"}
+                title={privacyMode ? "Show amounts" : "Hide amounts"}
               >
-                {privacyMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {privacyMode ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </Button>
               <ModeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => void signOut()}
-                className="h-10 w-10"
-                aria-label="Sign out"
-                title="Sign out"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10"
+                    aria-label="Sign out"
+                    title="Sign out"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Sign out of Demeter?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Pending changes are saved to the encrypted vault first.
+                      Local data on this device is then cleared.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => void signOut()}>
+                      Sign out
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <Button
                 variant="ghost"
                 size="icon"
@@ -195,8 +265,12 @@ export const Layout = ({ children }: LayoutProps) => {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-[280px] p-0">
           <SheetHeader className="px-6 pt-6 pb-4 border-b">
-            <SheetTitle className="text-left text-xl font-bold">Demeter</SheetTitle>
-            <SheetDescription className="text-left sr-only">Navigation menu</SheetDescription>
+            <SheetTitle className="text-left text-xl font-bold">
+              Demeter
+            </SheetTitle>
+            <SheetDescription className="text-left sr-only">
+              Navigation menu
+            </SheetDescription>
           </SheetHeader>
           <nav className="flex flex-col py-2 overflow-y-auto">
             {navItems.map((item) =>
@@ -211,10 +285,10 @@ export const Layout = ({ children }: LayoutProps) => {
                       to={child.to}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        'flex items-center px-8 py-3 text-sm transition-colors min-h-[44px]',
+                        "flex items-center px-8 py-3 text-sm transition-colors min-h-[44px]",
                         isActive(child.to)
-                          ? 'bg-accent text-accent-foreground font-medium'
-                          : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                          ? "bg-accent text-accent-foreground font-medium"
+                          : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                       )}
                     >
                       {child.label}
@@ -227,15 +301,15 @@ export const Layout = ({ children }: LayoutProps) => {
                   to={item.to!}
                   onClick={() => setMobileOpen(false)}
                   className={cn(
-                    'flex items-center px-6 py-3 text-sm transition-colors min-h-[44px]',
+                    "flex items-center px-6 py-3 text-sm transition-colors min-h-[44px]",
                     isActive(item.to!)
-                      ? 'bg-accent text-accent-foreground font-medium'
-                      : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                   )}
                 >
                   {item.label}
                 </Link>
-              )
+              ),
             )}
           </nav>
         </SheetContent>

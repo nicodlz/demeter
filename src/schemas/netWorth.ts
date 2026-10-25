@@ -1,7 +1,12 @@
-import { z } from 'zod';
-import { currencySchema } from './client';
+import { z } from "zod";
+import { currencySchema } from "./client";
 
-export const assetClassSchema = z.enum(['stocks', 'crypto', 'cash', 'stablecoins']);
+export const assetClassSchema = z.enum([
+  "stocks",
+  "crypto",
+  "cash",
+  "stablecoins",
+]);
 
 export const assetEntrySchema = z.object({
   id: z.string(),

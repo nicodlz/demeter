@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { useStore } from '../store';
+import { useCallback } from "react";
+import { useStore } from "../store";
 
 export const useInvoices = () => {
   const invoices = useStore((state) => state.invoices);
@@ -9,12 +9,12 @@ export const useInvoices = () => {
 
   const getInvoiceById = useCallback(
     (id: string) => invoices.find((invoice) => invoice.id === id),
-    [invoices]
+    [invoices],
   );
 
   const getInvoiceByNumber = useCallback(
     (number: string) => invoices.find((invoice) => invoice.number === number),
-    [invoices]
+    [invoices],
   );
 
   return {

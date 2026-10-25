@@ -1,10 +1,10 @@
-import type { AssetClass } from '@/schemas';
+import type { AssetClass } from "@/schemas";
 
 // Default expected annual returns by asset class
 export const DEFAULT_RETURNS: Record<AssetClass, number> = {
-  stocks: 0.07,      // 7%
-  crypto: 0.15,      // 15% (volatile, user should adjust)
-  cash: 0.02,        // 2% (savings accounts)
+  stocks: 0.07, // 7%
+  crypto: 0.15, // 15% (volatile, user should adjust)
+  cash: 0.02, // 2% (savings accounts)
   stablecoins: 0.05, // 5% (DeFi yields)
 };
 
@@ -38,7 +38,7 @@ export function calculateCompoundInterest(
   principal: number,
   monthlyContribution: number,
   annualRate: number,
-  years: number
+  years: number,
 ): ProjectionResult {
   const monthlyRate = annualRate / 12;
   const projectionByYear: ProjectionYear[] = [];
@@ -58,7 +58,7 @@ export function calculateCompoundInterest(
       totalContributed += monthlyContribution;
 
       // Apply monthly interest
-      currentValue *= (1 + monthlyRate);
+      currentValue *= 1 + monthlyRate;
     }
 
     const yearlyGains = currentValue - startOfYearValue - yearlyContribution;
@@ -90,7 +90,7 @@ export function yearsToReachTarget(
   monthlyContribution: number,
   annualRate: number,
   target: number,
-  maxYears: number = 100
+  maxYears: number = 100,
 ): number | null {
   const monthlyRate = annualRate / 12;
   let currentValue = principal;
@@ -98,7 +98,7 @@ export function yearsToReachTarget(
 
   while (currentValue < target && months < maxYears * 12) {
     currentValue += monthlyContribution;
-    currentValue *= (1 + monthlyRate);
+    currentValue *= 1 + monthlyRate;
     months++;
   }
 
@@ -114,7 +114,7 @@ export function yearsToReachTarget(
  */
 export function calculateWeightedReturn(
   allocation: Record<AssetClass, number>,
-  customReturns?: Partial<Record<AssetClass, number>>
+  customReturns?: Partial<Record<AssetClass, number>>,
 ): number {
   const returns = { ...DEFAULT_RETURNS, ...customReturns };
   const total = Object.values(allocation).reduce((sum, val) => sum + val, 0);

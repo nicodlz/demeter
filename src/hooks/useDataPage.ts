@@ -1,28 +1,44 @@
-import { useState, useRef } from 'react';
-import { storage } from '@/utils/storage';
-import { useSettings } from '@/hooks/useSettings';
-import { useToast } from '@/hooks/useToast';
+import { useState, useRef } from "react";
+import { storage } from "@/utils/storage";
+import { useSettings } from "@/hooks/useSettings";
+import { useToast } from "@/hooks/useToast";
+import { useStore } from "@/store";
 
 export function useDataPage() {
   const { settings, updateSettings } = useSettings();
   const toast = useToast();
 
-  const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [zerionApiKey, setZerionApiKey] = useState(settings.zerionApiKey || '');
-  const [ibkrFlexToken, setIbkrFlexToken] = useState(settings.ibkrFlexToken || '');
-  const [ibkrFlexQueryId, setIbkrFlexQueryId] = useState(settings.ibkrFlexQueryId || '');
-  const [taxProvisionEnabled, setTaxProvisionEnabled] = useState(settings.taxProvisionEnabled ?? false);
+  const [importStatus, setImportStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [zerionApiKey, setZerionApiKey] = useState(settings.zerionApiKey || "");
+  const [ibkrFlexToken, setIbkrFlexToken] = useState(
+    settings.ibkrFlexToken || "",
+  );
+  const [ibkrFlexQueryId, setIbkrFlexQueryId] = useState(
+    settings.ibkrFlexQueryId || "",
+  );
+  const [taxProvisionEnabled, setTaxProvisionEnabled] = useState(
+    settings.taxProvisionEnabled ?? false,
+  );
   const [taxRate, setTaxRate] = useState(settings.taxRate ?? 30);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const backupInfo = storage.exportAll();
+  const invoices = useStore((state) => state.invoices);
+  const clients = useStore((state) => state.clients);
+  const expenses = useStore((state) => state.expenses);
+  const snapshots = useStore((state) => state.snapshots);
+  const savedItems = useStore((state) => state.savedItems);
+  const mappings = useStore((state) => state.mappings);
+
   const stats = {
-    invoices: Array.isArray(backupInfo.data.invoices) ? backupInfo.data.invoices.length : 0,
-    clients: Array.isArray(backupInfo.data.clients) ? backupInfo.data.clients.length : 0,
-    expenses: Array.isArray(backupInfo.data.expenses) ? backupInfo.data.expenses.length : 0,
-    snapshots: Array.isArray(backupInfo.data.netWorthSnapshots) ? backupInfo.data.netWorthSnapshots.length : 0,
-    savedItems: Array.isArray(backupInfo.data.savedItems) ? backupInfo.data.savedItems.length : 0,
-    categoryMappings: Array.isArray(backupInfo.data.categoryMappings) ? backupInfo.data.categoryMappings.length : 0,
+    invoices: invoices.length,
+    clients: clients.length,
+    expenses: expenses.length,
+    snapshots: snapshots.length,
+    savedItems: savedItems.length,
+    categoryMappings: mappings.length,
   };
 
   const handleExport = () => {
@@ -43,29 +59,38 @@ export function useDataPage() {
       const result = storage.importBackup(parsed);
 
       if (result.success) {
-        setImportStatus({ type: 'success', message: 'Backup imported successfully! Refreshing...' });
-        setTimeout(() => window.location.reload(), 1500);
+        // Reload the store from the freshly written localStorage keys so the
+        // import is visible immediately and can be pushed to the vault.
+        await useStore.persist.rehydrate();
+        setImportStatus({
+          type: "success",
+          message: "Backup imported successfully!",
+        });
+        toast.success("Backup imported!");
       } else {
-        setImportStatus({ type: 'error', message: result.error || 'Import failed' });
+        setImportStatus({
+          type: "error",
+          message: result.error || "Import failed",
+        });
       }
     } catch {
-      setImportStatus({ type: 'error', message: 'Invalid backup file' });
+      setImportStatus({ type: "error", message: "Invalid backup file" });
     }
 
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const handleSaveApiKey = () => {
     updateSettings({ zerionApiKey: zerionApiKey || undefined });
-    toast.success('API key saved!');
+    toast.success("API key saved!");
   };
 
   const handleSaveTaxSettings = () => {
     updateSettings({ taxProvisionEnabled, taxRate });
-    toast.success('Tax provision settings saved!');
+    toast.success("Tax provision settings saved!");
   };
 
   const handleSaveIbkrCredentials = () => {
@@ -73,7 +98,7 @@ export function useDataPage() {
       ibkrFlexToken: ibkrFlexToken || undefined,
       ibkrFlexQueryId: ibkrFlexQueryId || undefined,
     });
-    toast.success('IBKR credentials saved!');
+    toast.success("IBKR credentials saved!");
   };
 
   return {

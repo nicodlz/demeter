@@ -1,27 +1,33 @@
-import { useState, useRef } from 'react';
-import type { ParsedTransaction, BankProvider } from '@/schemas';
-import { useSettings } from '@/hooks/useSettings';
-import { parseStatements, detectProvider, getProviderDisplayName, getProviderInputType, parsePdfFile } from '@/utils/parsers';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState, useRef } from "react";
+import type { ParsedTransaction, BankProvider } from "@/schemas";
+import { useSettings } from "@/hooks/useSettings";
+import {
+  parseStatements,
+  detectProvider,
+  getProviderDisplayName,
+  getProviderInputType,
+  parsePdfFile,
+} from "@/utils/parsers";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ImportPreview } from './ImportPreview';
-import { Upload, FileText, AlertCircle, FileUp, Loader2 } from 'lucide-react';
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ImportPreview } from "./ImportPreview";
+import { Upload, FileText, AlertCircle, FileUp, Loader2 } from "lucide-react";
 
 interface ExpenseImportModalProps {
   open: boolean;
@@ -29,17 +35,27 @@ interface ExpenseImportModalProps {
   onImport: (
     transactions: ParsedTransaction[],
     source: string,
-    provider: BankProvider
+    provider: BankProvider,
   ) => void;
-  findDuplicates: (transactions: ParsedTransaction[]) => {
+  findDuplicates: (
+    transactions: ParsedTransaction[],
+    sourceProvider?: string,
+  ) => {
     unique: ParsedTransaction[];
     duplicates: ParsedTransaction[];
   };
 }
 
-type Step = 'input' | 'preview';
+type Step = "input" | "preview";
 
-const PROVIDERS: BankProvider[] = ['deblock', 'bourso', 'gnosis_pay', 'etherfi', 'credit_agricole', 'bpi'];
+const PROVIDERS: BankProvider[] = [
+  "deblock",
+  "bourso",
+  "gnosis_pay",
+  "etherfi",
+  "credit_agricole",
+  "bpi",
+];
 
 export const ExpenseImportModal = ({
   open,
@@ -48,11 +64,13 @@ export const ExpenseImportModal = ({
   findDuplicates,
 }: ExpenseImportModalProps) => {
   const { settings } = useSettings();
-  const defaultCurrency = settings.defaultCurrency || 'USD';
-  const [step, setStep] = useState<Step>('input');
-  const [provider, setProvider] = useState<BankProvider | ''>('');
-  const [textContent, setTextContent] = useState('');
-  const [parsedTransactions, setParsedTransactions] = useState<ParsedTransaction[]>([]);
+  const defaultCurrency = settings.defaultCurrency || "USD";
+  const [step, setStep] = useState<Step>("input");
+  const [provider, setProvider] = useState<BankProvider | "">("");
+  const [textContent, setTextContent] = useState("");
+  const [parsedTransactions, setParsedTransactions] = useState<
+    ParsedTransaction[]
+  >([]);
   const [duplicates, setDuplicates] = useState<ParsedTransaction[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,9 +79,9 @@ export const ExpenseImportModal = ({
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const resetState = () => {
-    setStep('input');
-    setProvider('');
-    setTextContent('');
+    setStep("input");
+    setProvider("");
+    setTextContent("");
     setParsedTransactions([]);
     setDuplicates([]);
     setParseError(null);
@@ -84,7 +102,9 @@ export const ExpenseImportModal = ({
         setProvider(detected);
         doParse(content, detected);
       } else {
-        setParseError('Could not detect format. Please select a provider manually.');
+        setParseError(
+          "Could not detect format. Please select a provider manually.",
+        );
       }
     } else {
       doParse(content, provider);
@@ -99,18 +119,21 @@ export const ExpenseImportModal = ({
     if (!result.success || result.transactions.length === 0) {
       setParseError(
         result.errors.length > 0
-          ? result.errors.join(', ')
-          : 'No transactions found. Check the format.'
+          ? result.errors.join(", ")
+          : "No transactions found. Check the format.",
       );
       return;
     }
 
     // Check for duplicates
-    const { unique, duplicates: dups } = findDuplicates(result.transactions);
+    const { unique, duplicates: dups } = findDuplicates(
+      result.transactions,
+      selectedProvider,
+    );
 
     setParsedTransactions(unique);
     setDuplicates(dups);
-    setStep('preview');
+    setStep("preview");
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,13 +151,13 @@ export const ExpenseImportModal = ({
       }
 
       handleParse(content);
-    } catch (err) {
-      setParseError('Failed to read file');
+    } catch {
+      setParseError("Failed to read file");
     }
 
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -151,28 +174,33 @@ export const ExpenseImportModal = ({
       if (!result.success || result.transactions.length === 0) {
         setParseError(
           result.errors.length > 0
-            ? result.errors.join(', ')
-            : 'No transactions found in PDF.'
+            ? result.errors.join(", ")
+            : "No transactions found in PDF.",
         );
         setIsLoading(false);
         return;
       }
 
       // Check for duplicates
-      const { unique, duplicates: dups } = findDuplicates(result.transactions);
+      const { unique, duplicates: dups } = findDuplicates(
+        result.transactions,
+        provider,
+      );
 
       setParsedTransactions(unique);
       setDuplicates(dups);
       setIsLoading(false);
-      setStep('preview');
+      setStep("preview");
     } catch (err) {
-      setParseError(`Failed to parse PDF: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setParseError(
+        `Failed to parse PDF: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
       setIsLoading(false);
     }
 
     // Reset file input
     if (pdfInputRef.current) {
-      pdfInputRef.current.value = '';
+      pdfInputRef.current.value = "";
     }
   };
 
@@ -186,6 +214,24 @@ export const ExpenseImportModal = ({
     setIsDragging(false);
   };
 
+  const handleTextFile = async (file: File) => {
+    try {
+      const content = await file.text();
+      setTextContent(content);
+      const detected = provider || detectProvider(content);
+      if (!detected) {
+        setParseError(
+          "Could not detect format. Please select a provider manually.",
+        );
+        return;
+      }
+      if (!provider) setProvider(detected);
+      doParse(content, detected);
+    } catch {
+      setParseError("Failed to read file");
+    }
+  };
+
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
@@ -193,19 +239,27 @@ export const ExpenseImportModal = ({
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
 
-    if (file.type === 'application/pdf') {
-      // Create a fake event for the PDF handler
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+
+    if (isPdf) {
+      if (!provider) {
+        setParseError("Select the bank or provider before dropping a PDF.");
+        return;
+      }
       const fakeEvent = {
         target: { files: [file] },
       } as unknown as React.ChangeEvent<HTMLInputElement>;
-      handlePdfUpload(fakeEvent);
+      await handlePdfUpload(fakeEvent);
+      return;
     }
+
+    await handleTextFile(file);
   };
 
   const handleImportConfirm = (selected: ParsedTransaction[]) => {
     if (!provider) {
-      setParseError('Please select a provider');
-      setStep('input');
+      setParseError("Please select a provider");
+      setStep("input");
       return;
     }
 
@@ -225,7 +279,7 @@ export const ExpenseImportModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        {step === 'input' && (
+        {step === "input" && (
           <div className="space-y-4">
             <div>
               <Label htmlFor="provider">Bank / Provider</Label>
@@ -241,7 +295,13 @@ export const ExpenseImportModal = ({
                     <SelectItem key={p} value={p}>
                       {getProviderDisplayName(p)}
                       <span className="ml-2 text-xs text-muted-foreground">
-                        ({getProviderInputType(p) === 'csv' ? 'CSV' : getProviderInputType(p) === 'pdf' ? 'PDF' : 'Text'})
+                        (
+                        {getProviderInputType(p) === "csv"
+                          ? "CSV"
+                          : getProviderInputType(p) === "pdf"
+                            ? "PDF"
+                            : "Text"}
+                        )
                       </span>
                     </SelectItem>
                   ))}
@@ -249,11 +309,11 @@ export const ExpenseImportModal = ({
               </Select>
             </div>
 
-            {provider && inputType === 'pdf' && (
+            {provider && inputType === "pdf" && (
               <div className="space-y-4">
                 <div
                   className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    isDragging ? 'border-primary bg-primary/5' : 'border-border'
+                    isDragging ? "border-primary bg-primary/5" : "border-border"
                   }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
@@ -302,8 +362,8 @@ export const ExpenseImportModal = ({
               </div>
             )}
 
-            {provider && inputType !== 'pdf' && (
-              <Tabs defaultValue={inputType === 'csv' ? 'file' : 'text'}>
+            {provider && inputType !== "pdf" && (
+              <Tabs defaultValue={inputType === "csv" ? "file" : "text"}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="text" className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
@@ -337,7 +397,16 @@ export const ExpenseImportModal = ({
                 </TabsContent>
 
                 <TabsContent value="file" className="space-y-4">
-                  <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                      isDragging
+                        ? "border-primary bg-primary/5"
+                        : "border-border"
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -352,7 +421,7 @@ export const ExpenseImportModal = ({
                     >
                       <Upload className="h-8 w-8 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
-                        Click to upload CSV or TXT file
+                        Drag & drop or click to upload CSV or TXT file
                       </span>
                     </label>
                   </div>
@@ -375,12 +444,12 @@ export const ExpenseImportModal = ({
           </div>
         )}
 
-        {step === 'preview' && (
+        {step === "preview" && (
           <ImportPreview
             transactions={parsedTransactions}
             duplicates={duplicates}
             onConfirm={handleImportConfirm}
-            onCancel={() => setStep('input')}
+            onCancel={() => setStep("input")}
           />
         )}
       </DialogContent>

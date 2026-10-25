@@ -1,11 +1,11 @@
-import type { ParsedTransaction, Currency, BankProvider } from '@/schemas';
-import { deblockParser } from './deblockParser';
-import { boursoParser } from './boursoParser';
-import { gnosisPayParser } from './gnosisPayParser';
-import { etherfiParser } from './etherfiParser';
-import { parseBoursoramaPdf } from './boursoPdfParser';
-import { parseCreditAgricolePdf } from './creditAgricolePdfParser';
-import { parseBpiPdf } from './bpiPdfParser';
+import type { ParsedTransaction, Currency, BankProvider } from "@/schemas";
+import { deblockParser } from "./deblockParser";
+import { boursoParser } from "./boursoParser";
+import { gnosisPayParser } from "./gnosisPayParser";
+import { etherfiParser } from "./etherfiParser";
+import { parseBoursoramaPdf } from "./boursoPdfParser";
+import { parseCreditAgricolePdf } from "./creditAgricolePdfParser";
+import { parseBpiPdf } from "./bpiPdfParser";
 
 export interface ParserResult {
   success: boolean;
@@ -20,10 +20,10 @@ interface BankParser {
 }
 
 const parsers: BankParser[] = [
-  gnosisPayParser,  // CSV - check first (most specific headers)
-  etherfiParser,    // CSV - second
-  deblockParser,    // Text - French dates
-  boursoParser,     // Text - DD/MM/YYYY
+  gnosisPayParser, // CSV - check first (most specific headers)
+  etherfiParser, // CSV - second
+  deblockParser, // Text - French dates
+  boursoParser, // Text - DD/MM/YYYY
 ];
 
 /**
@@ -42,17 +42,21 @@ export const parseCreditAgricolePdfFile = parseCreditAgricolePdf;
 export const parsePdfFile = async (
   file: File,
   provider: BankProvider,
-  defaultCurrency: Currency = 'EUR'
+  defaultCurrency: Currency = "EUR",
 ): Promise<ParserResult> => {
   switch (provider) {
-    case 'bourso':
+    case "bourso":
       return parseBoursoramaPdf(file, defaultCurrency);
-    case 'credit_agricole':
+    case "credit_agricole":
       return parseCreditAgricolePdf(file, defaultCurrency);
-    case 'bpi':
+    case "bpi":
       return parseBpiPdf(file, defaultCurrency);
     default:
-      return { success: false, transactions: [], errors: [`No PDF parser for provider: ${provider}`] };
+      return {
+        success: false,
+        transactions: [],
+        errors: [`No PDF parser for provider: ${provider}`],
+      };
   }
 };
 
@@ -74,9 +78,9 @@ export const detectProvider = (content: string): BankProvider | null => {
 export const parseStatements = (
   content: string,
   provider: BankProvider,
-  defaultCurrency: Currency = 'EUR'
+  defaultCurrency: Currency = "EUR",
 ): ParserResult => {
-  const parser = parsers.find(p => p.provider === provider);
+  const parser = parsers.find((p) => p.provider === provider);
   if (!parser) {
     return {
       success: false,
@@ -93,7 +97,7 @@ export const parseStatements = (
 export const parseCSVFile = async (
   file: File,
   provider: BankProvider,
-  defaultCurrency: Currency = 'EUR'
+  defaultCurrency: Currency = "EUR",
 ): Promise<ParserResult> => {
   const content = await file.text();
   return parseStatements(content, provider, defaultCurrency);
@@ -104,14 +108,14 @@ export const parseCSVFile = async (
  */
 export const getProviderDisplayName = (provider: BankProvider): string => {
   const names: Record<BankProvider, string> = {
-    deblock: 'Deblock',
-    bourso: 'Boursorama',
-    gnosis_pay: 'Gnosis Pay',
-    etherfi: 'Etherfi',
-    credit_agricole: 'Crédit Agricole',
-    bpi: 'BPI',
-    manual: 'Manual',
-    invoice: 'Invoice',
+    deblock: "Deblock",
+    bourso: "Boursorama",
+    gnosis_pay: "Gnosis Pay",
+    etherfi: "Etherfi",
+    credit_agricole: "Crédit Agricole",
+    bpi: "BPI",
+    manual: "Manual",
+    invoice: "Invoice",
   };
   return names[provider] || provider;
 };
@@ -119,14 +123,28 @@ export const getProviderDisplayName = (provider: BankProvider): string => {
 /**
  * Get input type for provider (text, csv, or pdf)
  */
-export const getProviderInputType = (provider: BankProvider): 'text' | 'csv' | 'pdf' => {
-  if (provider === 'gnosis_pay' || provider === 'etherfi') {
-    return 'csv';
+export const getProviderInputType = (
+  provider: BankProvider,
+): "text" | "csv" | "pdf" => {
+  if (provider === "gnosis_pay" || provider === "etherfi") {
+    return "csv";
   }
-  if (provider === 'bourso' || provider === 'credit_agricole' || provider === 'bpi') {
-    return 'pdf';
+  if (
+    provider === "bourso" ||
+    provider === "credit_agricole" ||
+    provider === "bpi"
+  ) {
+    return "pdf";
   }
-  return 'text';
+  return "text";
 };
 
-export { deblockParser, boursoParser, gnosisPayParser, etherfiParser, parseBoursoramaPdf, parseCreditAgricolePdf, parseBpiPdf };
+export {
+  deblockParser,
+  boursoParser,
+  gnosisPayParser,
+  etherfiParser,
+  parseBoursoramaPdf,
+  parseCreditAgricolePdf,
+  parseBpiPdf,
+};

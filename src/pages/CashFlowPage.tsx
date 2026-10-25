@@ -1,24 +1,33 @@
-import { useCashFlowPage } from '@/hooks/useCashFlowPage';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
-import { formatCurrency } from '@/utils/formatters';
+import { useCashFlowPage } from "@/hooks/useCashFlowPage";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
+import { formatCurrency } from "@/utils/formatters";
+import { todayLocalISO } from "@/utils/date";
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ExpenseTable } from '@/components/expenses/ExpenseTable';
-import { ExpenseForm } from '@/components/expenses/ExpenseForm';
-import { ExpenseImportModal } from '@/components/expenses/ExpenseImportModal';
-import { ExpenseByCategoryChart } from '@/components/expenses/ExpenseByCategoryChart';
-import { CashFlowSankey } from '@/components/cashflow/CashFlowSankey';
-import { Upload, Plus, Download, X, TrendingUp, TrendingDown, ArrowRightLeft } from 'lucide-react';
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ExpenseTable } from "@/components/expenses/ExpenseTable";
+import { ExpenseForm } from "@/components/expenses/ExpenseForm";
+import { ExpenseImportModal } from "@/components/expenses/ExpenseImportModal";
+import { ExpenseByCategoryChart } from "@/components/expenses/ExpenseByCategoryChart";
+import { CashFlowSankey } from "@/components/cashflow/CashFlowSankey";
+import {
+  Upload,
+  Plus,
+  Download,
+  X,
+  TrendingUp,
+  TrendingDown,
+  ArrowRightLeft,
+} from "lucide-react";
 
 export const CashFlowPage = () => {
   const {
@@ -91,7 +100,9 @@ export const CashFlowPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Cash Flow</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            Cash Flow
+          </h1>
           <p className="text-sm text-muted-foreground">
             Track your income and expenses
           </p>
@@ -104,11 +115,21 @@ export const CashFlowPage = () => {
           >
             {displayCurrency}
           </Badge>
-          <Button variant="outline" size="sm" onClick={exportAsCSV} className="min-h-[44px] sm:min-h-0 sm:size-default">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportAsCSV}
+            className="min-h-[44px] sm:min-h-0 sm:size-default"
+          >
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setShowImportModal(true)} className="min-h-[44px] sm:min-h-0 sm:size-default">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowImportModal(true)}
+            className="min-h-[44px] sm:min-h-0 sm:size-default"
+          >
             <Upload className="mr-2 h-4 w-4" />
             Import
           </Button>
@@ -117,17 +138,21 @@ export const CashFlowPage = () => {
             size="sm"
             className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950 min-h-[44px] sm:min-h-0 sm:size-default"
             onClick={() => {
-              setDefaultFormType('income');
+              setDefaultFormType("income");
               setShowForm(true);
             }}
           >
             <TrendingUp className="mr-2 h-4 w-4" />
             New Income
           </Button>
-          <Button size="sm" onClick={() => {
-            setDefaultFormType('expense');
-            setShowForm(true);
-          }} className="min-h-[44px] sm:min-h-0 sm:size-default">
+          <Button
+            size="sm"
+            onClick={() => {
+              setDefaultFormType("expense");
+              setShowForm(true);
+            }}
+            className="min-h-[44px] sm:min-h-0 sm:size-default"
+          >
             <Plus className="mr-2 h-4 w-4" />
             New Expense
           </Button>
@@ -135,7 +160,10 @@ export const CashFlowPage = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as typeof activeTab)}
+      >
         <TabsList>
           <TabsTrigger value="all" className="gap-1.5">
             <ArrowRightLeft className="h-3.5 w-3.5" />
@@ -153,7 +181,7 @@ export const CashFlowPage = () => {
       </Tabs>
 
       {/* Stats */}
-      {activeTab === 'all' ? (
+      {activeTab === "all" ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <Card>
             <CardHeader className="pb-2">
@@ -175,7 +203,9 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-destructive">
-                {mask(`-${formatCurrency(stats.totalExpenses, displayCurrency)}`)}
+                {mask(
+                  `-${formatCurrency(stats.totalExpenses, displayCurrency)}`,
+                )}
               </div>
             </CardContent>
           </Card>
@@ -186,8 +216,15 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-lg sm:text-2xl font-bold ${stats.totalIncome - stats.totalExpenses >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-                {mask(formatCurrency(stats.totalIncome - stats.totalExpenses, displayCurrency))}
+              <div
+                className={`text-lg sm:text-2xl font-bold ${stats.totalIncome - stats.totalExpenses >= 0 ? "text-green-600" : "text-destructive"}`}
+              >
+                {mask(
+                  formatCurrency(
+                    stats.totalIncome - stats.totalExpenses,
+                    displayCurrency,
+                  ),
+                )}
               </div>
             </CardContent>
           </Card>
@@ -209,12 +246,17 @@ export const CashFlowPage = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                {filterMonth !== 'all' ? 'Filtered Total' : 'Total'} ({stats.totalCount} transactions)
+                {filterMonth !== "all" ? "Filtered Total" : "Total"} (
+                {stats.totalCount} transactions)
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}>
-                {mask(`${activeTab === 'income' ? '+' : '-'}${formatCurrency(stats.totalAll, displayCurrency)}`)}
+              <div
+                className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}
+              >
+                {mask(
+                  `${activeTab === "income" ? "+" : "-"}${formatCurrency(stats.totalAll, displayCurrency)}`,
+                )}
               </div>
             </CardContent>
           </Card>
@@ -225,13 +267,23 @@ export const CashFlowPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}>
-                {mask(`${activeTab === 'income' ? '+' : '-'}${formatCurrency(stats.lastCompleted, displayCurrency)}`)}
+              <div
+                className={`text-lg sm:text-2xl font-bold ${getStatColor()}`}
+              >
+                {mask(
+                  `${activeTab === "income" ? "+" : "-"}${formatCurrency(stats.lastCompleted, displayCurrency)}`,
+                )}
               </div>
               {stats.previous > 0 && (
-                <p className={`text-xs ${stats.lastCompleted > stats.previous ? (activeTab === 'income' ? 'text-green-500' : 'text-destructive') : (activeTab === 'income' ? 'text-destructive' : 'text-green-500')}`}>
-                  {stats.lastCompleted > stats.previous ? '+' : ''}
-                  {((stats.lastCompleted - stats.previous) / stats.previous * 100).toFixed(0)}% vs {stats.previousLabel}
+                <p
+                  className={`text-xs ${stats.lastCompleted > stats.previous ? (activeTab === "income" ? "text-green-500" : "text-destructive") : activeTab === "income" ? "text-destructive" : "text-green-500"}`}
+                >
+                  {stats.lastCompleted > stats.previous ? "+" : ""}
+                  {(
+                    ((stats.lastCompleted - stats.previous) / stats.previous) *
+                    100
+                  ).toFixed(0)}
+                  % vs {stats.previousLabel}
                 </p>
               )}
             </CardContent>
@@ -244,7 +296,9 @@ export const CashFlowPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold text-muted-foreground">
-                {mask(`${activeTab === 'income' ? '+' : '-'}${formatCurrency(stats.previous, displayCurrency)}`)}
+                {mask(
+                  `${activeTab === "income" ? "+" : "-"}${formatCurrency(stats.previous, displayCurrency)}`,
+                )}
               </div>
             </CardContent>
           </Card>
@@ -317,7 +371,12 @@ export const CashFlowPage = () => {
 
         {hasActiveFilters && (
           <div className="flex items-center gap-3 col-span-full md:col-span-1">
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="h-9"
+            >
               <X className="mr-1 h-4 w-4" />
               Clear filters
             </Button>
@@ -332,8 +391,12 @@ export const CashFlowPage = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            {activeTab === 'all' ? 'All Transactions' : activeTab === 'income' ? 'Income' : 'Expenses'}
-            {hasActiveFilters ? ' (Filtered)' : ''}
+            {activeTab === "all"
+              ? "All Transactions"
+              : activeTab === "income"
+                ? "Income"
+                : "Expenses"}
+            {hasActiveFilters ? " (Filtered)" : ""}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -345,8 +408,10 @@ export const CashFlowPage = () => {
             onClone={(expense) => {
               addExpense({
                 ...expense,
-                date: new Date().toISOString().split('T')[0],
-                source: expense.source ? `${expense.source} (clone)` : 'manual (clone)',
+                date: todayLocalISO(),
+                source: expense.source
+                  ? `${expense.source} (clone)`
+                  : "manual (clone)",
               });
             }}
             onCategorySelect={handleCategorySelect}

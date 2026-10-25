@@ -7,15 +7,29 @@
  * Keys are shown ONCE after generation — user must copy them immediately.
  */
 
-import { useState, useCallback } from "react";
-import { Bot, Copy, Check, Loader2, Key, ShieldAlert, Trash2 } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import {
+  Bot,
+  Copy,
+  Check,
+  Loader2,
+  Key,
+  ShieldAlert,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { vaultClient, SERVER_URL, VAULT_NAME } from "@/lib/vault/client";
 import { deriveKeysFromJwk } from "@/lib/vault/keys";
-import { useVault } from "@/lib/vault/context";
+import { useVault } from "@/hooks/useVault";
 import { useAuth } from "@ursalock/client";
 import { bytesToBase64 } from "@ursalock/crypto";
 
@@ -43,14 +57,27 @@ function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
   }, [text]);
 
   return (
-    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleCopy}>
-      {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-8 w-8 shrink-0"
+      onClick={handleCopy}
+    >
+      {copied ? (
+        <Check className="h-4 w-4 text-green-500" />
+      ) : (
+        <Copy className="h-4 w-4" />
+      )}
     </Button>
   );
 }
@@ -86,8 +113,8 @@ export function AgentAccess() {
       if (!res.ok) throw new Error(`Failed to list keys: ${res.status}`);
       const data = (await res.json()) as { apiKeys: ExistingKey[] };
       setExisting(data.apiKeys.filter((k) => !k.revokedAt));
-    } catch (err) {
-      console.warn("[agent-access] Failed to load keys:", err);
+    } catch {
+      setError("Failed to load existing agent keys");
     } finally {
       setIsLoadingKeys(false);
     }
@@ -95,7 +122,9 @@ export function AgentAccess() {
 
   const handleGenerate = useCallback(async () => {
     if (!authState.credential) {
-      setError("No passkey credential available. Please sign out and sign in again.");
+      setError(
+        "No passkey credential available. Please sign out and sign in again.",
+      );
       return;
     }
 
@@ -121,12 +150,17 @@ export function AgentAccess() {
       });
       if (!keyRes.ok) {
         const err = (await keyRes.json()) as { message?: string };
-        throw new Error(err.message ?? `Failed to create key: ${keyRes.status}`);
+        throw new Error(
+          err.message ?? `Failed to create key: ${keyRes.status}`,
+        );
       }
       const keyData = (await keyRes.json()) as { key: string; uid: string };
 
       // 3. Derive encryption keys from passkey
-      const keys = await deriveKeysFromJwk(authState.credential.cipherJwk, vaultUid);
+      const keys = await deriveKeysFromJwk(
+        authState.credential.cipherJwk,
+        vaultUid,
+      );
 
       setGenerated({
         apiKey: keyData.key,
@@ -146,20 +180,31 @@ export function AgentAccess() {
     }
   }, [authState.credential, name, loadExistingKeys]);
 
-  const handleRevoke = useCallback(async (uid: string) => {
-    try {
-      const res = await vaultClient.fetch(`/auth/api-keys/${uid}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`Failed to revoke: ${res.status}`);
-      await loadExistingKeys();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to revoke key");
-    }
-  }, [loadExistingKeys]);
+  const handleRevoke = useCallback(
+    async (uid: string) => {
+      try {
+        const res = await vaultClient.fetch(`/auth/api-keys/${uid}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error(`Failed to revoke: ${res.status}`);
+        await loadExistingKeys();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to revoke key");
+      }
+    },
+    [loadExistingKeys],
+  );
 
-  // Load existing keys on first render
-  if (isReady && existing === null && !isLoadingKeys) {
-    void loadExistingKeys();
-  }
+  // Load existing keys once the vault is ready.
+  useEffect(() => {
+    if (isReady && existing === null && !isLoadingKeys) {
+      // Defer so the loading state is not set synchronously inside the effect.
+      const timer = setTimeout(() => {
+        void loadExistingKeys();
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [isReady, existing, isLoadingKeys, loadExistingKeys]);
 
   return (
     <Card>
@@ -169,7 +214,8 @@ export function AgentAccess() {
           Agent Access
         </CardTitle>
         <CardDescription>
-          Generate an API key for your AI agent (OpenClaw, etc.) to read and write your encrypted data
+          Generate an API key for your AI agent (OpenClaw, etc.) to read and
+          write your encrypted data
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -185,15 +231,25 @@ export function AgentAccess() {
           <div className="space-y-2">
             <Label className="text-sm font-medium">Active keys</Label>
             {existing.map((key) => (
-              <div key={key.uid} className="flex items-center justify-between p-3 bg-muted rounded-lg text-sm">
+              <div
+                key={key.uid}
+                className="flex items-center justify-between p-3 bg-muted rounded-lg text-sm"
+              >
                 <div>
                   <span className="font-medium">{key.name}</span>
-                  <span className="text-muted-foreground ml-2 font-mono text-xs">{key.keyPrefix}…</span>
+                  <span className="text-muted-foreground ml-2 font-mono text-xs">
+                    {key.keyPrefix}…
+                  </span>
                   <span className="text-muted-foreground ml-2 text-xs">
                     {new Date(key.createdAt * 1000).toLocaleDateString()}
                   </span>
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRevoke(key.uid)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleRevoke(key.uid)}
+                >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
@@ -207,26 +263,36 @@ export function AgentAccess() {
             <div className="flex items-start gap-2">
               <ShieldAlert className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                <strong>Copy these now</strong> — the API key and encryption keys won't be shown again.
+                <strong>Copy these now</strong> — the API key and encryption
+                keys won&apos;t be shown again.
               </p>
             </div>
             <SecretField label="Server URL" value={SERVER_URL} />
             <SecretField label="API Key" value={generated.apiKey} />
             <SecretField label="Vault UID" value={generated.vaultUid} />
-            <SecretField label="Encryption Key (base64)" value={generated.encryptionKey} />
+            <SecretField
+              label="Encryption Key (base64)"
+              value={generated.encryptionKey}
+            />
             <SecretField label="HMAC Key (base64)" value={generated.hmacKey} />
 
             <div className="pt-2">
-              <Button variant="outline" size="sm" onClick={() => setGenerated(null)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGenerated(null)}
+              >
                 <Check className="mr-2 h-4 w-4" />
-                Done — I've copied the keys
+                Done — I&apos;ve copied the keys
               </Button>
             </div>
           </div>
         ) : (
           <div className="flex items-end gap-3">
             <div className="space-y-1 flex-1">
-              <Label htmlFor="agentName" className="text-xs">Key name</Label>
+              <Label htmlFor="agentName" className="text-xs">
+                Key name
+              </Label>
               <Input
                 id="agentName"
                 value={name}
@@ -235,7 +301,10 @@ export function AgentAccess() {
                 className="max-w-[200px]"
               />
             </div>
-            <Button onClick={handleGenerate} disabled={isGenerating || !isReady || !name}>
+            <Button
+              onClick={handleGenerate}
+              disabled={isGenerating || !isReady || !name}
+            >
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -252,8 +321,9 @@ export function AgentAccess() {
         )}
 
         <p className="text-xs text-muted-foreground">
-          🔐 The agent key is scoped to the <code className="bg-muted px-1 rounded">demeter-state</code> collection only.
-          Revoke it anytime from this page.
+          🔐 The agent key is scoped to the{" "}
+          <code className="bg-muted px-1 rounded">demeter-state</code>{" "}
+          collection only. Revoke it anytime from this page.
         </p>
       </CardContent>
     </Card>

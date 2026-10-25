@@ -1,27 +1,27 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
-import { Sankey, Tooltip, Rectangle } from 'recharts';
-import { CATEGORY_COLORS } from '@/utils/chartTheme';
-import type { Expense, Currency } from '@/schemas';
-import { formatCurrency } from '@/utils/formatters';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ExportableChart } from '@/components/ui/ExportableChart';
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { Sankey, Tooltip, Rectangle } from "recharts";
+import { CATEGORY_COLORS } from "@/utils/chartTheme";
+import type { Expense, Currency } from "@/schemas";
+import { formatCurrency } from "@/utils/formatters";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ExportableChart } from "@/components/ui/ExportableChart";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { NodeProps, LinkProps } from 'recharts/types/chart/Sankey';
+} from "@/components/ui/select";
+import type { NodeProps, LinkProps } from "recharts/types/chart/Sankey";
 
 // ── colour palette ──────────────────────────────────────────
-const INCOME_COLOR = '#22c55e'; // green-500
-const TOTAL_COLOR = '#6366f1'; // indigo-500
-const TOTAL_EXPENSES_COLOR = '#ef4444'; // red-500
+const INCOME_COLOR = "#22c55e"; // green-500
+const TOTAL_COLOR = "#6366f1"; // indigo-500
+const TOTAL_EXPENSES_COLOR = "#ef4444"; // red-500
 const EXPENSE_COLORS = CATEGORY_COLORS;
-const SAVINGS_COLOR = '#3b82f6'; // blue-500
-const TAX_COLOR = '#f59e0b'; // amber-500
+const SAVINGS_COLOR = "#3b82f6"; // blue-500
+const TAX_COLOR = "#f59e0b"; // amber-500
 
 // ── helpers ─────────────────────────────────────────────────
 
@@ -35,22 +35,26 @@ function extractClientName(expense: Expense): string {
   const match2 = expense.description.match(/^(.+?)\s*[-–—]\s*Invoice/i);
   if (match2) return match2[1].trim();
 
-  return 'Other Income';
+  return "Other Income";
 }
 
 function getIncomeSourceLabel(expense: Expense): string {
-  if (expense.sourceProvider === 'invoice') {
+  if (expense.sourceProvider === "invoice") {
     return extractClientName(expense);
   }
-  return 'Other Income';
+  return "Other Income";
 }
 
-function getNodeColor(name: string, expenseCategoryColorMap: Map<string, string>): string {
-  if (name === 'Total') return TOTAL_COLOR;
+function getNodeColor(
+  name: string,
+  expenseCategoryColorMap: Map<string, string>,
+): string {
+  if (name === "Total") return TOTAL_COLOR;
   // (Total Expenses node removed — kept color for expense links)
-  if (name === 'Savings' || name === 'Net Savings') return SAVINGS_COLOR;
-  if (name === 'Tax Provision') return TAX_COLOR;
-  if (expenseCategoryColorMap.has(name)) return expenseCategoryColorMap.get(name)!;
+  if (name === "Savings" || name === "Net Savings") return SAVINGS_COLOR;
+  if (name === "Tax Provision") return TAX_COLOR;
+  if (expenseCategoryColorMap.has(name))
+    return expenseCategoryColorMap.get(name)!;
   // Income source nodes
   return INCOME_COLOR;
 }
@@ -76,8 +80,8 @@ function buildSankeyData(
       ? convertFn(e.amount, e.currency, targetCurrency)
       : e.amount;
 
-  const incomes = expenses.filter((e) => e.type === 'income');
-  const expenseItems = expenses.filter((e) => !e.type || e.type === 'expense');
+  const incomes = expenses.filter((e) => e.type === "income");
+  const expenseItems = expenses.filter((e) => !e.type || e.type === "expense");
 
   const totalIncome = incomes.reduce((s, e) => s + toAmount(e), 0);
   const totalExpenses = expenseItems.reduce((s, e) => s + toAmount(e), 0);
@@ -94,8 +98,11 @@ function buildSankeyData(
   // Group expenses by category
   const expenseByCategory = new Map<string, number>();
   for (const exp of expenseItems) {
-    const cat = exp.category || 'Uncategorized';
-    expenseByCategory.set(cat, (expenseByCategory.get(cat) ?? 0) + toAmount(exp));
+    const cat = exp.category || "Uncategorized";
+    expenseByCategory.set(
+      cat,
+      (expenseByCategory.get(cat) ?? 0) + toAmount(exp),
+    );
   }
 
   // Build nodes: income sources → Total → expense categories [+ Savings]
@@ -103,14 +110,16 @@ function buildSankeyData(
   const links: { source: number; target: number; value: number }[] = [];
 
   // Income source nodes
-  const incomeSources = Array.from(incomeBySource.entries()).sort((a, b) => b[1] - a[1]);
+  const incomeSources = Array.from(incomeBySource.entries()).sort(
+    (a, b) => b[1] - a[1],
+  );
   for (const [label] of incomeSources) {
     nodes.push({ name: label });
   }
 
   // Total node
   const totalIdx = nodes.length;
-  nodes.push({ name: 'Total' });
+  nodes.push({ name: "Total" });
 
   // Links: income sources → Total
   for (let i = 0; i < incomeSources.length; i++) {
@@ -118,25 +127,28 @@ function buildSankeyData(
   }
 
   // Calculate tax provision
-  const taxProvision = taxProvisionEnabled && taxRate ? (totalIncome * taxRate) / 100 : 0;
+  const taxProvision =
+    taxProvisionEnabled && taxRate ? (totalIncome * taxRate) / 100 : 0;
   const netSavings = totalIncome - totalExpenses - taxProvision;
 
   // Tax Provision node (top)
   if (taxProvision > 0) {
     const taxIdx = nodes.length;
-    nodes.push({ name: 'Tax Provision' });
+    nodes.push({ name: "Tax Provision" });
     links.push({ source: totalIdx, target: taxIdx, value: taxProvision });
   }
 
   // Net Savings node
   if (netSavings > 0) {
     const savingsIdx = nodes.length;
-    nodes.push({ name: 'Net Savings' });
+    nodes.push({ name: "Net Savings" });
     links.push({ source: totalIdx, target: savingsIdx, value: netSavings });
   }
 
   // Expense category nodes: Total → categories directly
-  const expenseCategories = Array.from(expenseByCategory.entries()).sort((a, b) => b[1] - a[1]);
+  const expenseCategories = Array.from(expenseByCategory.entries()).sort(
+    (a, b) => b[1] - a[1],
+  );
   const firstExpenseIdx = nodes.length;
   for (const [cat] of expenseCategories) {
     nodes.push({ name: cat });
@@ -144,7 +156,11 @@ function buildSankeyData(
 
   // Links: Total → expense categories
   for (let i = 0; i < expenseCategories.length; i++) {
-    links.push({ source: totalIdx, target: firstExpenseIdx + i, value: expenseCategories[i][1] });
+    links.push({
+      source: totalIdx,
+      target: firstExpenseIdx + i,
+      value: expenseCategories[i][1],
+    });
   }
 
   // Sankey requires at least 1 link with value > 0
@@ -153,7 +169,14 @@ function buildSankeyData(
   const filteredLinks = links.filter((l) => l.value > 0);
   if (filteredLinks.length === 0) return null;
 
-  return { nodes, links: filteredLinks, totalIncome, totalExpenses, taxProvision, netSavings };
+  return {
+    nodes,
+    links: filteredLinks,
+    totalIncome,
+    totalExpenses,
+    taxProvision,
+    netSavings,
+  };
 }
 
 // ── custom renderers ────────────────────────────────────────
@@ -166,12 +189,19 @@ function CustomNode({
   payload,
   expenseCategoryColorMap,
 }: NodeProps & { expenseCategoryColorMap: Map<string, string> }) {
-  const name: string = (payload as { name: string }).name ?? '';
+  const name: string = (payload as { name: string }).name ?? "";
   const fill = getNodeColor(name, expenseCategoryColorMap);
 
   return (
     <g>
-      <Rectangle x={x} y={y} width={width} height={height} fill={fill} radius={2} />
+      <Rectangle
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill={fill}
+        radius={2}
+      />
       <text
         x={x + width + 6}
         y={y + height / 2}
@@ -200,20 +230,20 @@ function CustomLink({
 }: LinkProps & { expenseCategoryColorMap: Map<string, string> }) {
   const sourceNode = (payload as { source: { name: string } }).source;
   const targetNode = (payload as { target: { name: string } }).target;
-  const sourceName = sourceNode?.name ?? '';
-  const targetName = targetNode?.name ?? '';
+  const sourceName = sourceNode?.name ?? "";
+  const targetName = targetNode?.name ?? "";
 
   // Determine colour from the non-Total end
   let color: string;
-  if (targetName === 'Total') {
+  if (targetName === "Total") {
     color = INCOME_COLOR;
-  } else if (targetName === 'Savings' || targetName === 'Net Savings') {
+  } else if (targetName === "Savings" || targetName === "Net Savings") {
     color = SAVINGS_COLOR;
-  } else if (targetName === 'Tax Provision') {
+  } else if (targetName === "Tax Provision") {
     color = TAX_COLOR;
   } else if (expenseCategoryColorMap.has(targetName)) {
     color = expenseCategoryColorMap.get(targetName)!;
-  } else if (sourceName === 'Total') {
+  } else if (sourceName === "Total") {
     color = TOTAL_EXPENSES_COLOR;
   } else {
     color = INCOME_COLOR;
@@ -230,10 +260,10 @@ function CustomLink({
       strokeWidth={linkWidth}
       strokeOpacity={0.3}
       onMouseEnter={(e) => {
-        (e.target as SVGPathElement).setAttribute('stroke-opacity', '0.6');
+        (e.target as SVGPathElement).setAttribute("stroke-opacity", "0.6");
       }}
       onMouseLeave={(e) => {
-        (e.target as SVGPathElement).setAttribute('stroke-opacity', '0.3');
+        (e.target as SVGPathElement).setAttribute("stroke-opacity", "0.3");
       }}
     />
   );
@@ -251,7 +281,13 @@ interface CashFlowSankeyProps {
   taxRate?: number;
 }
 
-export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisionEnabled = false, taxRate = 30 }: CashFlowSankeyProps) => {
+export const CashFlowSankey = ({
+  expenses,
+  currency = "EUR",
+  convert,
+  taxProvisionEnabled = false,
+  taxRate = 30,
+}: CashFlowSankeyProps) => {
   const { mask } = usePrivacyMode();
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
@@ -260,7 +296,10 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisi
   const updateDimensions = useCallback(() => {
     if (containerRef.current) {
       const w = containerRef.current.clientWidth;
-      setDimensions({ width: Math.max(w, 300), height: Math.max(Math.min(w * 0.5, 500), 300) });
+      setDimensions({
+        width: Math.max(w, 300),
+        height: Math.max(Math.min(w * 0.5, 500), 300),
+      });
     }
   }, []);
 
@@ -278,35 +317,59 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisi
     return Array.from(months).sort().reverse();
   }, [expenses]);
 
-  const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
 
   const filteredExpenses = useMemo(() => {
-    if (selectedMonth === 'all') return expenses;
+    if (selectedMonth === "all") return expenses;
     return expenses.filter((e) => e.date.startsWith(selectedMonth));
   }, [expenses, selectedMonth]);
 
-  const sankeyData = useMemo(() => buildSankeyData(filteredExpenses, convert, currency, taxProvisionEnabled, taxRate), [filteredExpenses, convert, currency, taxProvisionEnabled, taxRate]);
+  const sankeyData = useMemo(
+    () =>
+      buildSankeyData(
+        filteredExpenses,
+        convert,
+        currency,
+        taxProvisionEnabled,
+        taxRate,
+      ),
+    [filteredExpenses, convert, currency, taxProvisionEnabled, taxRate],
+  );
 
   // Build colour map for expense categories
   const expenseCategoryColorMap = useMemo(() => {
     const map = new Map<string, string>();
     if (!sankeyData) return map;
     // Expense category nodes are those that are targets of links from Total
-    const totalIdx = sankeyData.nodes.findIndex((n) => n.name === 'Total');
-    const nonExpenseNames = new Set(['Tax Provision', 'Net Savings', 'Savings']);
+    const totalIdx = sankeyData.nodes.findIndex((n) => n.name === "Total");
+    const nonExpenseNames = new Set([
+      "Tax Provision",
+      "Net Savings",
+      "Savings",
+    ]);
     const expenseNodeIdxs = sankeyData.links
-      .filter((l) => l.source === totalIdx && !nonExpenseNames.has(sankeyData.nodes[l.target]?.name))
+      .filter(
+        (l) =>
+          l.source === totalIdx &&
+          !nonExpenseNames.has(sankeyData.nodes[l.target]?.name),
+      )
       .map((l) => l.target);
     expenseNodeIdxs.forEach((idx, i) => {
-      map.set(sankeyData.nodes[idx].name, EXPENSE_COLORS[i % EXPENSE_COLORS.length]);
+      map.set(
+        sankeyData.nodes[idx].name,
+        EXPENSE_COLORS[i % EXPENSE_COLORS.length],
+      );
     });
     return map;
   }, [sankeyData]);
 
   const formatMonth = (month: string) => {
-    const [year, m] = month.split('-');
+    const [year, m] = month.split("-");
     const date = new Date(parseInt(year), parseInt(m) - 1);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
   };
 
   if (!sankeyData) {
@@ -323,7 +386,9 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisi
   }
 
   return (
-    <ExportableChart filename={`cashflow-sankey${selectedMonth !== 'all' ? `-${selectedMonth}` : ''}`}>
+    <ExportableChart
+      filename={`cashflow-sankey${selectedMonth !== "all" ? `-${selectedMonth}` : ""}`}
+    >
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle>Money Flow</CardTitle>
@@ -344,65 +409,100 @@ export const CashFlowSankey = ({ expenses, currency = 'EUR', convert, taxProvisi
         <CardContent>
           <div ref={containerRef} className="w-full overflow-hidden">
             <Sankey
-            width={dimensions.width}
-            height={dimensions.height}
-            data={sankeyData}
-            nodeWidth={12}
-            nodePadding={14}
-            linkCurvature={0.5}
-            iterations={32}
-            margin={{ top: 10, right: 140, bottom: 10, left: 10 }}
-            node={(props: NodeProps) => (
-              <CustomNode {...props} expenseCategoryColorMap={expenseCategoryColorMap} />
-            )}
-            link={(props: LinkProps) => (
-              <CustomLink {...props} expenseCategoryColorMap={expenseCategoryColorMap} />
-            )}
-          >
-            <Tooltip
-              content={({ payload }) => {
-                if (!payload || payload.length === 0) return null;
-                const item = payload[0]?.payload;
-                if (!item) return null;
+              width={dimensions.width}
+              height={dimensions.height}
+              data={sankeyData}
+              nodeWidth={12}
+              nodePadding={14}
+              linkCurvature={0.5}
+              iterations={32}
+              margin={{ top: 10, right: 140, bottom: 10, left: 10 }}
+              node={(props: NodeProps) => (
+                <CustomNode
+                  {...props}
+                  expenseCategoryColorMap={expenseCategoryColorMap}
+                />
+              )}
+              link={(props: LinkProps) => (
+                <CustomLink
+                  {...props}
+                  expenseCategoryColorMap={expenseCategoryColorMap}
+                />
+              )}
+            >
+              <Tooltip
+                content={({ payload }) => {
+                  if (!payload || payload.length === 0) return null;
+                  const item = payload[0]?.payload;
+                  if (!item) return null;
 
-                // Node tooltip
-                if ('name' in item && !('source' in item && 'target' in item)) {
-                  if (item.name === 'Total' && sankeyData) {
+                  // Node tooltip
+                  if (
+                    "name" in item &&
+                    !("source" in item && "target" in item)
+                  ) {
+                    if (item.name === "Total" && sankeyData) {
+                      return (
+                        <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm space-y-1">
+                          <p className="font-medium">
+                            Total:{" "}
+                            {mask(
+                              formatCurrency(sankeyData.totalIncome, currency),
+                            )}
+                          </p>
+                          <p className="text-destructive">
+                            Expenses:{" "}
+                            {mask(
+                              formatCurrency(
+                                sankeyData.totalExpenses,
+                                currency,
+                              ),
+                            )}
+                          </p>
+                          {sankeyData.taxProvision > 0 && (
+                            <p className="text-amber-500">
+                              Tax Provision:{" "}
+                              {mask(
+                                formatCurrency(
+                                  sankeyData.taxProvision,
+                                  currency,
+                                ),
+                              )}
+                            </p>
+                          )}
+                          {sankeyData.netSavings > 0 && (
+                            <p className="text-blue-500">
+                              Net Savings:{" "}
+                              {mask(
+                                formatCurrency(sankeyData.netSavings, currency),
+                              )}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }
                     return (
-                      <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm space-y-1">
-                        <p className="font-medium">Total: {mask(formatCurrency(sankeyData.totalIncome, currency))}</p>
-                        <p className="text-destructive">Expenses: {mask(formatCurrency(sankeyData.totalExpenses, currency))}</p>
-                        {sankeyData.taxProvision > 0 && (
-                          <p className="text-amber-500">Tax Provision: {mask(formatCurrency(sankeyData.taxProvision, currency))}</p>
-                        )}
-                        {sankeyData.netSavings > 0 && (
-                          <p className="text-blue-500">Net Savings: {mask(formatCurrency(sankeyData.netSavings, currency))}</p>
-                        )}
+                      <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm">
+                        <p className="font-medium">{item.name}</p>
+                        <p>{mask(formatCurrency(item.value ?? 0, currency))}</p>
                       </div>
                     );
                   }
+
+                  // Link tooltip
+                  const source = item.source as { name: string } | undefined;
+                  const target = item.target as { name: string } | undefined;
                   return (
                     <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm">
-                      <p className="font-medium">{item.name}</p>
+                      <p className="font-medium">
+                        {source?.name ?? "?"} → {target?.name ?? "?"}
+                      </p>
                       <p>{mask(formatCurrency(item.value ?? 0, currency))}</p>
                     </div>
                   );
-                }
-
-                // Link tooltip
-                const source = item.source as { name: string } | undefined;
-                const target = item.target as { name: string } | undefined;
-                return (
-                  <div className="bg-popover border rounded-lg shadow-lg p-3 text-sm">
-                    <p className="font-medium">
-                      {source?.name ?? '?'} → {target?.name ?? '?'}
-                    </p>
-                    <p>{mask(formatCurrency(item.value ?? 0, currency))}</p>
-                  </div>
-                );
-              }}
-            />
-          </Sankey>
+                }}
+              />
+            </Sankey>
           </div>
         </CardContent>
       </Card>

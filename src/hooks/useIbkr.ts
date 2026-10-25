@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from 'react';
-import { useStore } from '../store';
-import { fetchIbkrPortfolio } from '@/services/ibkrApi';
+import { useCallback, useMemo } from "react";
+import { useStore } from "../store";
+import { fetchIbkrPortfolio } from "@/services/ibkrApi";
 
 export const useIbkr = () => {
   const positions = useStore((s) => s.ibkrPositions);
@@ -28,7 +28,7 @@ export const useIbkr = () => {
     if (!flexToken || !flexQueryId) {
       return {
         success: false,
-        error: 'IBKR Flex token and Query ID not configured. Go to Data page.',
+        error: "IBKR Flex token and Query ID not configured. Go to Data page.",
       };
     }
 

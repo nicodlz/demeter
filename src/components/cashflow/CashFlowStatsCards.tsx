@@ -1,7 +1,7 @@
-import { formatCurrency } from '@/utils/formatters';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Scale, PiggyBank } from 'lucide-react';
-import type { Currency } from '@/schemas';
+import { formatCurrency } from "@/utils/formatters";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp, TrendingDown, Scale, PiggyBank } from "lucide-react";
+import type { Currency } from "@/schemas";
 
 interface CashFlowStatsCardsProps {
   totalIncome: number;
@@ -20,7 +20,7 @@ export const CashFlowStatsCards = ({
   currency,
   privacyMode = false,
 }: CashFlowStatsCardsProps) => {
-  const mask = (value: string) => (privacyMode ? '•••••' : value);
+  const mask = (value: string) => (privacyMode ? "•••••" : value);
   const isPositiveBalance = balance >= 0;
 
   return (
@@ -58,7 +58,7 @@ export const CashFlowStatsCards = ({
         </CardHeader>
         <CardContent>
           <div
-            className={`text-lg sm:text-2xl font-bold ${isPositiveBalance ? 'text-green-600' : 'text-destructive'}`}
+            className={`text-lg sm:text-2xl font-bold ${isPositiveBalance ? "text-green-600" : "text-destructive"}`}
           >
             {mask(formatCurrency(balance, currency))}
           </div>
@@ -73,12 +73,12 @@ export const CashFlowStatsCards = ({
         </CardHeader>
         <CardContent>
           <div
-            className={`text-lg sm:text-2xl font-bold ${savingsRate >= 0 ? 'text-green-600' : 'text-destructive'}`}
+            className={`text-lg sm:text-2xl font-bold ${savingsRate >= 0 ? "text-green-600" : "text-destructive"}`}
           >
-            {privacyMode ? '•••••' : `${savingsRate.toFixed(1)}%`}
+            {privacyMode ? "•••••" : `${savingsRate.toFixed(1)}%`}
           </div>
           <p className="text-xs text-muted-foreground">
-            {totalIncome > 0 ? 'Of income saved' : 'No income recorded'}
+            {totalIncome > 0 ? "Of income saved" : "No income recorded"}
           </p>
         </CardContent>
       </Card>

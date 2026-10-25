@@ -1,7 +1,7 @@
-import { generateId } from '../../utils/id';
-import type { StateCreator } from 'zustand';
-import type { CategoryMapping } from '@/schemas';
-import type { StoreState, CategoryMappingsSlice } from '../types';
+import { generateId } from "../../utils/id";
+import type { StateCreator } from "zustand";
+import type { CategoryMapping } from "@/schemas";
+import type { StoreState, CategoryMappingsSlice } from "../types";
 
 /**
  * Normalize merchant name for consistent matching
@@ -9,8 +9,8 @@ import type { StoreState, CategoryMappingsSlice } from '../types';
 const normalizeMerchant = (merchant: string): string => {
   return merchant
     .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .replace(/['"]/g, '')
+    .replace(/\s+/g, " ")
+    .replace(/['"]/g, "")
     .trim();
 };
 
@@ -26,7 +26,7 @@ export const createCategoryMappingsSlice: StateCreator<
     const normalized = normalizeMerchant(merchantName);
     set((state) => {
       const existingIndex = state.mappings.findIndex(
-        (m) => m.normalizedMerchant === normalized
+        (m) => m.normalizedMerchant === normalized,
       );
 
       if (existingIndex >= 0) {
@@ -58,7 +58,7 @@ export const createCategoryMappingsSlice: StateCreator<
     const normalized = normalizeMerchant(merchantName);
     set((state) => ({
       mappings: state.mappings.filter(
-        (m) => m.normalizedMerchant !== normalized
+        (m) => m.normalizedMerchant !== normalized,
       ),
     }));
   },

@@ -1,23 +1,47 @@
+import { lazy } from "react";
 import {
   createRouter,
   createRoute,
   createRootRoute,
   redirect,
   Outlet,
-} from '@tanstack/react-router';
-import { Layout } from '@/components/Layout';
-import { PageErrorBoundary } from '@/components/PageErrorBoundary';
-import { DashboardPage } from '@/pages/DashboardPage';
-import { CashFlowPage } from '@/pages/CashFlowPage';
-import { NetWorthPage } from '@/pages/NetWorthPage';
-import { ProjectionsPage } from '@/pages/ProjectionsPage';
-import { InvoicesPage } from '@/pages/InvoicesPage';
-import { ClientsPage } from '@/pages/ClientsPage';
-import { SettingsPage } from '@/pages/SettingsPage';
-import { CryptoPage } from '@/pages/CryptoPage';
-import { DataPage } from '@/pages/DataPage';
-import { IbkrPage } from '@/pages/IbkrPage';
-import { NotFoundPage } from '@/pages/NotFoundPage';
+} from "@tanstack/react-router";
+import { Layout } from "@/components/Layout";
+import { PageRoute } from "@/components/PageRoute";
+import { NotFoundPage } from "@/pages/NotFoundPage";
+
+const DashboardPage = lazy(() =>
+  import("@/pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+);
+const CashFlowPage = lazy(() =>
+  import("@/pages/CashFlowPage").then((m) => ({ default: m.CashFlowPage })),
+);
+const NetWorthPage = lazy(() =>
+  import("@/pages/NetWorthPage").then((m) => ({ default: m.NetWorthPage })),
+);
+const ProjectionsPage = lazy(() =>
+  import("@/pages/ProjectionsPage").then((m) => ({
+    default: m.ProjectionsPage,
+  })),
+);
+const InvoicesPage = lazy(() =>
+  import("@/pages/InvoicesPage").then((m) => ({ default: m.InvoicesPage })),
+);
+const ClientsPage = lazy(() =>
+  import("@/pages/ClientsPage").then((m) => ({ default: m.ClientsPage })),
+);
+const SettingsPage = lazy(() =>
+  import("@/pages/SettingsPage").then((m) => ({ default: m.SettingsPage })),
+);
+const CryptoPage = lazy(() =>
+  import("@/pages/CryptoPage").then((m) => ({ default: m.CryptoPage })),
+);
+const DataPage = lazy(() =>
+  import("@/pages/DataPage").then((m) => ({ default: m.DataPage })),
+);
+const IbkrPage = lazy(() =>
+  import("@/pages/IbkrPage").then((m) => ({ default: m.IbkrPage })),
+);
 
 // Root route — wraps everything in the Layout shell
 const rootRoute = createRootRoute({
@@ -33,80 +57,80 @@ const rootRoute = createRootRoute({
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  path: "/",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <DashboardPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
 const cashFlowRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/cash-flow',
+  path: "/cash-flow",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <CashFlowPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
 // Redirect /expenses → /cash-flow for backward compatibility
 const expensesRedirectRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/expenses',
+  path: "/expenses",
   beforeLoad: () => {
-    throw redirect({ to: '/cash-flow' });
+    throw redirect({ to: "/cash-flow" }) as unknown as Error;
   },
 });
 
 const cryptoRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/crypto',
+  path: "/crypto",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <CryptoPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
 const netWorthRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/net-worth',
+  path: "/net-worth",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <NetWorthPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
 const projectionsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/projections',
+  path: "/projections",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <ProjectionsPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
 const ibkrRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/ibkr',
+  path: "/ibkr",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <IbkrPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
 const configurationRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/configuration',
+  path: "/configuration",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <DataPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
@@ -114,31 +138,31 @@ const configurationRoute = createRoute({
 
 const billingInvoicesRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/billing/invoices',
+  path: "/billing/invoices",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <InvoicesPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
 const billingClientsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/billing/clients',
+  path: "/billing/clients",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <ClientsPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
 const billingSettingsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/billing/settings',
+  path: "/billing/settings",
   component: () => (
-    <PageErrorBoundary>
+    <PageRoute>
       <SettingsPage />
-    </PageErrorBoundary>
+    </PageRoute>
   ),
 });
 
@@ -163,7 +187,7 @@ const routeTree = rootRoute.addChildren([
 export const router = createRouter({ routeTree });
 
 // Register the router for type-safety
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;
   }

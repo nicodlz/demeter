@@ -1,19 +1,19 @@
-import { generateId } from '@/utils/id';
-import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
-import type { AssetEntry, Currency } from '@/schemas';
-import { formatCurrency } from '@/utils/formatters';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
+import { generateId } from "@/utils/id";
+import { Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import type { AssetEntry, Currency } from "@/schemas";
+import { formatCurrency } from "@/utils/formatters";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 interface AssetCategoryInputProps {
   label: string;
@@ -34,9 +34,9 @@ export const AssetCategoryInput = ({
   const addEntry = () => {
     const newEntry: AssetEntry = {
       id: generateId(),
-      name: '',
+      name: "",
       amount: 0,
-      currency: 'USD',
+      currency: "USD",
     };
     onChange([...entries, newEntry]);
     setIsExpanded(true);
@@ -45,8 +45,8 @@ export const AssetCategoryInput = ({
   const updateEntry = (id: string, updates: Partial<AssetEntry>) => {
     onChange(
       entries.map((entry) =>
-        entry.id === id ? { ...entry, ...updates } : entry
-      )
+        entry.id === id ? { ...entry, ...updates } : entry,
+      ),
     );
   };
 
@@ -55,7 +55,7 @@ export const AssetCategoryInput = ({
   };
 
   const totalUSD = entries.reduce((sum, entry) => {
-    return sum + convert(entry.amount, entry.currency, 'USD');
+    return sum + convert(entry.amount, entry.currency, "USD");
   }, 0);
 
   return (
@@ -78,7 +78,9 @@ export const AssetCategoryInput = ({
             </span>
           )}
         </div>
-        <span className="font-semibold">{mask(formatCurrency(totalUSD, 'USD'))}</span>
+        <span className="font-semibold">
+          {mask(formatCurrency(totalUSD, "USD"))}
+        </span>
       </button>
 
       {isExpanded && (
@@ -89,7 +91,9 @@ export const AssetCategoryInput = ({
                 type="text"
                 placeholder="Name (ex: ibkr)"
                 value={entry.name}
-                onChange={(e) => updateEntry(entry.id, { name: e.target.value })}
+                onChange={(e) =>
+                  updateEntry(entry.id, { name: e.target.value })
+                }
                 className="flex-1 min-w-0"
               />
               <Input
@@ -97,7 +101,7 @@ export const AssetCategoryInput = ({
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                value={entry.amount || ''}
+                value={entry.amount || ""}
                 onChange={(e) =>
                   updateEntry(entry.id, {
                     amount: parseFloat(e.target.value) || 0,

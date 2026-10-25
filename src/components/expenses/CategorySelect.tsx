@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+} from "@/components/ui/select";
+import { Plus } from "lucide-react";
 
 interface CategorySelectProps {
   value?: string;
@@ -21,15 +21,15 @@ export const CategorySelect = ({
   value,
   categories,
   onChange,
-  placeholder = 'Select category',
+  placeholder = "Select category",
 }: CategorySelectProps) => {
   const [isCreating, setIsCreating] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
+  const [newCategory, setNewCategory] = useState("");
 
   const handleCreateCategory = () => {
     if (newCategory.trim()) {
       onChange(newCategory.trim());
-      setNewCategory('');
+      setNewCategory("");
       setIsCreating(false);
     }
   };
@@ -42,20 +42,23 @@ export const CategorySelect = ({
           onChange={(e) => setNewCategory(e.target.value)}
           placeholder="New category name..."
           className="flex-1"
-          autoFocus
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === "Enter") {
               e.preventDefault();
               handleCreateCategory();
             }
-            if (e.key === 'Escape') {
+            if (e.key === "Escape") {
               setIsCreating(false);
-              setNewCategory('');
+              setNewCategory("");
             }
           }}
         />
         <div className="flex gap-2">
-          <Button size="sm" onClick={handleCreateCategory} className="flex-1 sm:flex-none">
+          <Button
+            size="sm"
+            onClick={handleCreateCategory}
+            className="flex-1 sm:flex-none"
+          >
             Add
           </Button>
           <Button
@@ -63,7 +66,7 @@ export const CategorySelect = ({
             variant="outline"
             onClick={() => {
               setIsCreating(false);
-              setNewCategory('');
+              setNewCategory("");
             }}
             className="flex-1 sm:flex-none"
           >
@@ -76,7 +79,7 @@ export const CategorySelect = ({
 
   return (
     <div className="flex gap-2">
-      <Select value={value || ''} onValueChange={onChange}>
+      <Select value={value || ""} onValueChange={onChange}>
         <SelectTrigger className="flex-1">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

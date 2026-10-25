@@ -1,7 +1,7 @@
-import { generateId } from '../../utils/id';
-import type { StateCreator } from 'zustand';
-import type { Client } from '@/schemas';
-import type { StoreState, ClientsSlice } from '../types';
+import { generateId } from "../../utils/id";
+import type { StateCreator } from "zustand";
+import type { Client } from "@/schemas";
+import type { StoreState, ClientsSlice } from "../types";
 
 export const createClientsSlice: StateCreator<
   StoreState,
@@ -11,7 +11,7 @@ export const createClientsSlice: StateCreator<
 > = (set) => ({
   clients: [],
 
-  addClient: (client: Omit<Client, 'id'>) => {
+  addClient: (client: Omit<Client, "id">) => {
     const newClient: Client = {
       ...client,
       id: generateId(),
@@ -23,7 +23,7 @@ export const createClientsSlice: StateCreator<
   updateClient: (id, clientData) => {
     set((state) => ({
       clients: state.clients.map((client) =>
-        client.id === id ? { ...client, ...clientData } : client
+        client.id === id ? { ...client, ...clientData } : client,
       ),
     }));
   },

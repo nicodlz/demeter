@@ -1,7 +1,7 @@
-import { generateId } from '../../utils/id';
-import type { StateCreator } from 'zustand';
-import type { CryptoWallet, TokenPosition } from '@/schemas';
-import type { StoreState, CryptoSlice } from '../types';
+import { generateId } from "../../utils/id";
+import type { StateCreator } from "zustand";
+import type { CryptoWallet, TokenPosition } from "@/schemas";
+import type { StoreState, CryptoSlice } from "../types";
 
 export const createCryptoSlice: StateCreator<
   StoreState,
@@ -19,7 +19,7 @@ export const createCryptoSlice: StateCreator<
       id: generateId(),
       label: wallet.label,
       address: wallet.address,
-      type: wallet.type || 'evm', // Default to EVM for backward compatibility
+      type: wallet.type || "evm", // Default to EVM for backward compatibility
       createdAt: new Date().toISOString(),
     };
     set((state) => ({

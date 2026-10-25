@@ -1,31 +1,41 @@
-import { useState } from 'react';
-import { useSettings } from '@/hooks/useSettings';
-import { useToast } from '@/hooks/useToast';
-import type { IssuerSettings, Currency } from '@/schemas';
+import { useState } from "react";
+import { useSettings } from "@/hooks/useSettings";
+import { useToast } from "@/hooks/useToast";
+import type { IssuerSettings, Currency } from "@/schemas";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Save } from 'lucide-react';
+} from "@/components/ui/select";
+import { Save } from "lucide-react";
 
 export const SettingsPage = () => {
   const { settings, updateIssuer, updateSettings } = useSettings();
   const toast = useToast();
   const [formData, setFormData] = useState<IssuerSettings>(settings.issuer);
-  const [defaultCurrency, setDefaultCurrency] = useState<Currency>(settings.defaultCurrency || 'USD');
-  const [dashboardCurrency, setDashboardCurrency] = useState<Currency>(settings.dashboardCurrency || 'USD');
+  const [defaultCurrency, setDefaultCurrency] = useState<Currency>(
+    settings.defaultCurrency || "USD",
+  );
+  const [dashboardCurrency, setDashboardCurrency] = useState<Currency>(
+    settings.dashboardCurrency || "USD",
+  );
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -35,7 +45,7 @@ export const SettingsPage = () => {
     e.preventDefault();
     updateIssuer(formData);
     updateSettings({ defaultCurrency, dashboardCurrency });
-    toast.success('Settings saved!');
+    toast.success("Settings saved!");
   };
 
   return (
@@ -123,7 +133,7 @@ export const SettingsPage = () => {
                 type="tel"
                 name="phone"
                 id="phone"
-                value={formData.phone || ''}
+                value={formData.phone || ""}
                 onChange={handleChange}
               />
             </div>
@@ -133,12 +143,17 @@ export const SettingsPage = () => {
         <Card>
           <CardHeader>
             <CardTitle>Currency Settings</CardTitle>
-            <CardDescription>Default currencies for invoices and dashboard</CardDescription>
+            <CardDescription>
+              Default currencies for invoices and dashboard
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="defaultCurrency">Default Invoice Currency</Label>
-              <Select value={defaultCurrency} onValueChange={(v) => setDefaultCurrency(v as Currency)}>
+              <Select
+                value={defaultCurrency}
+                onValueChange={(v) => setDefaultCurrency(v as Currency)}
+              >
                 <SelectTrigger id="defaultCurrency">
                   <SelectValue />
                 </SelectTrigger>
@@ -153,8 +168,13 @@ export const SettingsPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dashboardCurrency">Dashboard Display Currency</Label>
-              <Select value={dashboardCurrency} onValueChange={(v) => setDashboardCurrency(v as Currency)}>
+              <Label htmlFor="dashboardCurrency">
+                Dashboard Display Currency
+              </Label>
+              <Select
+                value={dashboardCurrency}
+                onValueChange={(v) => setDashboardCurrency(v as Currency)}
+              >
                 <SelectTrigger id="dashboardCurrency">
                   <SelectValue />
                 </SelectTrigger>
@@ -173,7 +193,9 @@ export const SettingsPage = () => {
         <Card>
           <CardHeader>
             <CardTitle>Legal Information</CardTitle>
-            <CardDescription>Business registration and legal details</CardDescription>
+            <CardDescription>
+              Business registration and legal details
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -230,7 +252,9 @@ export const SettingsPage = () => {
             </div>
 
             <div className="sm:col-span-2 space-y-2">
-              <Label htmlFor="additionalLegalMentions">Additional Legal Mentions</Label>
+              <Label htmlFor="additionalLegalMentions">
+                Additional Legal Mentions
+              </Label>
               <Textarea
                 name="additionalLegalMentions"
                 id="additionalLegalMentions"

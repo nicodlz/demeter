@@ -1,55 +1,60 @@
-import { useState, useMemo } from 'react';
-import { useNetWorthDashboard } from '@/hooks/useNetWorthDashboard';
-import { useExpensesDashboard } from '@/hooks/useExpensesDashboard';
-import { useSettings } from '@/hooks/useSettings';
-import { useExchangeRate } from '@/hooks/useExchangeRate';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
-import { NetWorthStatsCards } from '@/components/networth/NetWorthStatsCards';
-import { NetWorthEvolutionChart } from '@/components/networth/NetWorthEvolutionChart';
-import { AllocationPieChart } from '@/components/networth/AllocationPieChart';
-import { CashFlowStatsCards } from '@/components/cashflow/CashFlowStatsCards';
-import { CashFlowChart } from '@/components/cashflow/CashFlowChart';
-import { ExpenseStatsCards } from '@/components/expenses/ExpenseStatsCards';
-import { ExpenseEvolutionChart } from '@/components/expenses/ExpenseEvolutionChart';
-import { ExpenseByCategoryChart } from '@/components/expenses/ExpenseByCategoryChart';
-import { TopMerchantsCard } from '@/components/expenses/TopMerchantsCard';
-import type { Currency } from '@/schemas';
+import { useState, useMemo } from "react";
+import { useNetWorthDashboard } from "@/hooks/useNetWorthDashboard";
+import { useExpensesDashboard } from "@/hooks/useExpensesDashboard";
+import { useSettings } from "@/hooks/useSettings";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
+import { NetWorthStatsCards } from "@/components/networth/NetWorthStatsCards";
+import { NetWorthEvolutionChart } from "@/components/networth/NetWorthEvolutionChart";
+import { AllocationPieChart } from "@/components/networth/AllocationPieChart";
+import { CashFlowStatsCards } from "@/components/cashflow/CashFlowStatsCards";
+import { CashFlowChart } from "@/components/cashflow/CashFlowChart";
+import { ExpenseStatsCards } from "@/components/expenses/ExpenseStatsCards";
+import { ExpenseEvolutionChart } from "@/components/expenses/ExpenseEvolutionChart";
+import { ExpenseByCategoryChart } from "@/components/expenses/ExpenseByCategoryChart";
+import { TopMerchantsCard } from "@/components/expenses/TopMerchantsCard";
+import type { Currency } from "@/schemas";
+import { formatLocalDate } from "@/utils/date";
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-type DateRange = 'all' | '30d' | '90d' | '6m' | '1y' | 'ytd';
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+type DateRange = "all" | "30d" | "90d" | "6m" | "1y" | "ytd";
 
 const getDateRange = (range: DateRange): { start?: string; end?: string } => {
   const now = new Date();
-  const end = now.toISOString().split('T')[0];
+  const end = formatLocalDate(now);
 
   switch (range) {
-    case '30d': {
+    case "30d": {
       const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      return { start: start.toISOString().split('T')[0], end };
+      return { start: formatLocalDate(start), end };
     }
-    case '90d': {
+    case "90d": {
       const start = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-      return { start: start.toISOString().split('T')[0], end };
+      return { start: formatLocalDate(start), end };
     }
-    case '6m': {
+    case "6m": {
       const start = new Date(now.getFullYear(), now.getMonth() - 6, 1);
-      return { start: start.toISOString().split('T')[0], end };
+      return { start: formatLocalDate(start), end };
     }
-    case '1y': {
-      const start = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-      return { start: start.toISOString().split('T')[0], end };
+    case "1y": {
+      const start = new Date(
+        now.getFullYear() - 1,
+        now.getMonth(),
+        now.getDate(),
+      );
+      return { start: formatLocalDate(start), end };
     }
-    case 'ytd': {
+    case "ytd": {
       const start = new Date(now.getFullYear(), 0, 1);
-      return { start: start.toISOString().split('T')[0], end };
+      return { start: formatLocalDate(start), end };
     }
     default:
       return {};
@@ -60,26 +65,36 @@ export const DashboardPage = () => {
   const { settings, updateSettings } = useSettings();
   const { convert } = useExchangeRate();
   const { privacyMode } = usePrivacyMode();
-  const displayCurrency: Currency = settings.dashboardCurrency || 'USD';
+  const displayCurrency: Currency = settings.dashboardCurrency || "USD";
 
   const toggleCurrency = () => {
-    const newCurrency: Currency = displayCurrency === 'USD' ? 'EUR' : 'USD';
+    const newCurrency: Currency = displayCurrency === "USD" ? "EUR" : "USD";
     updateSettings({ dashboardCurrency: newCurrency });
   };
 
-  const [expenseDateRange, setExpenseDateRange] = useState<DateRange>('all');
+  const [expenseDateRange, setExpenseDateRange] = useState<DateRange>("all");
 
   const networthStats = useNetWorthDashboard(displayCurrency);
 
-  const { start, end } = useMemo(() => getDateRange(expenseDateRange), [expenseDateRange]);
-  const expenseStats = useExpensesDashboard(start, end, displayCurrency, convert);
+  const { start, end } = useMemo(
+    () => getDateRange(expenseDateRange),
+    [expenseDateRange],
+  );
+  const expenseStats = useExpensesDashboard(
+    start,
+    end,
+    displayCurrency,
+    convert,
+  );
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex justify-between items-center gap-4">
         <div className="min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Dashboard</h2>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
+            Dashboard
+          </h2>
           <p className="text-sm text-muted-foreground">
             Overview of your finances
           </p>
@@ -145,7 +160,10 @@ export const DashboardPage = () => {
       <section className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-lg font-semibold">Expenses</h3>
-          <Select value={expenseDateRange} onValueChange={(v) => setExpenseDateRange(v as DateRange)}>
+          <Select
+            value={expenseDateRange}
+            onValueChange={(v) => setExpenseDateRange(v as DateRange)}
+          >
             <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue />
             </SelectTrigger>
@@ -174,7 +192,11 @@ export const DashboardPage = () => {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ExpenseEvolutionChart data={expenseStats.monthlyData} currency={displayCurrency} privacyMode={privacyMode} />
+          <ExpenseEvolutionChart
+            data={expenseStats.monthlyData}
+            currency={displayCurrency}
+            privacyMode={privacyMode}
+          />
           <ExpenseByCategoryChart
             data={expenseStats.categoryData}
             totalAmount={expenseStats.totalAmount}
@@ -184,7 +206,11 @@ export const DashboardPage = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          <TopMerchantsCard merchants={expenseStats.topMerchants} currency={displayCurrency} privacyMode={privacyMode} />
+          <TopMerchantsCard
+            merchants={expenseStats.topMerchants}
+            currency={displayCurrency}
+            privacyMode={privacyMode}
+          />
         </div>
       </section>
     </div>

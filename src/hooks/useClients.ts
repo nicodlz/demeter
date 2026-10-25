@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { useStore } from '../store';
+import { useCallback } from "react";
+import { useStore } from "../store";
 
 export const useClients = () => {
   const clients = useStore((state) => state.clients);
@@ -9,7 +9,7 @@ export const useClients = () => {
 
   const getClientById = useCallback(
     (id: string) => clients.find((client) => client.id === id),
-    [clients]
+    [clients],
   );
 
   return {

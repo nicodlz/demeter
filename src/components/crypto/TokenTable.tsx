@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
-import type { TokenPosition, CryptoWallet } from '@/schemas';
-import { formatCurrency } from '@/utils/formatters';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
+import { useState, useMemo } from "react";
+import type { TokenPosition, CryptoWallet } from "@/schemas";
+import { formatCurrency } from "@/utils/formatters";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
 
 import {
   Table,
@@ -10,18 +10,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+} from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 interface TokenTableProps {
   positions: TokenPosition[];
@@ -38,24 +44,31 @@ function formatAmount(amount: number): string {
   return amount.toExponential(2);
 }
 
-function positionTypeBadgeVariant(type: TokenPosition['positionType']): 'default' | 'secondary' | 'outline' {
+function positionTypeBadgeVariant(
+  type: TokenPosition["positionType"],
+): "default" | "secondary" | "outline" {
   switch (type) {
-    case 'wallet':
-      return 'default';
-    case 'deposit':
-    case 'staked':
-    case 'locked':
-      return 'secondary';
+    case "wallet":
+      return "default";
+    case "deposit":
+    case "staked":
+    case "locked":
+      return "secondary";
     default:
-      return 'outline';
+      return "outline";
   }
 }
 
-export const TokenTable = ({ positions, wallets, chains, onRemovePosition }: TokenTableProps) => {
+export const TokenTable = ({
+  positions,
+  wallets,
+  chains,
+  onRemovePosition,
+}: TokenTableProps) => {
   const { mask } = usePrivacyMode();
-  const [filterChain, setFilterChain] = useState<string>('all');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterWallet, setFilterWallet] = useState<string>('all');
+  const [filterChain, setFilterChain] = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterWallet, setFilterWallet] = useState<string>("all");
 
   const walletMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -67,19 +80,19 @@ export const TokenTable = ({ positions, wallets, chains, onRemovePosition }: Tok
 
   const filteredPositions = useMemo(() => {
     let result = positions;
-    if (filterChain !== 'all') {
+    if (filterChain !== "all") {
       result = result.filter((p) => p.chain === filterChain);
     }
-    if (filterType !== 'all') {
-      if (filterType === 'stablecoin') {
+    if (filterType !== "all") {
+      if (filterType === "stablecoin") {
         result = result.filter((p) => p.isStablecoin);
-      } else if (filterType === 'crypto') {
+      } else if (filterType === "crypto") {
         result = result.filter((p) => !p.isStablecoin);
       } else {
         result = result.filter((p) => p.positionType === filterType);
       }
     }
-    if (filterWallet !== 'all') {
+    if (filterWallet !== "all") {
       result = result.filter((p) => p.walletId === filterWallet);
     }
     // Sort by USD value descending
@@ -150,8 +163,8 @@ export const TokenTable = ({ positions, wallets, chains, onRemovePosition }: Tok
         {filteredPositions.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">
             {positions.length === 0
-              ? 'No positions yet. Sync your wallets to see token data.'
-              : 'No positions match the current filters.'}
+              ? "No positions yet. Sync your wallets to see token data."
+              : "No positions match the current filters."}
           </p>
         ) : (
           <div className="overflow-x-auto">
@@ -184,7 +197,10 @@ export const TokenTable = ({ positions, wallets, chains, onRemovePosition }: Tok
                         <div>
                           <span className="font-medium">{pos.symbol}</span>
                           {pos.isStablecoin && (
-                            <Badge variant="outline" className="ml-1.5 text-[10px] px-1 py-0">
+                            <Badge
+                              variant="outline"
+                              className="ml-1.5 text-[10px] px-1 py-0"
+                            >
                               stable
                             </Badge>
                           )}
@@ -198,7 +214,7 @@ export const TokenTable = ({ positions, wallets, chains, onRemovePosition }: Tok
                       {mask(formatAmount(pos.amount))}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {mask(formatCurrency(pos.usdValue, 'USD'))}
+                      {mask(formatCurrency(pos.usdValue, "USD"))}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
@@ -206,15 +222,18 @@ export const TokenTable = ({ positions, wallets, chains, onRemovePosition }: Tok
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={positionTypeBadgeVariant(pos.positionType)} className="text-xs">
+                      <Badge
+                        variant={positionTypeBadgeVariant(pos.positionType)}
+                        className="text-xs"
+                      >
                         {pos.positionType}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {pos.protocol || '—'}
+                      {pos.protocol || "—"}
                     </TableCell>
                     <TableCell className="text-xs">
-                      {walletMap.get(pos.walletId) || '?'}
+                      {walletMap.get(pos.walletId) || "?"}
                     </TableCell>
                     <TableCell>
                       <Button

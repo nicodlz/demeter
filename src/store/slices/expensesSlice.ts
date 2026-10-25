@@ -1,18 +1,8 @@
-import { generateId } from '../../utils/id';
-import type { StateCreator } from 'zustand';
-import type { Expense } from '@/schemas';
-import type { StoreState, ExpensesSlice } from '../types';
-
-/**
- * Normalize description for duplicate detection and merchant matching
- */
-const normalizeDescription = (desc: string): string => {
-  return desc
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .replace(/['"]/g, '')
-    .trim();
-};
+import { generateId } from "../../utils/id";
+import { expenseDedupKey, normalizeDescription } from "@/utils/expenseDedup";
+import type { StateCreator } from "zustand";
+import type { Expense } from "@/schemas";
+import type { StoreState, ExpensesSlice } from "../types";
 
 export const createExpensesSlice: StateCreator<
   StoreState,
@@ -25,7 +15,7 @@ export const createExpensesSlice: StateCreator<
   addExpense: (expense) => {
     const newExpense: Expense = {
       ...expense,
-      type: expense.type || 'expense',
+      type: expense.type || "expense",
       id: generateId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -47,43 +37,36 @@ export const createExpensesSlice: StateCreator<
       merchantName: t.merchantName,
       cardLastFour: t.cardLastFour,
       originalLine: t.originalLine,
-      type: t.isCredit ? 'income' as const : 'expense' as const,
+      type: t.isCredit ? ("income" as const) : ("expense" as const),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }));
 
+    let unique: Expense[] = newExpenses;
     set((state) => {
       // Deduplicate: skip transactions that already exist with same
       // date + normalized description + amount + sourceProvider
-      const existingKeys = new Set(
-        state.expenses.map((e) =>
-          `${e.date}|${normalizeDescription(e.merchantName || e.description)}|${e.amount}|${e.sourceProvider}`
-        )
-      );
+      const existingKeys = new Set(state.expenses.map(expenseDedupKey));
 
-      const unique = newExpenses.filter((e) => {
-        const key = `${e.date}|${normalizeDescription(e.merchantName || e.description)}|${e.amount}|${e.sourceProvider}`;
+      unique = newExpenses.filter((e) => {
+        const key = expenseDedupKey(e);
         if (existingKeys.has(key)) return false;
         existingKeys.add(key); // also dedup within the batch itself
         return true;
       });
 
-      if (unique.length < newExpenses.length) {
-        console.log(
-          `[demeter] Skipped ${newExpenses.length - unique.length} duplicate transaction(s)`
-        );
-      }
-
       return { expenses: [...state.expenses, ...unique] };
     });
 
-    return newExpenses;
+    return unique;
   },
 
   addRecurringIncome: (baseEntry, months) => {
     const newExpenses: Expense[] = [];
     // Parse date parts directly from the string to avoid timezone issues
-    const [baseYear, baseMonth, baseDay] = baseEntry.date.split('-').map(Number);
+    const [baseYear, baseMonth, baseDay] = baseEntry.date
+      .split("-")
+      .map(Number);
 
     for (let i = 0; i < months; i++) {
       // Calculate target year/month
@@ -96,10 +79,10 @@ export const createExpensesSlice: StateCreator<
       const lastDayOfMonth = new Date(year, month, 0).getDate();
       const day = Math.min(baseDay, lastDayOfMonth);
 
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       newExpenses.push({
         ...baseEntry,
-        type: 'income',
+        type: "income",
         date: dateStr,
         id: generateId(),
         createdAt: new Date().toISOString(),
@@ -116,7 +99,7 @@ export const createExpensesSlice: StateCreator<
       expenses: state.expenses.map((expense) =>
         expense.id === id
           ? { ...expense, ...data, updatedAt: new Date().toISOString() }
-          : expense
+          : expense,
       ),
     }));
   },
@@ -138,7 +121,7 @@ export const createExpensesSlice: StateCreator<
     set((state) => ({
       expenses: state.expenses.map((expense) => {
         const expenseMerchant = normalizeDescription(
-          expense.merchantName || expense.description
+          expense.merchantName || expense.description,
         );
         if (expenseMerchant === normalized) {
           return { ...expense, category, updatedAt: new Date().toISOString() };

@@ -1,24 +1,24 @@
-import type { Invoice } from '@/schemas';
-import { useInvoiceForm } from '@/hooks/useInvoiceForm';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
+import type { Invoice } from "@/schemas";
+import { useInvoiceForm } from "@/hooks/useInvoiceForm";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Plus, X } from 'lucide-react';
+} from "@/components/ui/select";
+import { Plus, X } from "lucide-react";
 
-import { VATSection } from '@/components/invoice/VATSection';
-import { LineItemsEditor } from '@/components/invoice/LineItemsEditor';
+import { VATSection } from "@/components/invoice/VATSection";
+import { LineItemsEditor } from "@/components/invoice/LineItemsEditor";
 
 interface InvoiceFormProps {
   invoice?: Invoice;
@@ -26,7 +26,11 @@ interface InvoiceFormProps {
   onCancel: () => void;
 }
 
-export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) => {
+export const InvoiceForm = ({
+  invoice,
+  onSubmit,
+  onCancel,
+}: InvoiceFormProps) => {
   const form = useInvoiceForm({ invoice, onSubmit });
   const { mask } = usePrivacyMode();
 
@@ -40,7 +44,10 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
         <CardContent className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
             <Label htmlFor="client">Client *</Label>
-            <Select value={form.selectedClientId} onValueChange={form.setSelectedClientId}>
+            <Select
+              value={form.selectedClientId}
+              onValueChange={form.setSelectedClientId}
+            >
               <SelectTrigger id="client">
                 <SelectValue placeholder="Select a client" />
               </SelectTrigger>
@@ -131,7 +138,12 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Custom Fields</CardTitle>
-          <Button type="button" variant="outline" size="sm" onClick={form.addCustomField}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={form.addCustomField}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Add Field
           </Button>
@@ -153,7 +165,11 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                       placeholder="Field name"
                       value={field.label}
                       onChange={(e) =>
-                        form.updateCustomField(field.id, 'label', e.target.value)
+                        form.updateCustomField(
+                          field.id,
+                          "label",
+                          e.target.value,
+                        )
                       }
                     />
                   </div>
@@ -162,7 +178,11 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                       placeholder="Value"
                       value={field.value}
                       onChange={(e) =>
-                        form.updateCustomField(field.id, 'value', e.target.value)
+                        form.updateCustomField(
+                          field.id,
+                          "value",
+                          e.target.value,
+                        )
                       }
                     />
                   </div>
@@ -225,7 +245,10 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
                 }
               }}
             />
-            <Label htmlFor="splitEnabled" className="text-lg font-semibold cursor-pointer">
+            <Label
+              htmlFor="splitEnabled"
+              className="text-lg font-semibold cursor-pointer"
+            >
               Split Invoice
             </Label>
           </div>
@@ -258,8 +281,8 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
               }}
             />
             <p className="text-xs text-muted-foreground">
-              Slide to adjust Part B amount. Part A will be the full original invoice, Part B
-              will be an invoice with only the selected amount.
+              Slide to adjust Part B amount. Part A will be the full original
+              invoice, Part B will be an invoice with only the selected amount.
             </p>
           </CardContent>
         )}
@@ -270,7 +293,7 @@ export const InvoiceForm = ({ invoice, onSubmit, onCancel }: InvoiceFormProps) =
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">{invoice ? 'Update' : 'Create Invoice'}</Button>
+        <Button type="submit">{invoice ? "Update" : "Create Invoice"}</Button>
       </div>
     </form>
   );

@@ -1,8 +1,8 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import type { TextItem as PdfTextItem } from 'pdfjs-dist/types/src/display/api';
-import type { ParsedTransaction, Currency } from '@/schemas';
-import { parseAmountStrict, frenchMonthToNumber } from './parserUtils';
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import type { TextItem as PdfTextItem } from "pdfjs-dist/types/src/display/api";
+import type { ParsedTransaction, Currency } from "@/schemas";
+import { parseAmountStrict, frenchMonthToNumber } from "./parserUtils";
 
 // Set worker source for Vite
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -15,8 +15,8 @@ interface TextItem {
 }
 
 interface RawTransaction {
-  dateOpe: string;      // DD.MM
-  dateValeur: string;   // DD.MM
+  dateOpe: string; // DD.MM
+  dateValeur: string; // DD.MM
   description: string[];
   debit?: number;
   credit?: number;
@@ -35,7 +35,7 @@ interface RawTransaction {
  */
 export const parseCreditAgricolePdf = async (
   file: File,
-  defaultCurrency: Currency = 'EUR'
+  defaultCurrency: Currency = "EUR",
 ): Promise<{
   success: boolean;
   transactions: ParsedTransaction[];
@@ -56,7 +56,9 @@ export const parseCreditAgricolePdf = async (
       const viewport = page.getViewport({ scale: 1.0 });
 
       const items: TextItem[] = textContent.items
-        .filter((item): item is PdfTextItem => 'str' in item && 'transform' in item)
+        .filter(
+          (item): item is PdfTextItem => "str" in item && "transform" in item,
+        )
         .map((item) => ({
           str: item.str,
           x: item.transform[4],
@@ -67,11 +69,14 @@ export const parseCreditAgricolePdf = async (
       allItems.push(items);
     }
 
-    const detectedCurrency = detectCurrencyFromContent(allItems) || defaultCurrency;
+    const detectedCurrency =
+      detectCurrencyFromContent(allItems) || defaultCurrency;
     const { startDate, endDate } = findStatementPeriod(allItems);
 
     if (!startDate || !endDate) {
-      errors.push('Could not determine statement period (Ancien solde / Nouveau solde dates)');
+      errors.push(
+        "Could not determine statement period (Ancien solde / Nouveau solde dates)",
+      );
       return { success: false, transactions: [], errors };
     }
 
@@ -80,12 +85,16 @@ export const parseCreditAgricolePdf = async (
     for (let pageNum = 0; pageNum < allItems.length; pageNum++) {
       const items = allItems[pageNum];
       const foundColumns = findColumnPositions(items);
-      const columnPositions: ColumnPositions | null = foundColumns || lastKnownColumns;
+      const columnPositions: ColumnPositions | null =
+        foundColumns || lastKnownColumns;
 
       if (!columnPositions) continue;
       if (foundColumns) lastKnownColumns = foundColumns;
 
-      const pageTransactions = extractTransactionsFromItems(items, columnPositions);
+      const pageTransactions = extractTransactionsFromItems(
+        items,
+        columnPositions,
+      );
 
       for (const tx of pageTransactions) {
         const date = resolveDate(tx.dateOpe, startDate, endDate);
@@ -98,7 +107,7 @@ export const parseCreditAgricolePdf = async (
         const isCredit = !tx.debit && !!tx.credit;
         if (amount === 0) continue;
 
-        const description = tx.description.join(' ').trim();
+        const description = tx.description.join(" ").trim();
         const merchantName = extractMerchantName(description);
         const cardLastFour = extractCardLastFour(description);
 
@@ -117,16 +126,25 @@ export const parseCreditAgricolePdf = async (
 
     return { success: transactions.length > 0, transactions, errors };
   } catch (error) {
-    errors.push(`PDF parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    errors.push(
+      `PDF parsing error: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
     return { success: false, transactions: [], errors };
   }
 };
 
-function detectCurrencyFromContent(allPageItems: TextItem[][]): Currency | null {
+function detectCurrencyFromContent(
+  allPageItems: TextItem[][],
+): Currency | null {
   for (const items of allPageItems) {
-    const fullText = items.map(i => i.str).join(' ').toUpperCase();
-    if (fullText.includes('EN EUROS') || fullText.includes('EN EUR')) return 'EUR';
-    if (fullText.includes('EN DOLLARS') || fullText.includes('EN USD')) return 'USD';
+    const fullText = items
+      .map((i) => i.str)
+      .join(" ")
+      .toUpperCase();
+    if (fullText.includes("EN EUROS") || fullText.includes("EN EUR"))
+      return "EUR";
+    if (fullText.includes("EN DOLLARS") || fullText.includes("EN USD"))
+      return "USD";
   }
   return null;
 }
@@ -137,13 +155,15 @@ interface StatementPeriod {
 }
 
 function findStatementPeriod(allPageItems: TextItem[][]): StatementPeriod {
-  let startDate: StatementPeriod['startDate'] = null;
-  let endDate: StatementPeriod['endDate'] = null;
+  let startDate: StatementPeriod["startDate"] = null;
+  let endDate: StatementPeriod["endDate"] = null;
 
   for (const items of allPageItems) {
-    const fullText = items.map(i => i.str).join(' ');
+    const fullText = items.map((i) => i.str).join(" ");
 
-    const ancienMatch = fullText.match(/Ancien solde\s+(?:cr[ée]diteur|d[ée]biteur)\s+au\s+(\d{2})\.(\d{2})\.(\d{4})/i);
+    const ancienMatch = fullText.match(
+      /Ancien solde\s+(?:cr[ée]diteur|d[ée]biteur)\s+au\s+(\d{2})\.(\d{2})\.(\d{4})/i,
+    );
     if (ancienMatch && !startDate) {
       startDate = {
         day: parseInt(ancienMatch[1]),
@@ -152,7 +172,9 @@ function findStatementPeriod(allPageItems: TextItem[][]): StatementPeriod {
       };
     }
 
-    const nouveauMatch = fullText.match(/Nouveau solde\s+(?:cr[ée]diteur|d[ée]biteur)\s+au\s+(\d{2})\.(\d{2})\.(\d{4})/i);
+    const nouveauMatch = fullText.match(
+      /Nouveau solde\s+(?:cr[ée]diteur|d[ée]biteur)\s+au\s+(\d{2})\.(\d{2})\.(\d{4})/i,
+    );
     if (nouveauMatch && !endDate) {
       endDate = {
         day: parseInt(nouveauMatch[1]),
@@ -162,7 +184,9 @@ function findStatementPeriod(allPageItems: TextItem[][]): StatementPeriod {
     }
 
     if (!endDate) {
-      const arreteMatch = fullText.match(/Date d'arr[ée]t[ée]\s*:\s*(\d{1,2})\s+(\w+)\s+(\d{4})/i);
+      const arreteMatch = fullText.match(
+        /Date d'arr[ée]t[ée]\s*:\s*(\d{1,2})\s+(\w+)\s+(\d{4})/i,
+      );
       if (arreteMatch) {
         const monthNum = frenchMonthToNumber(arreteMatch[2]);
         if (monthNum) {
@@ -187,18 +211,22 @@ function findStatementPeriod(allPageItems: TextItem[][]): StatementPeriod {
 function resolveDate(
   dateStr: string,
   start: { day: number; month: number; year: number },
-  end: { day: number; month: number; year: number }
+  end: { day: number; month: number; year: number },
 ): string {
   const match = dateStr.match(/(\d{2})\.(\d{2})/);
-  if (!match) return '';
+  if (!match) return "";
 
   const day = parseInt(match[1]);
   const month = parseInt(match[2]);
-  const year = start.year === end.year ? start.year
-    : (month >= start.month ? start.year : end.year);
+  const year =
+    start.year === end.year
+      ? start.year
+      : month >= start.month
+        ? start.year
+        : end.year;
 
-  const mm = month.toString().padStart(2, '0');
-  const dd = day.toString().padStart(2, '0');
+  const mm = month.toString().padStart(2, "0");
+  const dd = day.toString().padStart(2, "0");
   return `${year}-${mm}-${dd}`;
 }
 
@@ -216,10 +244,15 @@ interface ColumnPositions {
 }
 
 function findColumnPositions(items: TextItem[]): ColumnPositions | null {
-  const debitCandidates = items.filter(i => i.str.trim() === 'Débit' || i.str.trim() === 'Debit');
-  const creditCandidates = items.filter(i => i.str.trim() === 'Crédit' || i.str.trim() === 'Credit');
+  const debitCandidates = items.filter(
+    (i) => i.str.trim() === "Débit" || i.str.trim() === "Debit",
+  );
+  const creditCandidates = items.filter(
+    (i) => i.str.trim() === "Crédit" || i.str.trim() === "Credit",
+  );
 
-  if (debitCandidates.length === 0 || creditCandidates.length === 0) return null;
+  if (debitCandidates.length === 0 || creditCandidates.length === 0)
+    return null;
 
   let debitHeader: TextItem | null = null;
   let creditHeader: TextItem | null = null;
@@ -237,13 +270,17 @@ function findColumnPositions(items: TextItem[]): ColumnPositions | null {
 
   if (!debitHeader || !creditHeader) return null;
 
-  const dateOpeHeader = items.find(i =>
-    Math.abs(i.y - debitHeader!.y) < 15 &&
-    (i.str.trim() === 'Date opé.' || i.str.trim() === 'Date' || i.str.trim().startsWith('Date op'))
+  const dateOpeHeader = items.find(
+    (i) =>
+      Math.abs(i.y - debitHeader!.y) < 15 &&
+      (i.str.trim() === "Date opé." ||
+        i.str.trim() === "Date" ||
+        i.str.trim().startsWith("Date op")),
   );
-  const libelleHeader = items.find(i =>
-    Math.abs(i.y - debitHeader!.y) < 15 &&
-    (i.str.trim().includes('Libellé') || i.str.trim().includes('opérations'))
+  const libelleHeader = items.find(
+    (i) =>
+      Math.abs(i.y - debitHeader!.y) < 15 &&
+      (i.str.trim().includes("Libellé") || i.str.trim().includes("opérations")),
   );
 
   const debitX = debitHeader.x;
@@ -267,7 +304,10 @@ function findColumnPositions(items: TextItem[]): ColumnPositions | null {
   };
 }
 
-function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions): RawTransaction[] {
+function extractTransactionsFromItems(
+  items: TextItem[],
+  cols: ColumnPositions,
+): RawTransaction[] {
   const transactions: RawTransaction[] = [];
 
   const sortedItems = [...items].sort((a, b) => {
@@ -296,29 +336,55 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
   let inTransactionSection = false;
 
   for (const row of rows) {
-    const cleanRowText = row.map(i => i.str).join(' ').replace(/[þ¨]/g, '').trim();
+    const cleanRowText = row
+      .map((i) => i.str)
+      .join(" ")
+      .replace(/[þ¨]/g, "")
+      .trim();
 
-    if (cleanRowText.includes('Ancien solde')) { inTransactionSection = true; continue; }
-    if (cleanRowText.includes('Nouveau solde') || cleanRowText.includes('Total des op')) {
-      if (currentTransaction) { transactions.push(currentTransaction); currentTransaction = null; }
+    if (cleanRowText.includes("Ancien solde")) {
+      inTransactionSection = true;
+      continue;
+    }
+    if (
+      cleanRowText.includes("Nouveau solde") ||
+      cleanRowText.includes("Total des op")
+    ) {
+      if (currentTransaction) {
+        transactions.push(currentTransaction);
+        currentTransaction = null;
+      }
       inTransactionSection = false;
       continue;
     }
-    if (cleanRowText.includes('(suite)')) { inTransactionSection = true; continue; }
+    if (cleanRowText.includes("(suite)")) {
+      inTransactionSection = true;
+      continue;
+    }
     if (!inTransactionSection) continue;
-    if (cleanRowText.includes('Date opé') || cleanRowText.includes('Date valeur') || cleanRowText.includes('Libellé des')) continue;
-    if (cleanRowText.includes('Débit') && cleanRowText.includes('Crédit')) continue;
+    if (
+      cleanRowText.includes("Date opé") ||
+      cleanRowText.includes("Date valeur") ||
+      cleanRowText.includes("Libellé des")
+    )
+      continue;
+    if (cleanRowText.includes("Débit") && cleanRowText.includes("Crédit"))
+      continue;
 
-    const dateItem = row.find(i => {
-      const str = i.str.replace(/[þ¨]/g, '').trim();
-      return i.x >= cols.dateOpeMin && i.x <= cols.dateOpeMax && /^\d{2}\.\d{2}$/.test(str);
+    const dateItem = row.find((i) => {
+      const str = i.str.replace(/[þ¨]/g, "").trim();
+      return (
+        i.x >= cols.dateOpeMin &&
+        i.x <= cols.dateOpeMax &&
+        /^\d{2}\.\d{2}$/.test(str)
+      );
     });
 
     if (dateItem) {
       if (currentTransaction) transactions.push(currentTransaction);
       currentTransaction = {
-        dateOpe: dateItem.str.replace(/[þ¨]/g, '').trim(),
-        dateValeur: '',
+        dateOpe: dateItem.str.replace(/[þ¨]/g, "").trim(),
+        dateValeur: "",
         description: [],
       };
       processRowItems(row, dateItem, currentTransaction, cols, false);
@@ -338,28 +404,40 @@ function processRowItems(
   dateItem: TextItem | null,
   tx: RawTransaction,
   cols: ColumnPositions,
-  isContinuation: boolean
+  isContinuation: boolean,
 ): void {
   for (const item of row) {
     const x = item.x;
-    const str = item.str.replace(/[þ¨]/g, '').trim();
+    const str = item.str.replace(/[þ¨]/g, "").trim();
     if (!str || item === dateItem) continue;
 
-    if (!isContinuation && x >= cols.dateValeurMin && x < cols.dateValeurMax && /^\d{2}\.\d{2}$/.test(str)) {
+    if (
+      !isContinuation &&
+      x >= cols.dateValeurMin &&
+      x < cols.dateValeurMax &&
+      /^\d{2}\.\d{2}$/.test(str)
+    ) {
       tx.dateValeur = str;
       continue;
     }
 
-    if (isContinuation && (/^Page \d+/.test(str) || /^\d+\/\d+$/.test(str))) continue;
+    if (isContinuation && (/^Page \d+/.test(str) || /^\d+\/\d+$/.test(str)))
+      continue;
 
     if (x >= cols.libelleMin && x < cols.debitMax) {
       if (x >= cols.debitMin) {
         const amount = parseAmountStrict(str);
-        if (amount > 0 && (!isContinuation || !tx.debit)) { tx.debit = amount; continue; }
+        if (amount > 0 && (!isContinuation || !tx.debit)) {
+          tx.debit = amount;
+          continue;
+        }
       }
       if (x >= cols.creditMin && x <= cols.creditMax) {
         const amount = parseAmountStrict(str);
-        if (amount > 0 && (!isContinuation || !tx.credit)) { tx.credit = amount; continue; }
+        if (amount > 0 && (!isContinuation || !tx.credit)) {
+          tx.credit = amount;
+          continue;
+        }
       }
       if (x < cols.libelleMax) tx.description.push(str);
     } else if (x >= cols.debitMin && x < cols.debitMax) {
@@ -383,8 +461,15 @@ function fixSplitAmounts(tx: RawTransaction): void {
   const prefix = parseInt(lastDesc);
   if (prefix <= 0) return;
 
-  if (tx.debit !== undefined && tx.debit === 0) { tx.debit = prefix * 1000; tx.description.pop(); return; }
-  if (tx.credit !== undefined && tx.credit === 0) { tx.credit = prefix * 1000; tx.description.pop(); }
+  if (tx.debit !== undefined && tx.debit === 0) {
+    tx.debit = prefix * 1000;
+    tx.description.pop();
+    return;
+  }
+  if (tx.credit !== undefined && tx.credit === 0) {
+    tx.credit = prefix * 1000;
+    tx.description.pop();
+  }
 }
 
 function extractCardLastFour(description: string): string | undefined {
@@ -395,42 +480,44 @@ function extractCardLastFour(description: string): string | undefined {
 function extractMerchantName(description: string): string {
   const upper = description.toUpperCase();
 
-  if (upper.includes('CARTE X')) {
+  if (upper.includes("CARTE X")) {
     const m = description.match(/Carte\s+X\d{4}\s+(.+?)(?:\s+\d{2}\/\d{2})/i);
     if (m) return m[1].trim();
     const fb = description.match(/Carte\s+X\d{4}\s+(.+)/i);
     if (fb) return fb[1].trim();
   }
-  if (upper.startsWith('PRLV')) {
+  if (upper.startsWith("PRLV")) {
     const m = description.match(/Prlv\s+(.+?)(?:\s{2,}|$)/i);
     if (m) return m[1].trim();
   }
-  if (upper.includes('VIREMENT DE')) {
+  if (upper.includes("VIREMENT DE")) {
     const m = description.match(/Virement\s+De\s+(.+?)(?:\s{2,}|$)/i);
     if (m) return m[1].trim();
   }
-  if (upper.includes('VIREMENT WEB')) {
+  if (upper.includes("VIREMENT WEB")) {
     const m = description.match(/Virement\s+Web\s+(.+?)(?:\s{2,}|$)/i);
     if (m) return m[1].trim();
   }
-  if (upper.includes('VIREMENT')) {
+  if (upper.includes("VIREMENT")) {
     const m = description.match(/Virement\s+(.+?)(?:\s{2,}|$)/i);
     if (m) return m[1].trim();
   }
-  if (upper.includes('RET DAB')) {
-    const m = description.match(/Ret\s+DAB\s+X\d{4}\s+(.+?)(?:\s+\d{2}\/\d{2})/i);
+  if (upper.includes("RET DAB")) {
+    const m = description.match(
+      /Ret\s+DAB\s+X\d{4}\s+(.+?)(?:\s+\d{2}\/\d{2})/i,
+    );
     if (m) return m[1].trim();
     const fb = description.match(/Ret\s+DAB\s+X\d{4}\s+(.+)/i);
     if (fb) return fb[1].trim();
   }
-  if (upper.includes('REM CHQ')) return 'Remise Chèque';
+  if (upper.includes("REM CHQ")) return "Remise Chèque";
 
-  const words = description.split(/\s+/).filter(w => w.length > 2);
-  return words.slice(0, 3).join(' ');
+  const words = description.split(/\s+/).filter((w) => w.length > 2);
+  return words.slice(0, 3).join(" ");
 }
 
 export const creditAgricolePdfParser = {
-  provider: 'credit_agricole' as const,
-  canParse: (file: File) => file.type === 'application/pdf',
+  provider: "credit_agricole" as const,
+  canParse: (file: File) => file.type === "application/pdf",
   parse: parseCreditAgricolePdf,
 };

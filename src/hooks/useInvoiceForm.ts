@@ -1,18 +1,26 @@
-import { generateId } from '@/utils/id';
-import { useState, useRef, useEffect, useMemo } from 'react';
-import type { Invoice, LineItem, CustomField, Currency, SavedItem } from '@/schemas';
-import { useClients } from '@/hooks/useClients';
-import { useSettings } from '@/hooks/useSettings';
-import { useSavedItems } from '@/hooks/useSavedItems';
-import { generateInvoiceNumber, parseInvoiceNumber } from '@/utils/invoiceNumber';
-import { useInvoices } from '@/hooks/useInvoices';
-import { getCurrencySymbol } from '@/utils/formatters';
+import { generateId } from "@/utils/id";
+import { useState, useRef, useEffect, useMemo } from "react";
+import type {
+  Invoice,
+  LineItem,
+  CustomField,
+  Currency,
+  SavedItem,
+} from "@/schemas";
+import { useClients } from "@/hooks/useClients";
+import { useSettings } from "@/hooks/useSettings";
+import { useSavedItems } from "@/hooks/useSavedItems";
+import { generateNextInvoiceNumber } from "@/utils/invoiceNumber";
+import { useInvoices } from "@/hooks/useInvoices";
+import { getCurrencySymbol } from "@/utils/formatters";
+import { useToast } from "@/hooks/useToast";
+import { addDaysLocal, todayLocalISO } from "@/utils/date";
 import {
   calculateSubtotal as calcSubtotal,
   calculateVAT as calcVAT,
   calculateTotal as calcTotal,
   calculateSplitPercentage,
-} from '@/utils/invoiceCalculations';
+} from "@/utils/invoiceCalculations";
 
 interface UseInvoiceFormOptions {
   invoice?: Invoice;
@@ -23,69 +31,86 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
   const { clients } = useClients();
   const { settings } = useSettings();
   const { invoices: existingInvoices } = useInvoices();
-  const { savedItems, saveFromLineItem, incrementUsage, getMostUsedItems, deleteSavedItem } =
-    useSavedItems();
+  const {
+    savedItems,
+    saveFromLineItem,
+    incrementUsage,
+    getMostUsedItems,
+    deleteSavedItem,
+  } = useSavedItems();
+  const toast = useToast();
 
   // ── Autocomplete state ──────────────────────────────────────────────────────
-  const [activeAutocomplete, setActiveAutocomplete] = useState<string | null>(null);
+  const [activeAutocomplete, setActiveAutocomplete] = useState<string | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState<Record<string, string>>({});
   const autocompleteRef = useRef<HTMLDivElement>(null);
 
   // ── Form state ──────────────────────────────────────────────────────────────
-  const [selectedClientId, setSelectedClientId] = useState(invoice?.client.id || '');
-  const [date, setDate] = useState(
-    invoice?.date || new Date().toISOString().split('T')[0]
+  const [selectedClientId, setSelectedClientId] = useState(
+    invoice?.client.id || "",
   );
+  const [date, setDate] = useState(() => invoice?.date || todayLocalISO());
   const [dueDate, setDueDate] = useState(
-    invoice?.dueDate ||
-      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    () => invoice?.dueDate || addDaysLocal(30),
   );
   const [lineItems, setLineItems] = useState<LineItem[]>(
-    invoice?.lineItems || [
-      {
-        id: generateId(),
-        description: '',
-        quantity: 1,
-        unit: 'day',
-        unitPrice: 0,
-        vatRate: settings.vatRates[0]?.defaultRate || 20,
-        type: 'service',
-      },
-    ]
+    () =>
+      invoice?.lineItems || [
+        {
+          id: generateId(),
+          description: "",
+          quantity: 1,
+          unit: "day",
+          unitPrice: 0,
+          vatRate: settings.vatRates[0]?.defaultRate || 20,
+          type: "service",
+        },
+      ],
   );
   const [customFields, setCustomFields] = useState<CustomField[]>(
-    invoice?.customFields || []
+    invoice?.customFields || [],
   );
-  const [notes, setNotes] = useState(invoice?.notes || '');
+  const [notes, setNotes] = useState(invoice?.notes || "");
   const [paymentTerms, setPaymentTerms] = useState(
-    invoice?.paymentTerms || settings.defaultPaymentTerms
+    invoice?.paymentTerms || settings.defaultPaymentTerms,
   );
   const [applyVAT, setApplyVAT] = useState(invoice?.applyVAT ?? true);
   const [vatCountry, setVatCountry] = useState(
-    invoice?.vatCountry || settings.vatRates[0]?.countryCode || 'FR'
+    invoice?.vatCountry || settings.vatRates[0]?.countryCode || "FR",
   );
   const [vatExemptionReason, setVatExemptionReason] = useState(
-    invoice?.vatExemptionReason || 'VAT not applicable, art. 293 B of CGI (France)'
+    invoice?.vatExemptionReason ||
+      "VAT not applicable, art. 293 B of CGI (France)",
   );
-  const [splitEnabled, setSplitEnabled] = useState(invoice?.splitEnabled || false);
+  const [splitEnabled, setSplitEnabled] = useState(
+    invoice?.splitEnabled || false,
+  );
   const [splitAmount, setSplitAmount] = useState(invoice?.splitAmount || 0);
   const [currency, setCurrency] = useState<Currency>(
-    invoice?.currency || settings.defaultCurrency || 'USD'
+    invoice?.currency || settings.defaultCurrency || "USD",
   );
 
   // ── Derived values ──────────────────────────────────────────────────────────
   const currencySymbol = getCurrencySymbol(currency);
 
   const selectedVatRate = settings.vatRates.find(
-    (rate) => rate.countryCode === vatCountry
+    (rate) => rate.countryCode === vatCountry,
   );
 
   const subtotal = useMemo(() => calcSubtotal(lineItems), [lineItems]);
-  const vat = useMemo(() => calcVAT(lineItems, applyVAT), [lineItems, applyVAT]);
-  const total = useMemo(() => calcTotal(lineItems, applyVAT), [lineItems, applyVAT]);
+  const vat = useMemo(
+    () => calcVAT(lineItems, applyVAT),
+    [lineItems, applyVAT],
+  );
+  const total = useMemo(
+    () => calcTotal(lineItems, applyVAT),
+    [lineItems, applyVAT],
+  );
   const splitPercentage = useMemo(
     () => calculateSplitPercentage(splitAmount, total),
-    [splitAmount, total]
+    [splitAmount, total],
   );
 
   // ── Effects ─────────────────────────────────────────────────────────────────
@@ -98,13 +123,13 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
         setActiveAutocomplete(null);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // ── Autocomplete helpers ────────────────────────────────────────────────────
   const getFilteredSavedItems = (itemId: string): SavedItem[] => {
-    const query = searchQuery[itemId]?.toLowerCase() || '';
+    const query = searchQuery[itemId]?.toLowerCase() || "";
     if (!query) return getMostUsedItems(5);
     return savedItems
       .filter((item) => item.description.toLowerCase().includes(query))
@@ -123,16 +148,16 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
               type: savedItem.type,
               quantity: savedItem.defaultQuantity,
             }
-          : item
-      )
+          : item,
+      ),
     );
     incrementUsage(savedItem.id);
     setActiveAutocomplete(null);
-    setSearchQuery((prev) => ({ ...prev, [lineItemId]: '' }));
+    setSearchQuery((prev) => ({ ...prev, [lineItemId]: "" }));
   };
 
   const handleDescriptionChange = (lineItemId: string, value: string) => {
-    updateLineItem(lineItemId, 'description', value);
+    updateLineItem(lineItemId, "description", value);
     setSearchQuery((prev) => ({ ...prev, [lineItemId]: value }));
     setActiveAutocomplete(lineItemId);
   };
@@ -143,12 +168,12 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
       ...prev,
       {
         id: generateId(),
-        description: '',
+        description: "",
         quantity: 1,
-        unit: 'day',
+        unit: "day",
         unitPrice: 0,
         vatRate: selectedVatRate?.defaultRate || 20,
-        type: 'service',
+        type: "service",
       },
     ]);
   };
@@ -156,10 +181,10 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
   const updateLineItem = <K extends keyof LineItem>(
     id: string,
     field: K,
-    value: LineItem[K]
+    value: LineItem[K],
   ) => {
     setLineItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
     );
   };
 
@@ -174,13 +199,17 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
   const addCustomField = () => {
     setCustomFields((prev) => [
       ...prev,
-      { id: generateId(), label: '', value: '' },
+      { id: generateId(), label: "", value: "" },
     ]);
   };
 
-  const updateCustomField = (id: string, field: 'label' | 'value', value: string) => {
+  const updateCustomField = (
+    id: string,
+    field: "label" | "value",
+    value: string,
+  ) => {
     setCustomFields((prev) =>
-      prev.map((cf) => (cf.id === id ? { ...cf, [field]: value } : cf))
+      prev.map((cf) => (cf.id === id ? { ...cf, [field]: value } : cf)),
     );
   };
 
@@ -194,26 +223,39 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
 
     const selectedClient = clients.find((c) => c.id === selectedClientId);
     if (!selectedClient) {
-      alert('Please select a client');
+      toast.error("Please select a client");
       return;
     }
 
-    lineItems.forEach((item) => {
-      if (item.description.trim()) {
-        saveFromLineItem(item);
-      }
-    });
+    const invalidLine = lineItems.find(
+      (item) =>
+        !item.description.trim() || item.quantity <= 0 || item.unitPrice < 0,
+    );
+    if (invalidLine) {
+      toast.error(
+        "Every line item needs a description and a positive quantity.",
+      );
+      return;
+    }
+
+    if (total <= 0) {
+      toast.error("The invoice total must be greater than zero.");
+      return;
+    }
+
+    if (dueDate < date) {
+      toast.error("The due date cannot be before the invoice date.");
+      return;
+    }
+
+    lineItems.forEach((item) => saveFromLineItem(item));
 
     const invoiceNumber =
       invoice?.number ||
-      (() => {
-        const currentYear = new Date().getFullYear().toString();
-        const maxCounter = existingInvoices
-          .filter((i) => i.number.startsWith(currentYear))
-          .map((i) => parseInvoiceNumber(i.number) || 0)
-          .reduce((max, n) => Math.max(max, n), 0);
-        return generateInvoiceNumber(maxCounter + 1, settings.invoiceNumberFormat);
-      })();
+      generateNextInvoiceNumber(
+        existingInvoices.map((item) => item.number),
+        settings.invoiceNumberFormat,
+      );
 
     const newInvoice: Invoice = {
       id: invoice?.id || generateId(),
@@ -231,6 +273,9 @@ export function useInvoiceForm({ invoice, onSubmit }: UseInvoiceFormOptions) {
       splitEnabled,
       splitAmount: splitEnabled ? splitAmount : undefined,
       currency,
+      paid: invoice?.paid,
+      paidAt: invoice?.paidAt,
+      partB: invoice?.partB,
       createdAt: invoice?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

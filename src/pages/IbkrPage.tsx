@@ -1,10 +1,16 @@
-import { Link } from '@tanstack/react-router';
-import { useIbkrPage } from '@/hooks/useIbkrPage';
-import { formatCurrency } from '@/utils/formatters';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
+import { Link } from "@tanstack/react-router";
+import { useIbkrPage } from "@/hooks/useIbkrPage";
+import { formatCurrency } from "@/utils/formatters";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,14 +18,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   AlertTriangle,
   KeyRound,
@@ -28,17 +34,17 @@ import {
   TrendingUp,
   Landmark,
   BarChart3,
-} from 'lucide-react';
+} from "lucide-react";
 
 const ASSET_CATEGORY_LABELS: Record<string, string> = {
-  STK: 'Stocks',
-  OPT: 'Options',
-  FUT: 'Futures',
-  CASH: 'Cash',
-  BOND: 'Bonds',
-  WAR: 'Warrants',
-  FUND: 'Funds',
-  OTHER: 'Other',
+  STK: "Stocks",
+  OPT: "Options",
+  FUT: "Futures",
+  CASH: "Cash",
+  BOND: "Bonds",
+  WAR: "Warrants",
+  FUND: "Funds",
+  OTHER: "Other",
 };
 
 function formatAssetCategory(cat: string): string {
@@ -46,7 +52,7 @@ function formatAssetCategory(cat: string): string {
 }
 
 function formatNumber(n: number): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(n);
@@ -103,9 +109,16 @@ export const IbkrPage = () => {
                 Last sync: {new Date(lastSyncAt).toLocaleString()}
               </span>
             )}
-            <Button onClick={handleSync} disabled={syncing} size="sm" className="min-h-[44px] sm:min-h-0">
-              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? 'Syncing…' : 'Sync'}
+            <Button
+              onClick={handleSync}
+              disabled={syncing}
+              size="sm"
+              className="min-h-[44px] sm:min-h-0"
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${syncing ? "animate-spin" : ""}`}
+              />
+              {syncing ? "Syncing…" : "Sync"}
             </Button>
           </div>
         )}
@@ -119,11 +132,15 @@ export const IbkrPage = () => {
             <div>
               <p className="font-medium">IBKR Flex Credentials Required</p>
               <p className="text-sm text-muted-foreground mt-1">
-                To sync your IBKR portfolio, configure your Flex Token and Query ID in{' '}
-                <Link to="/configuration" className="underline text-foreground hover:text-foreground/80">
+                To sync your IBKR portfolio, configure your Flex Token and Query
+                ID in{" "}
+                <Link
+                  to="/configuration"
+                  className="underline text-foreground hover:text-foreground/80"
+                >
                   Configuration
                 </Link>
-                . You can obtain them from the IBKR Client Portal under{' '}
+                . You can obtain them from the IBKR Client Portal under{" "}
                 <em>Performance &amp; Reports → Flex Queries</em>.
               </p>
             </div>
@@ -143,8 +160,10 @@ export const IbkrPage = () => {
               </p>
             </div>
             <Button onClick={handleSync} disabled={syncing}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? 'Syncing…' : 'Sync Now'}
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${syncing ? "animate-spin" : ""}`}
+              />
+              {syncing ? "Syncing…" : "Sync Now"}
             </Button>
           </CardContent>
         </Card>
@@ -173,10 +192,15 @@ export const IbkrPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">
-                {mask(formatCurrency(nav ?? totalPositionValue + totalCashValue, 'USD'))}
+                {mask(
+                  formatCurrency(
+                    nav ?? totalPositionValue + totalCashValue,
+                    "USD",
+                  ),
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {positions.length} position{positions.length !== 1 ? 's' : ''}
+                {positions.length} position{positions.length !== 1 ? "s" : ""}
               </p>
             </CardContent>
           </Card>
@@ -188,29 +212,36 @@ export const IbkrPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-lg sm:text-2xl font-bold">
-                {mask(formatCurrency(totalCashValue, 'USD'))}
+                {mask(formatCurrency(totalCashValue, "USD"))}
               </div>
               <p className="text-xs text-muted-foreground">
-                {cashBalances.length} currenc{cashBalances.length !== 1 ? 'ies' : 'y'}
+                {cashBalances.length} currenc
+                {cashBalances.length !== 1 ? "ies" : "y"}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Unrealized P&L</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Unrealized P&L
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div
                 className={`text-lg sm:text-2xl font-bold ${
-                  totalUnrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'
+                  totalUnrealizedPnl >= 0 ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {mask(`${totalUnrealizedPnl >= 0 ? '+' : ''}${formatCurrency(totalUnrealizedPnl, 'USD')}`)}
+                {mask(
+                  `${totalUnrealizedPnl >= 0 ? "+" : ""}${formatCurrency(totalUnrealizedPnl, "USD")}`,
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
-                {mask(`${totalPnlPercent >= 0 ? '+' : ''}${totalPnlPercent.toFixed(2)}%`)}
+                {mask(
+                  `${totalPnlPercent >= 0 ? "+" : ""}${totalPnlPercent.toFixed(2)}%`,
+                )}
               </p>
             </CardContent>
           </Card>
@@ -221,9 +252,12 @@ export const IbkrPage = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg sm:text-2xl font-bold">{positions.length}</div>
+              <div className="text-lg sm:text-2xl font-bold">
+                {positions.length}
+              </div>
               <p className="text-xs text-muted-foreground">
-                {assetCategories.length} asset type{assetCategories.length !== 1 ? 's' : ''}
+                {assetCategories.length} asset type
+                {assetCategories.length !== 1 ? "s" : ""}
               </p>
             </CardContent>
           </Card>
@@ -239,11 +273,16 @@ export const IbkrPage = () => {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {cashBalances.map((cb) => (
-                <div key={cb.currency} className="p-3 bg-muted rounded-lg text-center">
+                <div
+                  key={cb.currency}
+                  className="p-3 bg-muted rounded-lg text-center"
+                >
                   <div className="text-sm font-medium text-muted-foreground">
                     {cb.currency}
                   </div>
-                  <div className="text-lg font-bold">{mask(formatNumber(cb.endingCash))}</div>
+                  <div className="text-lg font-bold">
+                    {mask(formatNumber(cb.endingCash))}
+                  </div>
                   {cb.endingSettledCash !== cb.endingCash && (
                     <div className="text-xs text-muted-foreground">
                       Settled: {mask(formatNumber(cb.endingSettledCash))}
@@ -268,7 +307,10 @@ export const IbkrPage = () => {
                 </CardDescription>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <Select
+                  value={filterCategory}
+                  onValueChange={setFilterCategory}
+                >
                   <SelectTrigger className="w-full sm:w-[140px]">
                     <SelectValue placeholder="Asset Type" />
                   </SelectTrigger>
@@ -282,7 +324,10 @@ export const IbkrPage = () => {
                   </SelectContent>
                 </Select>
 
-                <Select value={filterCurrency} onValueChange={setFilterCurrency}>
+                <Select
+                  value={filterCurrency}
+                  onValueChange={setFilterCurrency}
+                >
                   <SelectTrigger className="w-full sm:w-[120px]">
                     <SelectValue placeholder="Currency" />
                   </SelectTrigger>
@@ -300,59 +345,71 @@ export const IbkrPage = () => {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Symbol</TableHead>
-                  <TableHead className="hidden md:table-cell">Type</TableHead>
-                  <TableHead className="text-right hidden sm:table-cell">Qty</TableHead>
-                  <TableHead className="text-right hidden lg:table-cell">Price</TableHead>
-                  <TableHead className="text-right">Value</TableHead>
-                  <TableHead className="text-right hidden lg:table-cell">Cost</TableHead>
-                  <TableHead className="text-right">P&L</TableHead>
-                  <TableHead className="text-right hidden sm:table-cell">% NAV</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedPositions.map((pos) => (
-                  <TableRow key={`${pos.conid}-${pos.currency}`}>
-                    <TableCell>
-                      <div className="font-medium">{pos.symbol}</div>
-                      <div className="text-xs text-muted-foreground truncate max-w-[200px]">
-                        {pos.description}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <span className="text-xs px-2 py-0.5 rounded bg-muted">
-                        {formatAssetCategory(pos.assetCategory)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right font-mono hidden sm:table-cell">
-                      {mask(formatNumber(pos.quantity))}
-                    </TableCell>
-                    <TableCell className="text-right font-mono hidden lg:table-cell">
-                      {mask(formatNumber(pos.markPrice))}
-                    </TableCell>
-                    <TableCell className="text-right font-mono whitespace-nowrap">
-                      {mask(formatNumber(pos.marketValue))}
-                    </TableCell>
-                    <TableCell className="text-right font-mono hidden lg:table-cell">
-                      {mask(formatNumber(pos.costBasisMoney))}
-                    </TableCell>
-                    <TableCell
-                      className={`text-right font-mono ${
-                        pos.unrealizedPnl >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}
-                    >
-                      {mask(`${pos.unrealizedPnl >= 0 ? '+' : ''}${formatNumber(pos.unrealizedPnl)}`)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-muted-foreground hidden sm:table-cell">
-                      {mask(`${pos.percentOfNav.toFixed(1)}%`)}
-                    </TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Symbol</TableHead>
+                    <TableHead className="hidden md:table-cell">Type</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">
+                      Qty
+                    </TableHead>
+                    <TableHead className="text-right hidden lg:table-cell">
+                      Price
+                    </TableHead>
+                    <TableHead className="text-right">Value</TableHead>
+                    <TableHead className="text-right hidden lg:table-cell">
+                      Cost
+                    </TableHead>
+                    <TableHead className="text-right">P&L</TableHead>
+                    <TableHead className="text-right hidden sm:table-cell">
+                      % NAV
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {sortedPositions.map((pos) => (
+                    <TableRow key={`${pos.conid}-${pos.currency}`}>
+                      <TableCell>
+                        <div className="font-medium">{pos.symbol}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                          {pos.description}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <span className="text-xs px-2 py-0.5 rounded bg-muted">
+                          {formatAssetCategory(pos.assetCategory)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right font-mono hidden sm:table-cell">
+                        {mask(formatNumber(pos.quantity))}
+                      </TableCell>
+                      <TableCell className="text-right font-mono hidden lg:table-cell">
+                        {mask(formatNumber(pos.markPrice))}
+                      </TableCell>
+                      <TableCell className="text-right font-mono whitespace-nowrap">
+                        {mask(formatNumber(pos.marketValue))}
+                      </TableCell>
+                      <TableCell className="text-right font-mono hidden lg:table-cell">
+                        {mask(formatNumber(pos.costBasisMoney))}
+                      </TableCell>
+                      <TableCell
+                        className={`text-right font-mono ${
+                          pos.unrealizedPnl >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {mask(
+                          `${pos.unrealizedPnl >= 0 ? "+" : ""}${formatNumber(pos.unrealizedPnl)}`,
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-muted-foreground hidden sm:table-cell">
+                        {mask(`${pos.percentOfNav.toFixed(1)}%`)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </CardContent>
         </Card>

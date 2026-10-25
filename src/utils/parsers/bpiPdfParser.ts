@@ -1,7 +1,7 @@
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import type { TextItem as PdfTextItem } from 'pdfjs-dist/types/src/display/api';
-import type { ParsedTransaction, Currency } from '@/schemas';
+import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import type { TextItem as PdfTextItem } from "pdfjs-dist/types/src/display/api";
+import type { ParsedTransaction, Currency } from "@/schemas";
 
 // Set worker source for Vite
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -14,10 +14,10 @@ interface TextItem {
 }
 
 interface RawTransaction {
-  dateMov: string;    // DD/MM
-  dateVal: string;    // DD/MM
+  dateMov: string; // DD/MM
+  dateVal: string; // DD/MM
   description: string[];
-  amount: number;     // signed: negative = debit, positive = credit
+  amount: number; // signed: negative = debit, positive = credit
 }
 
 /**
@@ -36,7 +36,7 @@ interface RawTransaction {
  */
 export const parseBpiPdf = async (
   file: File,
-  _defaultCurrency: Currency = 'EUR' // BPI statements are always EUR
+  defaultCurrency: Currency = "EUR", // BPI statements are always EUR
 ): Promise<{
   success: boolean;
   transactions: ParsedTransaction[];
@@ -53,7 +53,8 @@ export const parseBpiPdf = async (
     try {
       pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     } catch {
-      pdf = await pdfjsLib.getDocument({ data: arrayBuffer, password: '' }).promise;
+      pdf = await pdfjsLib.getDocument({ data: arrayBuffer, password: "" })
+        .promise;
     }
 
     // Extract all text items from all pages
@@ -65,8 +66,8 @@ export const parseBpiPdf = async (
       const viewport = page.getViewport({ scale: 1.0 });
 
       const items: TextItem[] = textContent.items
-        .filter((item): item is PdfTextItem =>
-          'str' in item && 'transform' in item
+        .filter(
+          (item): item is PdfTextItem => "str" in item && "transform" in item,
         )
         .map((item) => ({
           str: item.str,
@@ -82,7 +83,9 @@ export const parseBpiPdf = async (
     const { startDate, endDate } = findStatementPeriod(allItems);
 
     if (!startDate || !endDate) {
-      errors.push('Could not determine statement period (Período De ... a ...)');
+      errors.push(
+        "Could not determine statement period (Período De ... a ...)",
+      );
       return { success: false, transactions: [], errors };
     }
 
@@ -104,14 +107,14 @@ export const parseBpiPdf = async (
 
         const isCredit = tx.amount > 0;
         const amount = Math.abs(tx.amount);
-        const description = tx.description.join(' ').trim();
+        const description = tx.description.join(" ").trim();
         const merchantName = extractMerchantName(description);
 
         transactions.push({
           date,
           description,
           amount,
-          currency: 'EUR' as Currency,
+          currency: defaultCurrency,
           merchantName,
           isCredit,
           originalLine: `${tx.dateMov} ${description}`,
@@ -121,7 +124,9 @@ export const parseBpiPdf = async (
 
     return { success: transactions.length > 0, transactions, errors };
   } catch (error) {
-    errors.push(`PDF parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    errors.push(
+      `PDF parsing error: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
     return { success: false, transactions: [], errors };
   }
 };
@@ -132,18 +137,28 @@ interface StatementPeriod {
 }
 
 function findStatementPeriod(allPageItems: TextItem[][]): StatementPeriod {
-  let startDate: StatementPeriod['startDate'] = null;
-  let endDate: StatementPeriod['endDate'] = null;
+  let startDate: StatementPeriod["startDate"] = null;
+  let endDate: StatementPeriod["endDate"] = null;
 
   for (const items of allPageItems) {
-    const fullText = items.map(i => i.str).join(' ');
+    const fullText = items.map((i) => i.str).join(" ");
 
     // "Período De DD/MM/YYYY a DD/MM/YYYY" or just "De DD/MM/YYYY a DD/MM/YYYY"
     // (pdfjs-dist may separate "Período" and "De" into distant text items)
-    const match = fullText.match(/(?:Per[ií]odo\s+)?De\s+(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/i);
+    const match = fullText.match(
+      /(?:Per[ií]odo\s+)?De\s+(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/i,
+    );
     if (match) {
-      startDate = { day: parseInt(match[1]), month: parseInt(match[2]), year: parseInt(match[3]) };
-      endDate = { day: parseInt(match[4]), month: parseInt(match[5]), year: parseInt(match[6]) };
+      startDate = {
+        day: parseInt(match[1]),
+        month: parseInt(match[2]),
+        year: parseInt(match[3]),
+      };
+      endDate = {
+        day: parseInt(match[4]),
+        month: parseInt(match[5]),
+        year: parseInt(match[6]),
+      };
       break;
     }
 
@@ -154,7 +169,11 @@ function findStatementPeriod(allPageItems: TextItem[][]): StatementPeriod {
       const year = parseInt(extractoMatch[2]);
       // Approximate: statement covers one month
       endDate = { day: 28, month, year };
-      startDate = { day: 1, month: month === 1 ? 12 : month - 1, year: month === 1 ? year - 1 : year };
+      startDate = {
+        day: 1,
+        month: month === 1 ? 12 : month - 1,
+        year: month === 1 ? year - 1 : year,
+      };
     }
   }
 
@@ -167,10 +186,10 @@ function findStatementPeriod(allPageItems: TextItem[][]): StatementPeriod {
 function resolveDate(
   dateStr: string,
   start: { day: number; month: number; year: number },
-  end: { day: number; month: number; year: number }
+  end: { day: number; month: number; year: number },
 ): string {
   const match = dateStr.match(/(\d{2})\/(\d{2})/);
-  if (!match) return '';
+  if (!match) return "";
 
   const day = parseInt(match[1]);
   const month = parseInt(match[2]);
@@ -183,7 +202,7 @@ function resolveDate(
     year = month >= start.month ? start.year : end.year;
   }
 
-  return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  return `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
 }
 
 interface ColumnPositions {
@@ -202,11 +221,16 @@ interface ColumnPositions {
 function findColumnPositions(items: TextItem[]): ColumnPositions | null {
   // Look for header: "DATA" and "VALOR" and "SALDO" on the same row
   // BPI header: DATA MOV | DATA VAL | DESCRIÇÃO DO MOVIMENTO | MOEDA | VALOR | SALDO
-  const dataItems = items.filter(i => i.str.trim() === 'DATA');
-  const valorItems = items.filter(i => i.str.trim() === 'VALOR');
-  const saldoItems = items.filter(i => i.str.trim() === 'SALDO');
+  const dataItems = items.filter((i) => i.str.trim() === "DATA");
+  const valorItems = items.filter((i) => i.str.trim() === "VALOR");
+  const saldoItems = items.filter((i) => i.str.trim() === "SALDO");
 
-  if (dataItems.length === 0 || valorItems.length === 0 || saldoItems.length === 0) return null;
+  if (
+    dataItems.length === 0 ||
+    valorItems.length === 0 ||
+    saldoItems.length === 0
+  )
+    return null;
 
   // Find header row: DATA and VALOR on same Y
   let headerY = -1;
@@ -217,7 +241,7 @@ function findColumnPositions(items: TextItem[]): ColumnPositions | null {
   for (const d of dataItems) {
     for (const v of valorItems) {
       if (Math.abs(d.y - v.y) < 10) {
-        const s = saldoItems.find(si => Math.abs(si.y - d.y) < 10);
+        const s = saldoItems.find((si) => Math.abs(si.y - d.y) < 10);
         if (s) {
           headerY = d.y;
           dataItem = d;
@@ -233,16 +257,24 @@ function findColumnPositions(items: TextItem[]): ColumnPositions | null {
   if (!dataItem || !valorItem || !saldoItem) return null;
 
   // Look for sub-headers: MOV | VAL on next row
-  const movItems = items.filter(i => i.str.trim() === 'MOV' && Math.abs(i.y - headerY) < 25 && i.y > headerY);
-  const valItems = items.filter(i => i.str.trim() === 'VAL' && Math.abs(i.y - headerY) < 25 && i.y > headerY);
+  const movItems = items.filter(
+    (i) =>
+      i.str.trim() === "MOV" && Math.abs(i.y - headerY) < 25 && i.y > headerY,
+  );
+  const valItems = items.filter(
+    (i) =>
+      i.str.trim() === "VAL" && Math.abs(i.y - headerY) < 25 && i.y > headerY,
+  );
 
-  const dataMovX = movItems.length > 0 ? Math.min(dataItem.x, movItems[0].x) : dataItem.x;
+  const dataMovX =
+    movItems.length > 0 ? Math.min(dataItem.x, movItems[0].x) : dataItem.x;
   const dataValX = valItems.length > 0 ? valItems[0].x : dataItem.x + 40;
 
   // DESCRIÇÃO is between the date columns and VALOR
-  const descItem = items.find(i =>
-    Math.abs(i.y - headerY) < 10 &&
-    (i.str.trim().startsWith('DESCRI') || i.str.trim().includes('MOVIMENTO'))
+  const descItem = items.find(
+    (i) =>
+      Math.abs(i.y - headerY) < 10 &&
+      (i.str.trim().startsWith("DESCRI") || i.str.trim().includes("MOVIMENTO")),
   );
   const descX = descItem?.x || dataValX + 40;
 
@@ -265,7 +297,10 @@ function findColumnPositions(items: TextItem[]): ColumnPositions | null {
   };
 }
 
-function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions): RawTransaction[] {
+function extractTransactionsFromItems(
+  items: TextItem[],
+  cols: ColumnPositions,
+): RawTransaction[] {
   const transactions: RawTransaction[] = [];
 
   // Sort by Y then X
@@ -296,16 +331,19 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
   let inSection = false;
 
   for (const row of rows) {
-    const rowText = row.map(i => i.str).join(' ').trim();
+    const rowText = row
+      .map((i) => i.str)
+      .join(" ")
+      .trim();
 
     // Start after SALDO ANTERIOR
-    if (rowText.includes('SALDO ANTERIOR')) {
+    if (rowText.includes("SALDO ANTERIOR")) {
       inSection = true;
       continue;
     }
 
     // End at SALDO ACTUAL
-    if (rowText.includes('SALDO ACTUAL') || rowText.includes('TOTAL DEP')) {
+    if (rowText.includes("SALDO ACTUAL") || rowText.includes("TOTAL DEP")) {
       if (currentTx) {
         transactions.push(currentTx);
         currentTx = null;
@@ -317,17 +355,24 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
     if (!inSection) continue;
 
     // Skip header rows and metadata
-    if (rowText.includes('DATA') && rowText.includes('DESCRI')) continue;
-    if (rowText.includes('MOV') && rowText.includes('VAL')) continue;
-    if (rowText.startsWith('CONTA') || rowText.startsWith('NIB') || rowText.startsWith('IBAN')) continue;
-    if (rowText.includes('EUR') && row.length <= 2) continue;
+    if (rowText.includes("DATA") && rowText.includes("DESCRI")) continue;
+    if (rowText.includes("MOV") && rowText.includes("VAL")) continue;
+    if (
+      rowText.startsWith("CONTA") ||
+      rowText.startsWith("NIB") ||
+      rowText.startsWith("IBAN")
+    )
+      continue;
+    if (rowText.includes("EUR") && row.length <= 2) continue;
 
     // Check for date in DATA MOV column → new transaction
-    const dateItem = row.find(i => {
+    const dateItem = row.find((i) => {
       const str = i.str.trim();
-      return i.x >= cols.dataMovMin &&
+      return (
+        i.x >= cols.dataMovMin &&
         i.x <= cols.dataMovMax &&
-        /^\d{2}\/\d{2}$/.test(str);
+        /^\d{2}\/\d{2}$/.test(str)
+      );
     });
 
     if (dateItem) {
@@ -335,7 +380,7 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
 
       currentTx = {
         dateMov: dateItem.str.trim(),
-        dateVal: '',
+        dateVal: "",
         description: [],
         amount: 0,
       };
@@ -348,7 +393,11 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
         const x = item.x;
 
         // Date valeur
-        if (x >= cols.dataValMin && x <= cols.dataValMax && /^\d{2}\/\d{2}$/.test(str)) {
+        if (
+          x >= cols.dataValMin &&
+          x <= cols.dataValMax &&
+          /^\d{2}\/\d{2}$/.test(str)
+        ) {
           currentTx.dateVal = str;
           continue;
         }
@@ -376,9 +425,13 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
     } else if (currentTx) {
       // Row without DATA MOV: could be a continuation OR a new transaction without DATA MOV.
       // Pre-scan: if row has a VALOR amount, it's a new transaction (inheriting DATA MOV from previous).
-      const rowHasAmount = row.some(item => {
+      const rowHasAmount = row.some((item) => {
         const x = item.x;
-        return x >= cols.valorMin && x <= cols.valorMax && parseAmount(item.str.trim()) !== null;
+        return (
+          x >= cols.valorMin &&
+          x <= cols.valorMax &&
+          parseAmount(item.str.trim()) !== null
+        );
       });
 
       if (rowHasAmount && currentTx.amount !== 0) {
@@ -387,7 +440,7 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
         const prevDateMov: string = currentTx.dateMov;
         currentTx = {
           dateMov: prevDateMov, // inherit from previous transaction
-          dateVal: '',
+          dateVal: "",
           description: [],
           amount: 0,
         };
@@ -399,7 +452,11 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
         const x = item.x;
 
         // Date valeur on continuation row
-        if (x >= cols.dataValMin && x <= cols.dataValMax && /^\d{2}\/\d{2}$/.test(str)) {
+        if (
+          x >= cols.dataValMin &&
+          x <= cols.dataValMax &&
+          /^\d{2}\/\d{2}$/.test(str)
+        ) {
           currentTx.dateVal = str;
           continue;
         }
@@ -440,10 +497,10 @@ function extractTransactionsFromItems(items: TextItem[], cols: ColumnPositions):
 function parseAmount(str: string): number | null {
   if (!str) return null;
   // Must contain comma (decimal separator) and no letters (reject "UNIPESSOAL,LDA" etc.)
-  if (!str.includes(',')) return null;
+  if (!str.includes(",")) return null;
   if (/[a-zA-Z]/.test(str)) return null;
   // Clean: remove spaces and thousand separators (.), replace decimal comma
-  const cleaned = str.replace(/[\s\u00a0.]/g, '').replace(',', '.');
+  const cleaned = str.replace(/[\s\u00a0.]/g, "").replace(",", ".");
   const num = parseFloat(cleaned);
   return isNaN(num) ? null : num;
 }
@@ -452,63 +509,71 @@ function extractMerchantName(description: string): string {
   const upper = description.toUpperCase();
 
   // TRF CR/SEPA+ INST/CR SEPA+ NNNNNNN DE <MERCHANT>
-  if (upper.includes('TRF') && upper.includes('SEPA') && upper.includes(' DE ')) {
+  if (
+    upper.includes("TRF") &&
+    upper.includes("SEPA") &&
+    upper.includes(" DE ")
+  ) {
     const match = description.match(/\bDE\s+(.+)/i);
     if (match) return match[1].trim();
   }
 
   // TRF DB SEPA+ ... PARA <MERCHANT>
-  if (upper.includes('TRF') && upper.includes('SEPA') && upper.includes(' PARA ')) {
+  if (
+    upper.includes("TRF") &&
+    upper.includes("SEPA") &&
+    upper.includes(" PARA ")
+  ) {
     const match = description.match(/PARA\s+(.+)/i);
     if (match) return match[1].trim();
   }
 
   // DD (direct debit): DD <COMPANY> <REF>
-  if (upper.startsWith('DD ')) {
+  if (upper.startsWith("DD ")) {
     const match = description.match(/^DD\s+(.+?)(?:\s+\d{5,})/i);
     if (match) return match[1].trim();
     return description.substring(3).trim();
   }
 
   // PAG. PORTAGEM/TELEF. PUBL. ELEC
-  if (upper.includes('PAG. PORTAGEM') || upper.includes('PAG.PORTAGEM')) {
-    return 'Portagem';
+  if (upper.includes("PAG. PORTAGEM") || upper.includes("PAG.PORTAGEM")) {
+    return "Portagem";
   }
 
   // PAG. SERV. ATM REF. (service payments via ATM)
-  if (upper.includes('PAG. SERV. ATM') || upper.includes('PAG.SERV.ATM')) {
-    return 'Pagamento Serviços ATM';
+  if (upper.includes("PAG. SERV. ATM") || upper.includes("PAG.SERV.ATM")) {
+    return "Pagamento Serviços ATM";
   }
 
   // MANUTENCAO DE CONTA
-  if (upper.includes('MANUTENCAO DE CONTA')) {
-    return 'BPI - Manutenção conta';
+  if (upper.includes("MANUTENCAO DE CONTA")) {
+    return "BPI - Manutenção conta";
   }
 
   // IMPOSTO DE SELO
-  if (upper.includes('IMPOSTO DE SELO')) {
-    return 'Imposto de Selo';
+  if (upper.includes("IMPOSTO DE SELO")) {
+    return "Imposto de Selo";
   }
 
   // MB WAY
-  if (upper.includes('MB WAY')) {
+  if (upper.includes("MB WAY")) {
     const match = description.match(/MB WAY\s+(.+)/i);
     if (match) return match[1].trim();
-    return 'MB WAY';
+    return "MB WAY";
   }
 
   // MULTIBANCO
-  if (upper.includes('MULTIBANCO') || upper.includes('MB ')) {
+  if (upper.includes("MULTIBANCO") || upper.includes("MB ")) {
     return description.trim();
   }
 
   // Default: first meaningful words
-  const words = description.split(/\s+/).filter(w => w.length > 2);
-  return words.slice(0, 4).join(' ');
+  const words = description.split(/\s+/).filter((w) => w.length > 2);
+  return words.slice(0, 4).join(" ");
 }
 
 export const bpiPdfParser = {
-  provider: 'bpi' as const,
-  canParse: (file: File) => file.type === 'application/pdf',
+  provider: "bpi" as const,
+  canParse: (file: File) => file.type === "application/pdf",
   parse: parseBpiPdf,
 };

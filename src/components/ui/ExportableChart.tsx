@@ -1,12 +1,12 @@
-import { useRef, useCallback, useState, type ReactNode } from 'react';
-import { toPng } from 'html-to-image';
-import { Download, Loader2 } from 'lucide-react';
+import { useRef, useCallback, useState, type ReactNode } from "react";
+import { toPng } from "html-to-image";
+import { Download, Loader2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
 
 interface ExportableChartProps {
   children: ReactNode;
@@ -47,20 +47,20 @@ export const ExportableChart = ({
     const origMaxWidth = el.style.maxWidth;
     const origPosition = el.style.position;
     const origZIndex = el.style.zIndex;
-    const origOverflow = el.parentElement?.style.overflow || '';
+    const origOverflow = el.parentElement?.style.overflow || "";
 
     try {
       // Prevent the parent from clipping or scrolling while we resize
       if (el.parentElement) {
-        el.parentElement.style.overflow = 'visible';
+        el.parentElement.style.overflow = "visible";
       }
 
       // Force the element to the export width — Recharts will re-render via ResizeObserver
       el.style.width = `${exportWidth}px`;
       el.style.minWidth = `${exportWidth}px`;
       el.style.maxWidth = `${exportWidth}px`;
-      el.style.position = 'relative';
-      el.style.zIndex = '-1';
+      el.style.position = "relative";
+      el.style.zIndex = "-1";
 
       // Wait for Recharts ResizeObserver to fire and SVG to re-render
       // Two rAFs + a timeout ensures layout is recalculated and SVGs are painted
@@ -74,23 +74,23 @@ export const ExportableChart = ({
 
       const dataUrl = await toPng(el, {
         pixelRatio,
-        backgroundColor: '#ffffff',
+        backgroundColor: "#ffffff",
         style: {
-          padding: '24px',
+          padding: "24px",
         },
         filter: (node: HTMLElement) => {
           return !node?.dataset?.exportButton;
         },
       });
 
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       const now = new Date();
-      const dateSuffix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const dateSuffix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
       link.download = `${filename}-${dateSuffix}.png`;
       link.href = dataUrl;
       link.click();
-    } catch (err) {
-      console.error('Failed to export chart as PNG:', err);
+    } catch {
+      /* ignore */
     } finally {
       // Restore original styles
       el.style.width = origWidth;
@@ -110,10 +110,7 @@ export const ExportableChart = ({
       {children}
 
       {/* Export button — absolutely positioned in top-right corner */}
-      <div
-        data-export-button="true"
-        className="absolute top-2 right-2 z-10"
-      >
+      <div data-export-button="true" className="absolute top-2 right-2 z-10">
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>

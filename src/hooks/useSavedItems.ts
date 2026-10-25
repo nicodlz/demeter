@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
-import { useStore } from '../store';
-import type { SavedItem } from '@/schemas';
+import { useCallback } from "react";
+import { useStore } from "../store";
+import type { SavedItem } from "@/schemas";
 
 export function useSavedItems() {
   const savedItems = useStore((state) => state.savedItems);
@@ -13,7 +13,7 @@ export function useSavedItems() {
   const getSavedItemById = useCallback(
     (id: string): SavedItem | undefined =>
       savedItems.find((item) => item.id === id),
-    [savedItems]
+    [savedItems],
   );
 
   const searchSavedItems = useCallback(
@@ -21,20 +21,20 @@ export function useSavedItems() {
       const trimmed = query.trim().toLowerCase();
       if (!trimmed) return savedItems;
       return savedItems.filter((item) =>
-        item.description.toLowerCase().includes(trimmed)
+        item.description.toLowerCase().includes(trimmed),
       );
     },
-    [savedItems]
+    [savedItems],
   );
 
   const getMostUsedItems = useCallback(
     (limit?: number): SavedItem[] => {
       const sorted = [...savedItems].sort(
-        (a, b) => b.usageCount - a.usageCount
+        (a, b) => b.usageCount - a.usageCount,
       );
       return limit ? sorted.slice(0, limit) : sorted;
     },
-    [savedItems]
+    [savedItems],
   );
 
   return {

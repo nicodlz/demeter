@@ -1,22 +1,24 @@
-import { useState, useMemo } from 'react';
-import { useNetWorthDashboard } from '@/hooks/useNetWorthDashboard';
-import { useSettings } from '@/hooks/useSettings';
+import { useState, useMemo } from "react";
+import { useNetWorthDashboard } from "@/hooks/useNetWorthDashboard";
+import { useSettings } from "@/hooks/useSettings";
 import {
   calculateCompoundInterest,
   calculateWeightedReturn,
   yearsToReachTarget,
   DEFAULT_RETURNS,
-} from '@/utils/projections';
-import type { ProjectionResult } from '@/utils/projections';
-import type { Currency, AssetClass } from '@/schemas';
+} from "@/utils/projections";
+import type { ProjectionResult } from "@/utils/projections";
+import type { Currency, AssetClass } from "@/schemas";
 
 export const useProjectionsPage = () => {
   const { settings } = useSettings();
-  const stats = useNetWorthDashboard();
-  const currency: Currency = settings.dashboardCurrency || 'USD';
+  const currency: Currency = settings.dashboardCurrency || "USD";
+  const stats = useNetWorthDashboard(currency);
 
   // Custom returns per asset class (stored as percentages for display)
-  const [customReturns, setCustomReturns] = useState<Record<AssetClass, string>>({
+  const [customReturns, setCustomReturns] = useState<
+    Record<AssetClass, string>
+  >({
     stocks: (DEFAULT_RETURNS.stocks * 100).toString(),
     crypto: (DEFAULT_RETURNS.crypto * 100).toString(),
     cash: (DEFAULT_RETURNS.cash * 100).toString(),
@@ -30,10 +32,11 @@ export const useProjectionsPage = () => {
   });
 
   // Form state
-  const [principal, setPrincipal] = useState<string>('10000');
-  const [monthlyContribution, setMonthlyContribution] = useState<string>('2000');
-  const [years, setYears] = useState<string>('10');
-  const [targetAmount, setTargetAmount] = useState<string>('1000000');
+  const [principal, setPrincipal] = useState<string>("10000");
+  const [monthlyContribution, setMonthlyContribution] =
+    useState<string>("2000");
+  const [years, setYears] = useState<string>("10");
+  const [targetAmount, setTargetAmount] = useState<string>("1000000");
 
   // Get current portfolio allocation from snapshot
   const portfolioAllocation = useMemo(() => {
@@ -88,7 +91,10 @@ export const useProjectionsPage = () => {
 
   // Calculate weighted return for contributions
   const contributionReturn = useMemo(() => {
-    return calculateWeightedReturn(contributionAllocationNumbers, customReturnsDecimal);
+    return calculateWeightedReturn(
+      contributionAllocationNumbers,
+      customReturnsDecimal,
+    );
   }, [contributionAllocationNumbers, customReturnsDecimal]);
 
   // Blended return over time
@@ -100,8 +106,17 @@ export const useProjectionsPage = () => {
     const totalContributions = m * 12 * y;
     const estimatedWeight = p / (p + totalContributions);
 
-    return portfolioReturn * estimatedWeight + contributionReturn * (1 - estimatedWeight);
-  }, [principal, monthlyContribution, years, portfolioReturn, contributionReturn]);
+    return (
+      portfolioReturn * estimatedWeight +
+      contributionReturn * (1 - estimatedWeight)
+    );
+  }, [
+    principal,
+    monthlyContribution,
+    years,
+    portfolioReturn,
+    contributionReturn,
+  ]);
 
   // Calculate projection
   const projection: ProjectionResult | null = useMemo(() => {

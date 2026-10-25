@@ -1,13 +1,13 @@
-import { Component, type ReactNode, type ErrorInfo } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Component, Fragment, type ReactNode } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 
 interface Props {
   children: ReactNode;
@@ -29,9 +29,7 @@ export class PageErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[PageErrorBoundary] Caught error:', error, info.componentStack);
-  }
+  componentDidCatch() {}
 
   handleRetry = () => {
     this.setState((prev) => ({
@@ -78,6 +76,6 @@ export class PageErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return <>{this.props.children}</>;
+    return <Fragment key={this.state.resetKey}>{this.props.children}</Fragment>;
   }
 }

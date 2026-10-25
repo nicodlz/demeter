@@ -1,15 +1,15 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ============= Asset Category =============
 export const ibkrAssetCategorySchema = z.enum([
-  'STK',
-  'OPT',
-  'FUT',
-  'CASH',
-  'BOND',
-  'WAR',
-  'FUND',
-  'OTHER',
+  "STK",
+  "OPT",
+  "FUT",
+  "CASH",
+  "BOND",
+  "WAR",
+  "FUND",
+  "OTHER",
 ]);
 
 export type IbkrAssetCategory = z.infer<typeof ibkrAssetCategorySchema>;

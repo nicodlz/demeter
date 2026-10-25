@@ -1,12 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
-import { fetchExchangeRate, convertAmount } from '../services/exchangeRate';
-import type { Currency } from '@/schemas';
+import { useState, useEffect, useCallback } from "react";
+import { fetchExchangeRate, convertAmount } from "../services/exchangeRate";
+import type { Currency } from "@/schemas";
 
 interface UseExchangeRateResult {
   rate: number;
   loading: boolean;
   error: string | null;
-  convert: (amount: number, fromCurrency: Currency, toCurrency: Currency) => number;
+  convert: (
+    amount: number,
+    fromCurrency: Currency,
+    toCurrency: Currency,
+  ) => number;
 }
 
 export const useExchangeRate = (): UseExchangeRateResult => {
@@ -27,7 +31,7 @@ export const useExchangeRate = (): UseExchangeRateResult => {
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch rate');
+          setError(err instanceof Error ? err.message : "Failed to fetch rate");
         }
       } finally {
         if (mounted) {
@@ -36,7 +40,7 @@ export const useExchangeRate = (): UseExchangeRateResult => {
       }
     };
 
-    loadRate();
+    void loadRate();
 
     return () => {
       mounted = false;
@@ -47,7 +51,7 @@ export const useExchangeRate = (): UseExchangeRateResult => {
     (amount: number, fromCurrency: Currency, toCurrency: Currency): number => {
       return convertAmount(amount, fromCurrency, toCurrency, rate);
     },
-    [rate]
+    [rate],
   );
 
   return { rate, loading, error, convert };

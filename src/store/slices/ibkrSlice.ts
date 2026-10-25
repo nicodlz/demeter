@@ -1,13 +1,10 @@
-import type { StateCreator } from 'zustand';
-import type { IbkrPosition, IbkrCashBalance } from '../../schemas/ibkr';
-import type { StoreState, IbkrSlice } from '../types';
+import type { StateCreator } from "zustand";
+import type { IbkrPosition, IbkrCashBalance } from "../../schemas/ibkr";
+import type { StoreState, IbkrSlice } from "../types";
 
-export const createIbkrSlice: StateCreator<
-  StoreState,
-  [],
-  [],
-  IbkrSlice
-> = (set) => ({
+export const createIbkrSlice: StateCreator<StoreState, [], [], IbkrSlice> = (
+  set,
+) => ({
   ibkrPositions: [],
   ibkrCashBalances: [],
   ibkrLastSyncAt: null,

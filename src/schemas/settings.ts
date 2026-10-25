@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { currencySchema } from './client';
+import { z } from "zod";
+import { currencySchema } from "./client";
 
 export const vatRateSchema = z.object({
   country: z.string(),

@@ -1,28 +1,46 @@
-import { useState } from 'react';
-import type { Expense, ExpenseType, Currency, BankProvider } from '@/schemas';
-import { useSettings } from '@/hooks/useSettings';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { todayLocalISO } from "@/utils/date";
+import type { Expense, ExpenseType, Currency, BankProvider } from "@/schemas";
+import { useSettings } from "@/hooks/useSettings";
+import { useToast } from "@/hooks/useToast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { CategorySelect } from './CategorySelect';
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CategorySelect } from "./CategorySelect";
 
-const INCOME_CATEGORIES = ['Salary', 'Freelance', 'Investment', 'Rental', 'Refund', 'Other'];
-const INCOME_SOURCES = ['Employer', 'Client', 'Platform', 'Manual'];
+const INCOME_CATEGORIES = [
+  "Salary",
+  "Freelance",
+  "Investment",
+  "Rental",
+  "Refund",
+  "Other",
+];
+const INCOME_SOURCES = ["Employer", "Client", "Platform", "Manual"];
 
 interface ExpenseFormProps {
   expense?: Expense;
   categories: string[];
-  onSubmit: (data: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>) => void;
-  onSubmitRecurring?: (data: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>, months: number) => void;
+  onSubmit: (data: Omit<Expense, "id" | "createdAt" | "updatedAt">) => void;
+  onSubmitRecurring?: (
+    data: Omit<Expense, "id" | "createdAt" | "updatedAt">,
+    months: number,
+  ) => void;
   onCancel: () => void;
   defaultType?: ExpenseType;
 }
@@ -33,21 +51,26 @@ export const ExpenseForm = ({
   onSubmit,
   onSubmitRecurring,
   onCancel,
-  defaultType = 'expense',
+  defaultType = "expense",
 }: ExpenseFormProps) => {
   const { settings } = useSettings();
-  const [entryType, setEntryType] = useState<ExpenseType>(expense?.type || defaultType);
-  const [date, setDate] = useState(expense?.date || new Date().toISOString().split('T')[0]);
-  const [description, setDescription] = useState(expense?.description || '');
-  const [amount, setAmount] = useState(expense?.amount?.toString() || '');
-  const [currency, setCurrency] = useState<Currency>(expense?.currency || settings.defaultCurrency || 'USD');
-  const [category, setCategory] = useState(expense?.category || '');
-  const [source, setSource] = useState(expense?.source || '');
-  const [merchantName, setMerchantName] = useState(expense?.merchantName || '');
+  const toast = useToast();
+  const [entryType, setEntryType] = useState<ExpenseType>(
+    expense?.type || defaultType,
+  );
+  const [date, setDate] = useState(expense?.date || todayLocalISO());
+  const [description, setDescription] = useState(expense?.description || "");
+  const [amount, setAmount] = useState(expense?.amount?.toString() || "");
+  const [currency, setCurrency] = useState<Currency>(
+    expense?.currency || settings.defaultCurrency || "USD",
+  );
+  const [category, setCategory] = useState(expense?.category || "");
+  const [source, setSource] = useState(expense?.source || "");
+  const [merchantName, setMerchantName] = useState(expense?.merchantName || "");
   const [repeatMonthly, setRepeatMonthly] = useState(false);
-  const [repeatMonths, setRepeatMonths] = useState('12');
+  const [repeatMonths, setRepeatMonths] = useState("12");
 
-  const isIncome = entryType === 'income';
+  const isIncome = entryType === "income";
   const effectiveCategories = isIncome ? INCOME_CATEGORIES : categories;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,28 +78,28 @@ export const ExpenseForm = ({
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      alert('Please enter a valid amount');
+      toast.error("Please enter a valid amount");
       return;
     }
 
     if (!description.trim()) {
-      alert('Please enter a description');
+      toast.error("Please enter a description");
       return;
     }
 
     if (!source.trim()) {
-      alert('Please enter a source');
+      toast.error("Please enter a source");
       return;
     }
 
-    const data: Omit<Expense, 'id' | 'createdAt' | 'updatedAt'> = {
+    const data: Omit<Expense, "id" | "createdAt" | "updatedAt"> = {
       date,
       description: description.trim(),
       amount: parsedAmount,
       currency,
       category: category || undefined,
       source: source.trim(),
-      sourceProvider: 'manual' as BankProvider,
+      sourceProvider: "manual" as BankProvider,
       merchantName: merchantName.trim() || undefined,
       type: entryType,
     };
@@ -90,14 +113,18 @@ export const ExpenseForm = ({
   };
 
   const isEditing = !!expense;
-  const typeLabel = isIncome ? 'Income' : 'Expense';
+  const typeLabel = isIncome ? "Income" : "Expense";
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{isEditing ? `Edit ${typeLabel}` : `New ${typeLabel}`}</CardTitle>
+        <CardTitle>
+          {isEditing ? `Edit ${typeLabel}` : `New ${typeLabel}`}
+        </CardTitle>
         <CardDescription>
-          {isEditing ? `Modify ${typeLabel.toLowerCase()} details` : `Add a new ${typeLabel.toLowerCase()} manually`}
+          {isEditing
+            ? `Modify ${typeLabel.toLowerCase()} details`
+            : `Add a new ${typeLabel.toLowerCase()} manually`}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -109,27 +136,35 @@ export const ExpenseForm = ({
               <div className="flex gap-2 mt-1">
                 <Button
                   type="button"
-                  variant={entryType === 'expense' ? 'default' : 'outline'}
+                  variant={entryType === "expense" ? "default" : "outline"}
                   size="sm"
                   onClick={() => {
-                    setEntryType('expense');
-                    setCategory('');
-                    setSource('');
+                    setEntryType("expense");
+                    setCategory("");
+                    setSource("");
                   }}
-                  className={entryType === 'expense' ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground' : ''}
+                  className={
+                    entryType === "expense"
+                      ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                      : ""
+                  }
                 >
                   Expense
                 </Button>
                 <Button
                   type="button"
-                  variant={entryType === 'income' ? 'default' : 'outline'}
+                  variant={entryType === "income" ? "default" : "outline"}
                   size="sm"
                   onClick={() => {
-                    setEntryType('income');
-                    setCategory('');
-                    setSource('');
+                    setEntryType("income");
+                    setCategory("");
+                    setSource("");
                   }}
-                  className={entryType === 'income' ? 'bg-green-600 hover:bg-green-600/90 text-white' : ''}
+                  className={
+                    entryType === "income"
+                      ? "bg-green-600 hover:bg-green-600/90 text-white"
+                      : ""
+                  }
                 >
                   Income
                 </Button>
@@ -181,7 +216,9 @@ export const ExpenseForm = ({
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={isIncome ? 'e.g., Monthly salary' : 'What was this expense for?'}
+              placeholder={
+                isIncome ? "e.g., Monthly salary" : "What was this expense for?"
+              }
               required
             />
           </div>
@@ -214,7 +251,10 @@ export const ExpenseForm = ({
             </div>
             <div>
               <Label htmlFor="currency">Currency</Label>
-              <Select value={currency} onValueChange={(v) => setCurrency(v as Currency)}>
+              <Select
+                value={currency}
+                onValueChange={(v) => setCurrency(v as Currency)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -258,7 +298,9 @@ export const ExpenseForm = ({
                 <Checkbox
                   id="repeatMonthly"
                   checked={repeatMonthly}
-                  onCheckedChange={(checked) => setRepeatMonthly(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setRepeatMonthly(checked === true)
+                  }
                 />
                 <Label htmlFor="repeatMonthly" className="cursor-pointer">
                   Repeat monthly
@@ -266,7 +308,10 @@ export const ExpenseForm = ({
               </div>
               {repeatMonthly && (
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="repeatMonths" className="text-sm whitespace-nowrap">
+                  <Label
+                    htmlFor="repeatMonths"
+                    className="text-sm whitespace-nowrap"
+                  >
                     Number of months:
                   </Label>
                   <Input
@@ -290,9 +335,11 @@ export const ExpenseForm = ({
             </Button>
             <Button
               type="submit"
-              className={isIncome ? 'bg-green-600 hover:bg-green-600/90 text-white' : ''}
+              className={
+                isIncome ? "bg-green-600 hover:bg-green-600/90 text-white" : ""
+              }
             >
-              {isEditing ? 'Update' : 'Add'} {typeLabel}
+              {isEditing ? "Update" : "Add"} {typeLabel}
             </Button>
           </div>
         </form>

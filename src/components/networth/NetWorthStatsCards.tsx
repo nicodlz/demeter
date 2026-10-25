@@ -1,7 +1,7 @@
-import type { Currency } from '@/schemas';
-import { formatCurrency } from '@/utils/formatters';
-import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import type { Currency } from "@/schemas";
+import { formatCurrency } from "@/utils/formatters";
+import { Card, CardContent } from "@/components/ui/card";
+import { Wallet, TrendingUp, TrendingDown, Calendar } from "lucide-react";
 
 interface NetWorthStatsCardsProps {
   totalNetWorth: number;
@@ -21,7 +21,14 @@ interface StatCardProps {
   subValueColor?: string;
 }
 
-const StatCard = ({ title, value, icon, iconBg, subValue, subValueColor }: StatCardProps) => (
+const StatCard = ({
+  title,
+  value,
+  icon,
+  iconBg,
+  subValue,
+  subValueColor,
+}: StatCardProps) => (
   <Card>
     <CardContent className="p-4 sm:p-6">
       <div className="flex items-center">
@@ -30,7 +37,9 @@ const StatCard = ({ title, value, icon, iconBg, subValue, subValueColor }: StatC
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <p className="text-lg sm:text-2xl font-semibold truncate">{value}</p>
           {subValue && (
-            <p className={`text-sm ${subValueColor || 'text-muted-foreground'}`}>
+            <p
+              className={`text-sm ${subValueColor || "text-muted-foreground"}`}
+            >
               {subValue}
             </p>
           )}
@@ -54,12 +63,12 @@ export const NetWorthStatsCards = ({
   ) : (
     <TrendingDown className="h-6 w-6" />
   );
-  const changeColor = isPositive ? 'text-green-600' : 'text-red-600';
+  const changeColor = isPositive ? "text-green-600" : "text-red-600";
   const changeBg = isPositive
-    ? 'bg-green-100 text-green-600'
-    : 'bg-red-100 text-red-600';
+    ? "bg-green-100 text-green-600"
+    : "bg-red-100 text-red-600";
 
-  const mask = (value: string) => privacyMode ? '•••••' : value;
+  const mask = (value: string) => (privacyMode ? "•••••" : value);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -78,7 +87,7 @@ export const NetWorthStatsCards = ({
           icon={changeIcon}
           subValue={
             changePercentage !== null
-              ? `${isPositive ? '+' : ''}${changePercentage.toFixed(1)}%`
+              ? `${isPositive ? "+" : ""}${changePercentage.toFixed(1)}%`
               : undefined
           }
           subValueColor={changeColor}
@@ -88,7 +97,7 @@ export const NetWorthStatsCards = ({
       {changePercentage !== null && (
         <StatCard
           title="Change %"
-          value={`${isPositive ? '+' : ''}${changePercentage.toFixed(2)}%`}
+          value={`${isPositive ? "+" : ""}${changePercentage.toFixed(2)}%`}
           iconBg={changeBg}
           icon={changeIcon}
         />

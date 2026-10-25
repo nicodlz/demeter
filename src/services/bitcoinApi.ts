@@ -1,4 +1,4 @@
-import type { CryptoWallet, TokenPosition } from '@/schemas';
+import type { CryptoWallet, TokenPosition } from "@/schemas";
 
 // ============================================================
 // Bitcoin API using Mempool.space and CoinGecko
@@ -8,7 +8,7 @@ interface MempoolAddressStats {
   address: string;
   chain_stats: {
     funded_txo_sum: number; // Total received in satoshis
-    spent_txo_sum: number;  // Total spent in satoshis
+    spent_txo_sum: number; // Total spent in satoshis
     tx_count: number;
   };
   mempool_stats: {
@@ -29,20 +29,24 @@ interface CoinGeckoPrice {
  */
 async function fetchBtcBalance(address: string): Promise<number> {
   const url = `https://mempool.space/api/address/${address}`;
-  
+
   const response = await fetch(url);
-  
+
   if (!response.ok) {
-    throw new Error(`Mempool.space API error: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Mempool.space API error: ${response.status} ${response.statusText}`,
+    );
   }
-  
+
   const data: MempoolAddressStats = await response.json();
-  
+
   // Calculate balance: received - spent (including mempool)
-  const confirmedBalance = data.chain_stats.funded_txo_sum - data.chain_stats.spent_txo_sum;
-  const mempoolBalance = data.mempool_stats.funded_txo_sum - data.mempool_stats.spent_txo_sum;
+  const confirmedBalance =
+    data.chain_stats.funded_txo_sum - data.chain_stats.spent_txo_sum;
+  const mempoolBalance =
+    data.mempool_stats.funded_txo_sum - data.mempool_stats.spent_txo_sum;
   const totalSatoshis = confirmedBalance + mempoolBalance;
-  
+
   // Convert satoshis to BTC (1 BTC = 100,000,000 satoshis)
   return totalSatoshis / 100000000;
 }
@@ -52,27 +56,30 @@ async function fetchBtcBalance(address: string): Promise<number> {
  * Free Demo API: https://www.coingecko.com/en/api/pricing
  * - 30 calls/min
  * - 10,000 calls/month
- * 
+ *
  * @param apiKey Optional CoinGecko API key (Demo or Pro plan)
  */
 async function fetchBtcPrice(apiKey?: string): Promise<number> {
-  const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd';
-  
+  const url =
+    "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
+
   const headers: HeadersInit = {
-    'Accept': 'application/json',
+    Accept: "application/json",
   };
-  
+
   // Add API key if provided (recommended for production)
   if (apiKey) {
-    headers['x-cg-demo-api-key'] = apiKey;
+    headers["x-cg-demo-api-key"] = apiKey;
   }
-  
+
   const response = await fetch(url, { headers });
-  
+
   if (!response.ok) {
-    throw new Error(`CoinGecko API error: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `CoinGecko API error: ${response.status} ${response.statusText}`,
+    );
   }
-  
+
   const data: CoinGeckoPrice = await response.json();
   return data.bitcoin.usd;
 }
@@ -82,32 +89,26 @@ async function fetchBtcPrice(apiKey?: string): Promise<number> {
  */
 export async function fetchBitcoinPosition(
   wallet: CryptoWallet,
-): Promise<TokenPosition | null> {
-  try {
-    const [btcAmount, btcPrice] = await Promise.all([
-      fetchBtcBalance(wallet.address),
-      fetchBtcPrice(),
-    ]);
-    
-    const usdValue = btcAmount * btcPrice;
-    
-    return {
-      id: `${wallet.id}-btc`,
-      symbol: 'BTC',
-      name: 'Bitcoin',
-      amount: btcAmount,
-      usdValue,
-      chain: 'bitcoin',
-      isStablecoin: false,
-      isNative: true,
-      positionType: 'wallet',
-      walletId: wallet.id,
-      iconUrl: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
-    };
-  } catch (err) {
-    console.error(`Error fetching Bitcoin position for ${wallet.address}:`, err);
-    return null;
-  }
+  btcPrice?: number,
+): Promise<TokenPosition> {
+  const [btcAmount, price] = await Promise.all([
+    fetchBtcBalance(wallet.address),
+    btcPrice !== undefined ? Promise.resolve(btcPrice) : fetchBtcPrice(),
+  ]);
+
+  return {
+    id: `${wallet.id}-btc`,
+    symbol: "BTC",
+    name: "Bitcoin",
+    amount: btcAmount,
+    usdValue: btcAmount * price,
+    chain: "bitcoin",
+    isStablecoin: false,
+    isNative: true,
+    positionType: "wallet",
+    walletId: wallet.id,
+    iconUrl: "https://assets.coingecko.com/coins/images/1/small/bitcoin.png",
+  };
 }
 
 /**
@@ -120,19 +121,40 @@ export async function fetchAllBitcoinPositions(
   errors: Array<{ walletId: string; address: string; error: string }>;
 }> {
   const positions: TokenPosition[] = [];
-  const errors: Array<{ walletId: string; address: string; error: string }> = [];
-  
+  const errors: Array<{ walletId: string; address: string; error: string }> =
+    [];
+
+  if (wallets.length === 0) return { positions, errors };
+
+  // Fetch the BTC price once for all wallets to avoid one CoinGecko call per
+  // address (rate limits) and to fail consistently if the price is unavailable.
+  let btcPrice: number;
+  try {
+    btcPrice = await fetchBtcPrice();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    for (const wallet of wallets) {
+      errors.push({
+        walletId: wallet.id,
+        address: wallet.address,
+        error: message,
+      });
+    }
+    return { positions, errors };
+  }
+
   for (const wallet of wallets) {
     try {
-      const position = await fetchBitcoinPosition(wallet);
-      if (position) {
-        positions.push(position);
-      }
+      positions.push(await fetchBitcoinPosition(wallet, btcPrice));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      errors.push({ walletId: wallet.id, address: wallet.address, error: message });
+      errors.push({
+        walletId: wallet.id,
+        address: wallet.address,
+        error: message,
+      });
     }
   }
-  
+
   return { positions, errors };
 }

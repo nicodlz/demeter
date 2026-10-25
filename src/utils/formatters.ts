@@ -1,26 +1,34 @@
-import type { Currency } from '@/schemas';
+import type { Currency } from "@/schemas";
+import { parseCalendarDate } from "./date";
 
 export const getCurrencySymbol = (currency: Currency): string => {
-  return currency === 'EUR' ? '€' : '$';
+  return currency === "EUR" ? "€" : "$";
 };
 
 export const formatCurrency = (amount: number, currency: Currency): string => {
-  const locale = currency === 'EUR' ? 'fr-FR' : 'en-US';
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+  const locale = currency === "EUR" ? "fr-FR" : "en-US";
   return new Intl.NumberFormat(locale, {
-    style: 'currency',
+    style: "currency",
     currency,
     minimumFractionDigits: 2,
-  }).format(amount);
+  }).format(safeAmount);
 };
 
-export const formatCurrencyCompact = (amount: number, currency: Currency): string => {
+export const formatCurrencyCompact = (
+  amount: number,
+  currency: Currency,
+): string => {
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
   const symbol = getCurrencySymbol(currency);
-  if (Math.abs(amount) >= 1000) {
-    return `${symbol}${(amount / 1000).toFixed(1)}k`;
+  const sign = safeAmount < 0 ? "-" : "";
+  const absolute = Math.abs(safeAmount);
+  if (absolute >= 1000) {
+    return `${sign}${symbol}${(absolute / 1000).toFixed(1)}k`;
   }
-  return `${symbol}${amount.toFixed(0)}`;
+  return `${sign}${symbol}${absolute.toFixed(0)}`;
 };
 
-export const formatDate = (dateString: string, locale = 'en-US'): string => {
-  return new Date(dateString).toLocaleDateString(locale);
+export const formatDate = (dateString: string, locale = "en-US"): string => {
+  return parseCalendarDate(dateString).toLocaleDateString(locale);
 };

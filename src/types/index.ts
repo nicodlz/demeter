@@ -6,10 +6,10 @@
 // module. This file only holds types that have no schema equivalent.
 // ============================================================
 
-import type { CryptoWallet, TokenPosition } from '@/schemas';
-import type { Invoice, IssuerSettings, AssetClass } from '@/schemas';
-export type { AssetClass } from '@/schemas';
-import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from '@/schemas';
+import type { CryptoWallet, TokenPosition } from "@/schemas";
+import type { Invoice, IssuerSettings, AssetClass } from "@/schemas";
+export type { AssetClass } from "@/schemas";
+import type { AnyNetWorthSnapshot, NetWorthSnapshotV2 } from "@/schemas";
 
 // ============================================================
 // Crypto Portfolio state (runtime only)
@@ -54,6 +54,8 @@ export interface NetWorthEvolution {
 // Runtime helpers
 // ============================================================
 
-export const isV2Snapshot = (snapshot: AnyNetWorthSnapshot): snapshot is NetWorthSnapshotV2 => {
-  return 'version' in snapshot && snapshot.version === 2;
+export const isV2Snapshot = (
+  snapshot: AnyNetWorthSnapshot,
+): snapshot is NetWorthSnapshotV2 => {
+  return "version" in snapshot && snapshot.version === 2;
 };

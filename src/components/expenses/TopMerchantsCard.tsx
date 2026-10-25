@@ -1,9 +1,15 @@
-import { useState } from 'react';
-import { formatCurrency } from '@/utils/formatters';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import type { Currency } from '@/schemas';
+import { useState } from "react";
+import { formatCurrency } from "@/utils/formatters";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import type { Currency } from "@/schemas";
 
 interface TopMerchantsCardProps {
   merchants: Array<{
@@ -25,7 +31,7 @@ export const TopMerchantsCard = ({
   expandedLimit,
 }: TopMerchantsCardProps) => {
   const [expanded, setExpanded] = useState(false);
-  const mask = (value: string) => privacyMode ? '•••••' : value;
+  const mask = (value: string) => (privacyMode ? "•••••" : value);
 
   if (merchants.length === 0) {
     return (
@@ -50,16 +56,23 @@ export const TopMerchantsCard = ({
     <Card>
       <CardHeader>
         <CardTitle>Top Merchants</CardTitle>
-        <CardDescription>Where you spend the most ({merchants.length} total)</CardDescription>
+        <CardDescription>
+          Where you spend the most ({merchants.length} total)
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           {displayedMerchants.map((m, index) => (
             <div key={m.merchant} className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground w-6">{index + 1}.</span>
+              <span className="text-sm text-muted-foreground w-6">
+                {index + 1}.
+              </span>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-medium truncate" title={m.merchant}>
+                  <span
+                    className="text-sm font-medium truncate"
+                    title={m.merchant}
+                  >
                     {m.merchant}
                   </span>
                   <span className="text-sm font-bold ml-2">

@@ -7,13 +7,13 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
-import type { ProjectionYear } from '@/utils/projections';
-import type { Currency } from '@/schemas';
-import { formatCurrency, formatCurrencyCompact } from '@/utils/formatters';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
-import { ExportableChart } from '@/components/ui/ExportableChart';
-import { CHART_COLORS } from '@/utils/chartTheme';
+} from "recharts";
+import type { ProjectionYear } from "@/utils/projections";
+import type { Currency } from "@/schemas";
+import { formatCurrency, formatCurrencyCompact } from "@/utils/formatters";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
+import { ExportableChart } from "@/components/ui/ExportableChart";
+import { CHART_COLORS } from "@/utils/chartTheme";
 
 interface ProjectionChartProps {
   data: ProjectionYear[];
@@ -52,32 +52,34 @@ export const ProjectionChart = ({ data, currency }: ProjectionChartProps) => {
             />
             <YAxis
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => maskShort(formatCurrencyCompact(value, currency))}
+              tickFormatter={(value) =>
+                maskShort(formatCurrencyCompact(value, currency))
+              }
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
               formatter={(value, name) => [
                 mask(formatCurrency(value as number, currency)),
-                name === 'contributed'
-                  ? 'Contributed'
-                  : name === 'gains'
-                  ? 'Gains'
-                  : 'Total',
+                name === "contributed"
+                  ? "Contributed"
+                  : name === "gains"
+                    ? "Gains"
+                    : "Total",
               ]}
               contentStyle={{
-                backgroundColor: 'hsl(var(--popover))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: 'var(--radius)',
+                backgroundColor: "hsl(var(--popover))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "var(--radius)",
               }}
             />
             <Legend
               formatter={(value) =>
-                value === 'contributed'
-                  ? 'Contributed'
-                  : value === 'gains'
-                  ? 'Gains'
-                  : 'Total'
+                value === "contributed"
+                  ? "Contributed"
+                  : value === "gains"
+                    ? "Gains"
+                    : "Total"
               }
             />
             <Area

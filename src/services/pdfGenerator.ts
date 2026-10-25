@@ -1,10 +1,15 @@
-import jsPDF from 'jspdf';
-import { PDFDocument } from 'pdf-lib';
-import type { Invoice, IssuerSettings } from '@/schemas';
-import type { InvoiceMetadata } from '../types';
-import { getCurrencySymbol } from '../utils/formatters';
+import jsPDF from "jspdf";
+import { PDFDocument } from "pdf-lib";
+import {
+  invoiceSchema,
+  issuerSettingsSchema,
+  type Invoice,
+  type IssuerSettings,
+} from "@/schemas";
+import type { InvoiceMetadata } from "../types";
+import { getCurrencySymbol } from "../utils/formatters";
 
-const METADATA_VERSION = '1.0.0';
+const METADATA_VERSION = "1.0.0";
 
 export class PDFGenerator {
   private doc: jsPDF;
@@ -21,7 +26,7 @@ export class PDFGenerator {
 
   async generateInvoicePDF(
     invoice: Invoice,
-    issuer: IssuerSettings
+    issuer: IssuerSettings,
   ): Promise<Blob> {
     this.reset();
 
@@ -46,7 +51,7 @@ export class PDFGenerator {
     this.addFooter(issuer, invoice);
 
     // Convert to blob and add metadata
-    const pdfBlob = this.doc.output('blob');
+    const pdfBlob = this.doc.output("blob");
     return await this.addMetadataToPDF(pdfBlob, invoice, issuer);
   }
 
@@ -58,12 +63,12 @@ export class PDFGenerator {
   private addHeader(_invoice: Invoice, issuer: IssuerSettings) {
     // Company name (large, bold)
     this.doc.setFontSize(20);
-    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFont("helvetica", "bold");
     this.doc.text(issuer.companyName, this.margin, this.currentY);
 
     // Issuer address block (right side)
     this.doc.setFontSize(9);
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFont("helvetica", "normal");
     const issuerLines = [
       issuer.address,
       `${issuer.postalCode} ${issuer.city}`,
@@ -83,8 +88,8 @@ export class PDFGenerator {
 
     // INVOICE title
     this.doc.setFontSize(24);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('INVOICE', this.margin, this.currentY);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("INVOICE", this.margin, this.currentY);
 
     this.currentY += 15;
   }
@@ -92,11 +97,11 @@ export class PDFGenerator {
   private addClientInfo(invoice: Invoice) {
     // Client section
     this.doc.setFontSize(10);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Bill to:', this.margin, this.currentY);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("Bill to:", this.margin, this.currentY);
 
     this.currentY += 6;
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFont("helvetica", "normal");
 
     const clientLines = [
       invoice.client.name,
@@ -118,10 +123,10 @@ export class PDFGenerator {
     // Delivery address if different
     if (invoice.client.deliveryAddress) {
       this.currentY += 3;
-      this.doc.setFont('helvetica', 'bold');
-      this.doc.text('Delivery to:', this.margin, this.currentY);
+      this.doc.setFont("helvetica", "bold");
+      this.doc.text("Delivery to:", this.margin, this.currentY);
       this.currentY += 6;
-      this.doc.setFont('helvetica', 'normal');
+      this.doc.setFont("helvetica", "normal");
 
       const deliveryLines = [
         invoice.client.deliveryAddress,
@@ -144,31 +149,31 @@ export class PDFGenerator {
     const rightX = this.pageWidth - this.margin - 60;
 
     this.doc.setFontSize(10);
-    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFont("helvetica", "bold");
 
     // Invoice number
-    this.doc.text('Invoice #:', rightX, this.currentY);
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.text("Invoice #:", rightX, this.currentY);
+    this.doc.setFont("helvetica", "normal");
     this.doc.text(invoice.number, rightX + 30, this.currentY);
 
     this.currentY += 6;
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Date:', rightX, this.currentY);
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("Date:", rightX, this.currentY);
+    this.doc.setFont("helvetica", "normal");
     this.doc.text(
-      new Date(invoice.date).toLocaleDateString('en-US'),
+      new Date(invoice.date).toLocaleDateString("en-US"),
       rightX + 30,
-      this.currentY
+      this.currentY,
     );
 
     this.currentY += 6;
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Due Date:', rightX, this.currentY);
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("Due Date:", rightX, this.currentY);
+    this.doc.setFont("helvetica", "normal");
     this.doc.text(
-      new Date(invoice.dueDate).toLocaleDateString('en-US'),
+      new Date(invoice.dueDate).toLocaleDateString("en-US"),
       rightX + 30,
-      this.currentY
+      this.currentY,
     );
 
     this.currentY += 15;
@@ -192,29 +197,29 @@ export class PDFGenerator {
       tableTop,
       this.pageWidth - 2 * this.margin,
       8,
-      'F'
+      "F",
     );
 
     this.doc.setFontSize(9);
-    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFont("helvetica", "bold");
 
     let colX = this.margin + 2;
-    this.doc.text('Description', colX, tableTop + 5);
+    this.doc.text("Description", colX, tableTop + 5);
     colX += colWidths.description;
-    this.doc.text('Qty', colX, tableTop + 5);
+    this.doc.text("Qty", colX, tableTop + 5);
     colX += colWidths.quantity;
-    this.doc.text('Unit', colX, tableTop + 5);
+    this.doc.text("Unit", colX, tableTop + 5);
     colX += colWidths.unit;
-    this.doc.text('Price', colX, tableTop + 5);
+    this.doc.text("Price", colX, tableTop + 5);
     colX += colWidths.unitPrice;
     if (invoice.applyVAT) {
-      this.doc.text('VAT%', colX, tableTop + 5);
+      this.doc.text("VAT%", colX, tableTop + 5);
       colX += colWidths.vatRate;
     }
-    this.doc.text('Total', colX, tableTop + 5);
+    this.doc.text("Total", colX, tableTop + 5);
 
     this.currentY = tableTop + 12;
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFont("helvetica", "normal");
 
     // Table rows
     invoice.lineItems.forEach((item) => {
@@ -224,7 +229,7 @@ export class PDFGenerator {
       // Description (with word wrap if needed)
       const descLines = this.doc.splitTextToSize(
         item.description,
-        colWidths.description - 4
+        colWidths.description - 4,
       );
       this.doc.text(descLines, colX, this.currentY);
 
@@ -233,12 +238,16 @@ export class PDFGenerator {
 
       colX += colWidths.quantity;
       // Display unit
-      const unitLabel = item.unit || 'unit';
+      const unitLabel = item.unit || "unit";
       this.doc.text(unitLabel, colX, this.currentY);
 
       colX += colWidths.unit;
-      const symbol = getCurrencySymbol(invoice.currency || 'USD');
-      this.doc.text(`${symbol}${item.unitPrice.toFixed(2)}`, colX, this.currentY);
+      const symbol = getCurrencySymbol(invoice.currency || "USD");
+      this.doc.text(
+        `${symbol}${item.unitPrice.toFixed(2)}`,
+        colX,
+        this.currentY,
+      );
 
       colX += colWidths.unitPrice;
       if (invoice.applyVAT) {
@@ -259,7 +268,7 @@ export class PDFGenerator {
       this.margin,
       this.currentY,
       this.pageWidth - this.margin,
-      this.currentY
+      this.currentY,
     );
 
     this.currentY += 8;
@@ -271,19 +280,19 @@ export class PDFGenerator {
   private addTotals(invoice: Invoice) {
     const subtotal = invoice.lineItems.reduce(
       (sum, item) => sum + item.quantity * item.unitPrice,
-      0
+      0,
     );
 
     const vat = invoice.applyVAT
       ? invoice.lineItems.reduce(
           (sum, item) =>
             sum + item.quantity * item.unitPrice * (item.vatRate / 100),
-          0
+          0,
         )
       : 0;
 
     const total = subtotal + vat;
-    const symbol = getCurrencySymbol(invoice.currency || 'USD');
+    const symbol = getCurrencySymbol(invoice.currency || "USD");
 
     const rightX = this.pageWidth - this.margin - 50;
     const valueX = this.pageWidth - this.margin - 30;
@@ -291,27 +300,27 @@ export class PDFGenerator {
     this.doc.setFontSize(10);
 
     // Subtotal
-    this.doc.setFont('helvetica', 'normal');
-    this.doc.text('Subtotal:', rightX, this.currentY, { align: 'right' });
+    this.doc.setFont("helvetica", "normal");
+    this.doc.text("Subtotal:", rightX, this.currentY, { align: "right" });
     this.doc.text(`${symbol}${subtotal.toFixed(2)}`, valueX, this.currentY, {
-      align: 'right',
+      align: "right",
     });
 
     if (invoice.applyVAT) {
       this.currentY += 6;
-      this.doc.text('VAT:', rightX, this.currentY, { align: 'right' });
+      this.doc.text("VAT:", rightX, this.currentY, { align: "right" });
       this.doc.text(`${symbol}${vat.toFixed(2)}`, valueX, this.currentY, {
-        align: 'right',
+        align: "right",
       });
     } else if (invoice.vatExemptionReason) {
       // Display VAT exemption reason
       this.currentY += 6;
       this.doc.setFontSize(8);
-      this.doc.setFont('helvetica', 'italic');
+      this.doc.setFont("helvetica", "italic");
       this.doc.setTextColor(80, 80, 80);
       const exemptionText = this.doc.splitTextToSize(
         invoice.vatExemptionReason,
-        this.pageWidth - this.margin - rightX - 10
+        this.pageWidth - this.margin - rightX - 10,
       );
       this.doc.text(exemptionText, this.margin, this.currentY);
       this.doc.setTextColor(0, 0, 0);
@@ -322,10 +331,10 @@ export class PDFGenerator {
     // Total
     this.currentY += 8;
     this.doc.setFontSize(12);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Total:', rightX, this.currentY, { align: 'right' });
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("Total:", rightX, this.currentY, { align: "right" });
     this.doc.text(`${symbol}${total.toFixed(2)}`, valueX, this.currentY, {
-      align: 'right',
+      align: "right",
     });
 
     this.currentY += 12;
@@ -333,17 +342,17 @@ export class PDFGenerator {
 
   private addCustomFields(invoice: Invoice) {
     this.doc.setFontSize(9);
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.text('Additional Information:', this.margin, this.currentY);
+    this.doc.setFont("helvetica", "bold");
+    this.doc.text("Additional Information:", this.margin, this.currentY);
 
     this.currentY += 5;
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFont("helvetica", "normal");
 
     invoice.customFields.forEach((field) => {
       this.doc.text(
         `${field.label}: ${field.value}`,
         this.margin + 2,
-        this.currentY
+        this.currentY,
       );
       this.currentY += 4;
     });
@@ -357,19 +366,19 @@ export class PDFGenerator {
     // Payment terms
     if (invoice.paymentTerms) {
       this.doc.setFontSize(9);
-      this.doc.setFont('helvetica', 'bold');
-      this.doc.text('Payment Terms:', this.margin, footerY);
-      this.doc.setFont('helvetica', 'normal');
+      this.doc.setFont("helvetica", "bold");
+      this.doc.text("Payment Terms:", this.margin, footerY);
+      this.doc.setFont("helvetica", "normal");
       this.doc.text(invoice.paymentTerms, this.margin, footerY + 5);
     }
 
     // Notes
     if (invoice.notes) {
       this.doc.setFontSize(9);
-      this.doc.setFont('helvetica', 'italic');
+      this.doc.setFont("helvetica", "italic");
       const noteLines = this.doc.splitTextToSize(
         invoice.notes,
-        this.pageWidth - 2 * this.margin
+        this.pageWidth - 2 * this.margin,
       );
       this.doc.text(noteLines, this.margin, footerY + 12);
     }
@@ -377,7 +386,7 @@ export class PDFGenerator {
     // Legal mentions
     const legalY = this.pageHeight - 25;
     this.doc.setFontSize(7);
-    this.doc.setFont('helvetica', 'normal');
+    this.doc.setFont("helvetica", "normal");
     this.doc.setTextColor(100, 100, 100);
 
     const legalLines = [
@@ -389,21 +398,21 @@ export class PDFGenerator {
       issuer.additionalLegalMentions,
     ]
       .filter(Boolean)
-      .join(' - ');
+      .join(" - ");
 
     const wrappedLegal = this.doc.splitTextToSize(
       legalLines,
-      this.pageWidth - 2 * this.margin
+      this.pageWidth - 2 * this.margin,
     );
     this.doc.text(wrappedLegal, this.pageWidth / 2, legalY, {
-      align: 'center',
+      align: "center",
     });
   }
 
   private async addMetadataToPDF(
     pdfBlob: Blob,
     invoice: Invoice,
-    issuer: IssuerSettings
+    issuer: IssuerSettings,
   ): Promise<Blob> {
     try {
       const arrayBuffer = await pdfBlob.arrayBuffer();
@@ -418,47 +427,57 @@ export class PDFGenerator {
       // Add metadata as custom property
       pdfDoc.setTitle(`Invoice ${invoice.number}`);
       pdfDoc.setSubject(`Invoice for ${invoice.client.name}`);
-      pdfDoc.setKeywords(['invoice', invoice.number]);
-      pdfDoc.setProducer('Demeter');
-      pdfDoc.setCreator('Demeter');
+      pdfDoc.setKeywords(["invoice", invoice.number]);
+      pdfDoc.setProducer("Demeter");
+      pdfDoc.setCreator("Demeter");
 
       // Store JSON metadata in a custom field (we'll use the Author field)
       pdfDoc.setAuthor(JSON.stringify(metadata));
 
       const modifiedPdfBytes = await pdfDoc.save();
-      return new Blob([new Uint8Array(modifiedPdfBytes)], { type: 'application/pdf' });
-    } catch (error) {
-      console.error('Error adding metadata to PDF:', error);
+      return new Blob([new Uint8Array(modifiedPdfBytes)], {
+        type: "application/pdf",
+      });
+    } catch {
       // Return original PDF if metadata addition fails
       return pdfBlob;
     }
   }
 
   static async extractMetadataFromPDF(
-    file: File
+    file: File,
   ): Promise<InvoiceMetadata | null> {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdfDoc = await PDFDocument.load(arrayBuffer);
 
       const author = pdfDoc.getAuthor();
-      if (!author) return null;
+      if (!author || author.length > 4_000_000) return null;
 
-      const metadata = JSON.parse(author) as InvoiceMetadata;
+      const parsed: unknown = JSON.parse(author);
+      if (!parsed || typeof parsed !== "object") return null;
 
-      // Validate metadata structure
-      if (
-        metadata.version &&
-        metadata.invoice &&
-        metadata.issuer &&
-        metadata.invoice.number
-      ) {
-        return metadata;
+      const raw = parsed as {
+        version?: unknown;
+        invoice?: unknown;
+        issuer?: unknown;
+      };
+      const invoiceResult = invoiceSchema.safeParse(raw.invoice);
+      const issuerResult = issuerSettingsSchema.safeParse(raw.issuer);
+
+      // An imported PDF is untrusted input: never inject unvalidated objects
+      // into the invoice store.
+      if (!invoiceResult.success || !issuerResult.success) {
+        return null;
       }
 
-      return null;
-    } catch (error) {
-      console.error('Error extracting metadata from PDF:', error);
+      return {
+        version:
+          typeof raw.version === "string" ? raw.version : METADATA_VERSION,
+        invoice: invoiceResult.data,
+        issuer: issuerResult.data,
+      };
+    } catch {
       return null;
     }
   }
@@ -466,14 +485,14 @@ export class PDFGenerator {
 
 export const generateInvoicePDF = async (
   invoice: Invoice,
-  issuer: IssuerSettings
+  issuer: IssuerSettings,
 ): Promise<Blob> => {
   const generator = new PDFGenerator();
   return await generator.generateInvoicePDF(invoice, issuer);
 };
 
 export const extractInvoiceFromPDF = async (
-  file: File
+  file: File,
 ): Promise<InvoiceMetadata | null> => {
   return await PDFGenerator.extractMetadataFromPDF(file);
 };

@@ -1,4 +1,4 @@
-import type { Currency } from '@/schemas';
+import type { Currency } from "@/schemas";
 
 interface ExchangeRateResponse {
   rates: {
@@ -7,7 +7,7 @@ interface ExchangeRateResponse {
   };
 }
 
-const CACHE_KEY = 'exchange-rate-cache';
+const CACHE_KEY = "exchange-rate-cache";
 const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
 interface CachedRate {
@@ -39,6 +39,8 @@ const saveToCache = (rate: number): void => {
   }
 };
 
+let inFlightRequest: Promise<number> | null = null;
+
 export const fetchExchangeRate = async (): Promise<number> => {
   // Check cache first
   const cached = getFromCache();
@@ -46,36 +48,48 @@ export const fetchExchangeRate = async (): Promise<number> => {
     return cached.rate;
   }
 
-  try {
-    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-    if (!response.ok) {
-      throw new Error('Failed to fetch exchange rate');
+  // Several components call useExchangeRate() on mount. Share one request
+  // instead of firing one network call per component.
+  if (inFlightRequest) return inFlightRequest;
+
+  inFlightRequest = (async () => {
+    try {
+      const response = await fetch(
+        "https://api.exchangerate-api.com/v4/latest/USD",
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch exchange rate");
+      }
+      const data: ExchangeRateResponse = await response.json();
+      const eurRate = data.rates.EUR;
+      saveToCache(eurRate);
+      return eurRate;
+    } catch {
+      // Fallback rate if API fails
+      return 0.92;
+    } finally {
+      inFlightRequest = null;
     }
-    const data: ExchangeRateResponse = await response.json();
-    const eurRate = data.rates.EUR;
-    saveToCache(eurRate);
-    return eurRate;
-  } catch {
-    // Fallback rate if API fails
-    return 0.92;
-  }
+  })();
+
+  return inFlightRequest;
 };
 
 export const convertAmount = (
   amount: number,
   fromCurrency: Currency,
   toCurrency: Currency,
-  usdToEurRate: number
+  usdToEurRate: number,
 ): number => {
   if (fromCurrency === toCurrency) {
     return amount;
   }
 
-  if (fromCurrency === 'USD' && toCurrency === 'EUR') {
+  if (fromCurrency === "USD" && toCurrency === "EUR") {
     return amount * usdToEurRate;
   }
 
-  if (fromCurrency === 'EUR' && toCurrency === 'USD') {
+  if (fromCurrency === "EUR" && toCurrency === "USD") {
     return amount / usdToEurRate;
   }
 

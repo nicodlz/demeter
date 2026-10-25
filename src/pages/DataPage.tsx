@@ -1,12 +1,27 @@
-import { useDataPage } from '@/hooks/useDataPage';
+import { useDataPage } from "@/hooks/useDataPage";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Upload, Database, AlertTriangle, KeyRound, Landmark, Save, Receipt } from 'lucide-react';
-import { AgentAccess } from '@/components/AgentAccess';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Download,
+  Upload,
+  Database,
+  AlertTriangle,
+  KeyRound,
+  Landmark,
+  Save,
+  Receipt,
+} from "lucide-react";
+import { AgentAccess } from "@/components/AgentAccess";
 
 export const DataPage = () => {
   const {
@@ -35,9 +50,7 @@ export const DataPage = () => {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Configuration</h2>
-        <p className="text-muted-foreground">
-          Manage your API keys and data
-        </p>
+        <p className="text-muted-foreground">Manage your API keys and data</p>
       </div>
 
       {/* Tax Provision */}
@@ -81,7 +94,8 @@ export const DataPage = () => {
                 placeholder="30"
               />
               <p className="text-xs text-muted-foreground">
-                Percentage of income to set aside for taxes (e.g., 30% for typical freelancer rate)
+                Percentage of income to set aside for taxes (e.g., 30% for
+                typical freelancer rate)
               </p>
             </div>
           )}
@@ -101,7 +115,8 @@ export const DataPage = () => {
             Crypto API
           </CardTitle>
           <CardDescription>
-            Connect to Zerion to automatically track your crypto wallets &amp; DeFi positions
+            Connect to Zerion to automatically track your crypto wallets &amp;
+            DeFi positions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -116,7 +131,7 @@ export const DataPage = () => {
               onChange={(e) => setZerionApiKey(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              Get a free API key at{' '}
+              Get a free API key at{" "}
               <a
                 href="https://developers.zerion.io"
                 target="_blank"
@@ -143,7 +158,8 @@ export const DataPage = () => {
             IBKR (Interactive Brokers)
           </CardTitle>
           <CardDescription>
-            Connect to Interactive Brokers via the Flex Web Service to track your brokerage positions
+            Connect to Interactive Brokers via the Flex Web Service to track
+            your brokerage positions
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -171,8 +187,9 @@ export const DataPage = () => {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            Configure in IBKR Client Portal → Performance &amp; Reports → Flex Queries → Flex Web Service.
-            Create an Activity Flex Query with Open Positions, Cash Report and Net Asset Value sections.
+            Configure in IBKR Client Portal → Performance &amp; Reports → Flex
+            Queries → Flex Web Service. Create an Activity Flex Query with Open
+            Positions, Cash Report and Net Asset Value sections.
           </p>
           <Button onClick={handleSaveIbkrCredentials}>
             <Save className="mr-2 h-4 w-4" />
@@ -206,7 +223,9 @@ export const DataPage = () => {
             </div>
             <div className="text-center p-3 bg-muted rounded-lg">
               <div className="text-2xl font-bold">{stats.snapshots}</div>
-              <div className="text-xs text-muted-foreground">Net Worth Snapshots</div>
+              <div className="text-xs text-muted-foreground">
+                Net Worth Snapshots
+              </div>
             </div>
             <div className="text-center p-3 bg-muted rounded-lg">
               <div className="text-2xl font-bold">{stats.savedItems}</div>
@@ -214,7 +233,9 @@ export const DataPage = () => {
             </div>
             <div className="text-center p-3 bg-muted rounded-lg">
               <div className="text-2xl font-bold">{stats.categoryMappings}</div>
-              <div className="text-xs text-muted-foreground">Category Rules</div>
+              <div className="text-xs text-muted-foreground">
+                Category Rules
+              </div>
             </div>
           </div>
         </CardContent>
@@ -236,7 +257,9 @@ export const DataPage = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            This will export all your invoices, clients, expenses, net worth snapshots, settings, saved items, and category mappings to a single JSON file.
+            This will export all your invoices, clients, expenses, net worth
+            snapshots, settings, saved items, and category mappings to a single
+            JSON file.
           </p>
           <Button onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
@@ -260,7 +283,9 @@ export const DataPage = () => {
           <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
             <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="text-sm text-amber-800 dark:text-amber-200">
-              <strong>Warning:</strong> Importing a backup will overwrite all existing data. Make sure to export your current data first if you want to keep it.
+              <strong>Warning:</strong> Importing a backup will overwrite all
+              existing data. Make sure to export your current data first if you
+              want to keep it.
             </div>
           </div>
 
@@ -279,9 +304,9 @@ export const DataPage = () => {
           {importStatus && (
             <div
               className={`p-3 rounded-md text-sm ${
-                importStatus.type === 'success'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                importStatus.type === "success"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
               }`}
             >
               {importStatus.message}

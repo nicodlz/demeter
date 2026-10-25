@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { currencySchema, clientSchema } from './client';
+import { z } from "zod";
+import { currencySchema, clientSchema } from "./client";
 
 export const lineItemSchema = z.object({
   id: z.string(),
@@ -8,7 +8,7 @@ export const lineItemSchema = z.object({
   unit: z.string(),
   unitPrice: z.number(),
   vatRate: z.number(),
-  type: z.enum(['goods', 'service', 'mixed', 'expense']),
+  type: z.enum(["goods", "service", "mixed", "expense"]),
 });
 
 export const savedItemSchema = z.object({
@@ -16,7 +16,7 @@ export const savedItemSchema = z.object({
   description: z.string(),
   unit: z.string(),
   unitPrice: z.number(),
-  type: z.enum(['goods', 'service', 'mixed', 'expense']),
+  type: z.enum(["goods", "service", "mixed", "expense"]),
   defaultQuantity: z.number(),
   createdAt: z.string(),
   usageCount: z.number(),

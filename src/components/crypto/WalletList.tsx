@@ -1,8 +1,14 @@
-import { useState, useRef } from 'react';
-import type { CryptoWallet } from '@/schemas';
+import { useState, useRef } from "react";
+import type { CryptoWallet } from "@/schemas";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,9 +19,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Pencil, Trash2, Plus, Wallet, Upload } from 'lucide-react';
-import { WalletForm } from './WalletForm';
+} from "@/components/ui/alert-dialog";
+import { Pencil, Trash2, Plus, Wallet, Upload } from "lucide-react";
+import { WalletForm } from "./WalletForm";
 
 function truncateAddress(address: string): string {
   if (address.length <= 12) return address;
@@ -24,15 +30,30 @@ function truncateAddress(address: string): string {
 
 interface WalletListProps {
   wallets: CryptoWallet[];
-  onAdd: (data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => void;
-  onEdit: (id: string, data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => void;
+  onAdd: (data: {
+    label: string;
+    address: string;
+    type: "evm" | "bitcoin";
+  }) => void;
+  onEdit: (
+    id: string,
+    data: { label: string; address: string; type: "evm" | "bitcoin" },
+  ) => void;
   onDelete: (id: string) => void;
 }
 
-export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps) => {
+export const WalletList = ({
+  wallets,
+  onAdd,
+  onEdit,
+  onDelete,
+}: WalletListProps) => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingWallet, setEditingWallet] = useState<CryptoWallet | null>(null);
-  const [importStatus, setImportStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [importStatus, setImportStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenAdd = () => {
@@ -45,7 +66,11 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
     setFormOpen(true);
   };
 
-  const handleSubmit = (data: { label: string; address: string; type: 'evm' | 'bitcoin' }) => {
+  const handleSubmit = (data: {
+    label: string;
+    address: string;
+    type: "evm" | "bitcoin";
+  }) => {
     if (editingWallet) {
       onEdit(editingWallet.id, data);
     } else {
@@ -63,7 +88,7 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
 
     try {
       const text = await file.text();
-      const lines = text.trim().split('\n');
+      const lines = text.trim().split("\n");
 
       // Skip header line
       const dataLines = lines.slice(1);
@@ -72,7 +97,7 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
       let skipped = 0;
 
       for (const line of dataLines) {
-        const [address, label, type] = line.split(',').map(s => s.trim());
+        const [address, label, type] = line.split(",").map((s) => s.trim());
 
         if (!address || !label) {
           skipped++;
@@ -80,36 +105,38 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
         }
 
         // Check if wallet already exists
-        const exists = wallets.some(w => w.address.toLowerCase() === address.toLowerCase());
+        const exists = wallets.some(
+          (w) => w.address.toLowerCase() === address.toLowerCase(),
+        );
         if (exists) {
           skipped++;
           continue;
         }
 
         // Default to 'evm' if type not specified or invalid
-        const walletType = (type === 'bitcoin' || type === 'evm') ? type : 'evm';
+        const walletType = type === "bitcoin" || type === "evm" ? type : "evm";
 
         onAdd({ address, label, type: walletType });
         imported++;
       }
 
       setImportStatus({
-        type: 'success',
-        message: `Imported ${imported} wallet(s)${skipped > 0 ? `, skipped ${skipped} duplicate(s)` : ''}`
+        type: "success",
+        message: `Imported ${imported} wallet(s)${skipped > 0 ? `, skipped ${skipped} duplicate(s)` : ""}`,
       });
 
       setTimeout(() => setImportStatus(null), 5000);
     } catch (error) {
       setImportStatus({
-        type: 'error',
-        message: `Failed to import CSV: ${error instanceof Error ? error.message : 'Unknown error'}`
+        type: "error",
+        message: `Failed to import CSV: ${error instanceof Error ? error.message : "Unknown error"}`,
       });
       setTimeout(() => setImportStatus(null), 5000);
     }
 
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -120,7 +147,7 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
           <div>
             <CardTitle>Wallets</CardTitle>
             <CardDescription>
-              {wallets.length} wallet{wallets.length !== 1 ? 's' : ''} tracked
+              {wallets.length} wallet{wallets.length !== 1 ? "s" : ""} tracked
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -139,9 +166,9 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
           {importStatus && (
             <div
               className={`p-3 rounded-md text-sm ${
-                importStatus.type === 'success'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                importStatus.type === "success"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
               }`}
             >
               {importStatus.message}
@@ -161,7 +188,8 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
             <div className="text-center py-8">
               <Wallet className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground mb-4">
-                No wallets configured yet. Add a wallet to start tracking your crypto.
+                No wallets configured yet. Add a wallet to start tracking your
+                crypto.
               </p>
               <Button variant="outline" onClick={handleOpenAdd}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -178,12 +206,14 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-medium truncate">{wallet.label}</p>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
-                        wallet.type === 'bitcoin' 
-                          ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                      }`}>
-                        {wallet.type === 'bitcoin' ? 'BTC' : 'EVM'}
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                          wallet.type === "bitcoin"
+                            ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300"
+                            : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                        }`}
+                      >
+                        {wallet.type === "bitcoin" ? "BTC" : "EVM"}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground font-mono">
@@ -201,7 +231,11 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </AlertDialogTrigger>
@@ -209,7 +243,9 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete Wallet</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Remove "{wallet.label}" ({truncateAddress(wallet.address)})? Positions from this wallet will also be removed.
+                            Remove &quot;{wallet.label}&quot; (
+                            {truncateAddress(wallet.address)})? Positions from
+                            this wallet will also be removed.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -232,6 +268,7 @@ export const WalletList = ({ wallets, onAdd, onEdit, onDelete }: WalletListProps
       </Card>
 
       <WalletForm
+        key={`${editingWallet?.id ?? "new"}-${formOpen}`}
         open={formOpen}
         onOpenChange={setFormOpen}
         wallet={editingWallet}

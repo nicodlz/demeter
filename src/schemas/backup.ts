@@ -1,11 +1,11 @@
-import { z } from 'zod';
-import { clientSchema } from './client';
-import { invoiceSchema, savedItemSchema } from './invoice';
-import { appSettingsSchema } from './settings';
-import { anyNetWorthSnapshotSchema } from './netWorth';
-import { expenseSchema, categoryMappingSchema } from './expense';
-import { cryptoWalletSchema, tokenPositionSchema } from './crypto';
-import { ibkrPositionSchema, ibkrCashBalanceSchema } from './ibkr';
+import { z } from "zod";
+import { clientSchema } from "./client";
+import { invoiceSchema, savedItemSchema } from "./invoice";
+import { appSettingsSchema } from "./settings";
+import { anyNetWorthSnapshotSchema } from "./netWorth";
+import { expenseSchema, categoryMappingSchema } from "./expense";
+import { cryptoWalletSchema, tokenPositionSchema } from "./crypto";
+import { ibkrPositionSchema, ibkrCashBalanceSchema } from "./ibkr";
 
 export const demeterBackupSchema = z.object({
   version: z.number(),

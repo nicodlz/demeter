@@ -1,8 +1,8 @@
-import { useCallback, useMemo } from 'react';
-import { useStore } from '../store';
-import { fetchAllWalletsPositions } from '@/services/zerionApi';
-import { fetchAllBitcoinPositions } from '@/services/bitcoinApi';
-import type { TokenPosition } from '@/schemas';
+import { useCallback, useMemo } from "react";
+import { useStore } from "../store";
+import { fetchAllWalletsPositions } from "@/services/zerionApi";
+import { fetchAllBitcoinPositions } from "@/services/bitcoinApi";
+import type { TokenPosition } from "@/schemas";
 
 export const useCrypto = () => {
   const wallets = useStore((s) => s.cryptoWallets);
@@ -24,26 +24,48 @@ export const useCrypto = () => {
     errors?: Array<{ walletId: string; address: string; error: string }>;
   }> => {
     if (wallets.length === 0) {
-      return { success: false, errors: [{ walletId: '', address: '', error: 'No wallets configured.' }] };
+      return {
+        success: false,
+        errors: [
+          { walletId: "", address: "", error: "No wallets configured." },
+        ],
+      };
     }
 
     setSyncing(true);
     try {
       // Separate wallets by type
-      const evmWallets = wallets.filter((w) => w.type === 'evm' || !w.type);
-      const btcWallets = wallets.filter((w) => w.type === 'bitcoin');
+      const evmWallets = wallets.filter((w) => w.type === "evm" || !w.type);
+      const btcWallets = wallets.filter((w) => w.type === "bitcoin");
 
       const allPositions: TokenPosition[] = [];
-      const allErrors: Array<{ walletId: string; address: string; error: string }> = [];
+      const allErrors: Array<{
+        walletId: string;
+        address: string;
+        error: string;
+      }> = [];
+      const syncedWalletIds = new Set<string>();
 
       // Sync EVM wallets with Zerion (only if API key is configured)
       if (evmWallets.length > 0) {
         if (!zerionApiKey) {
-          allErrors.push({ walletId: '', address: '', error: 'Zerion API key not configured for EVM wallets. Go to Settings.' });
+          allErrors.push({
+            walletId: "",
+            address: "",
+            error:
+              "Zerion API key not configured for EVM wallets. Go to Configuration.",
+          });
         } else {
-          const evmResult = await fetchAllWalletsPositions(evmWallets, zerionApiKey);
+          const evmResult = await fetchAllWalletsPositions(
+            evmWallets,
+            zerionApiKey,
+          );
           allPositions.push(...evmResult.positions);
           allErrors.push(...evmResult.errors);
+          const failed = new Set(evmResult.errors.map((item) => item.walletId));
+          for (const wallet of evmWallets) {
+            if (!failed.has(wallet.id)) syncedWalletIds.add(wallet.id);
+          }
         }
       }
 
@@ -52,18 +74,41 @@ export const useCrypto = () => {
         const btcResult = await fetchAllBitcoinPositions(btcWallets);
         allPositions.push(...btcResult.positions);
         allErrors.push(...btcResult.errors);
+        const failed = new Set(btcResult.errors.map((item) => item.walletId));
+        for (const wallet of btcWallets) {
+          if (!failed.has(wallet.id)) syncedWalletIds.add(wallet.id);
+        }
       }
 
-      setPositions(allPositions);
+      // Preserve the last known positions of wallets that were not synced
+      // (offline, missing API key, provider error). Replacing the whole list
+      // silently erased those wallets from the portfolio.
+      const retained = positions.filter(
+        (position) => !syncedWalletIds.has(position.walletId),
+      );
+      setPositions([...retained, ...allPositions]);
       setLastSyncAt(new Date().toISOString());
-      return { success: allErrors.length === 0, errors: allErrors.length > 0 ? allErrors : undefined };
+      return {
+        success: allErrors.length === 0,
+        errors: allErrors.length > 0 ? allErrors : undefined,
+      };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return { success: false, errors: [{ walletId: '', address: '', error: message }] };
+      return {
+        success: false,
+        errors: [{ walletId: "", address: "", error: message }],
+      };
     } finally {
       setSyncing(false);
     }
-  }, [zerionApiKey, wallets, setSyncing, setPositions, setLastSyncAt]);
+  }, [
+    zerionApiKey,
+    wallets,
+    positions,
+    setSyncing,
+    setPositions,
+    setLastSyncAt,
+  ]);
 
   const getTotalCryptoValue = useMemo(() => {
     return positions

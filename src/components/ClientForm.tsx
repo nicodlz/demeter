@@ -1,37 +1,37 @@
-import { useState } from 'react';
-import type { Client } from '@/schemas';
+import { useState } from "react";
+import type { Client } from "@/schemas";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ClientFormProps {
   client?: Client;
-  onSubmit: (clientData: Omit<Client, 'id'>) => void;
+  onSubmit: (clientData: Omit<Client, "id">) => void;
   onCancel: () => void;
 }
 
 export const ClientForm = ({ client, onSubmit, onCancel }: ClientFormProps) => {
   const [formData, setFormData] = useState({
-    name: client?.name || '',
-    email: client?.email || '',
-    address: client?.address || '',
-    postalCode: client?.postalCode || '',
-    city: client?.city || '',
-    country: client?.country || '',
-    siret: client?.siret || '',
-    vatNumber: client?.vatNumber || '',
-    deliveryAddress: client?.deliveryAddress || '',
-    deliveryPostalCode: client?.deliveryPostalCode || '',
-    deliveryCity: client?.deliveryCity || '',
-    deliveryCountry: client?.deliveryCountry || '',
-    additionalInfo: client?.additionalInfo || '',
+    name: client?.name || "",
+    email: client?.email || "",
+    address: client?.address || "",
+    postalCode: client?.postalCode || "",
+    city: client?.city || "",
+    country: client?.country || "",
+    siret: client?.siret || "",
+    vatNumber: client?.vatNumber || "",
+    deliveryAddress: client?.deliveryAddress || "",
+    deliveryPostalCode: client?.deliveryPostalCode || "",
+    deliveryCity: client?.deliveryCity || "",
+    deliveryCountry: client?.deliveryCountry || "",
+    additionalInfo: client?.additionalInfo || "",
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -203,9 +203,7 @@ export const ClientForm = ({ client, onSubmit, onCancel }: ClientFormProps) => {
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
-          {client ? 'Update' : 'Add'}
-        </Button>
+        <Button type="submit">{client ? "Update" : "Add"}</Button>
       </div>
     </form>
   );

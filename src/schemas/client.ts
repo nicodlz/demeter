@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export const currencySchema = z.enum(['EUR', 'USD']);
+export const currencySchema = z.enum(["EUR", "USD"]);
 
 export const clientSchema = z.object({
   id: z.string(),

@@ -1,8 +1,9 @@
-import type { SavedItem } from '@/schemas';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Trash2 } from 'lucide-react';
+import type { SavedItem } from "@/schemas";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Trash2 } from "lucide-react";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
 
 interface SavedItemAutocompleteProps {
   lineItemId: string;
@@ -31,6 +32,8 @@ export const SavedItemAutocomplete = ({
   onApply,
   onDelete,
 }: SavedItemAutocompleteProps) => {
+  const { mask } = usePrivacyMode();
+
   return (
     <div ref={autocompleteRef}>
       <Label className="text-xs">Description *</Label>
@@ -49,16 +52,21 @@ export const SavedItemAutocomplete = ({
             </div>
             {filteredItems.length > 0 ? (
               filteredItems.map((savedItem) => (
-                <div key={savedItem.id} className="flex items-center border-b last:border-b-0">
+                <div
+                  key={savedItem.id}
+                  className="flex items-center border-b last:border-b-0"
+                >
                   <button
                     type="button"
                     onClick={() => onApply(lineItemId, savedItem)}
                     className="flex-1 px-3 py-2 text-left hover:bg-accent"
                   >
-                    <div className="text-sm font-medium">{savedItem.description}</div>
+                    <div className="text-sm font-medium">
+                      {savedItem.description}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {currencySymbol}
-                      {savedItem.unitPrice.toFixed(2)} / {savedItem.unit}
+                      {mask(savedItem.unitPrice.toFixed(2))} / {savedItem.unit}
                     </div>
                   </button>
                   <Button
@@ -78,8 +86,8 @@ export const SavedItemAutocomplete = ({
             ) : (
               <div className="px-3 py-3 text-sm text-muted-foreground text-center">
                 {savedItemsCount === 0
-                  ? 'No saved items yet.'
-                  : 'No matching items found.'}
+                  ? "No saved items yet."
+                  : "No matching items found."}
               </div>
             )}
           </div>

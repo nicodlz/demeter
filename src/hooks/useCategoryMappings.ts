@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { useStore } from '../store';
+import { useCallback } from "react";
+import { useStore } from "../store";
 
 /**
  * Normalize merchant name for consistent matching
@@ -7,8 +7,8 @@ import { useStore } from '../store';
 const normalizeMerchant = (merchant: string): string => {
   return merchant
     .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .replace(/['"]/g, '')
+    .replace(/\s+/g, " ")
+    .replace(/['"]/g, "")
     .trim();
 };
 
@@ -16,7 +16,9 @@ export const useCategoryMappings = () => {
   const mappings = useStore((state) => state.mappings);
   const setMerchantCategory = useStore((state) => state.setMerchantCategory);
   const deleteMapping = useStore((state) => state.deleteMapping);
-  const deleteMappingForMerchant = useStore((state) => state.deleteMappingForMerchant);
+  const deleteMappingForMerchant = useStore(
+    (state) => state.deleteMappingForMerchant,
+  );
 
   // Get category for a merchant (returns undefined if no mapping)
   const getCategoryForMerchant = useCallback(
@@ -25,7 +27,7 @@ export const useCategoryMappings = () => {
       const mapping = mappings.find((m) => m.normalizedMerchant === normalized);
       return mapping?.category;
     },
-    [mappings]
+    [mappings],
   );
 
   // Get all unique categories from mappings
@@ -39,7 +41,9 @@ export const useCategoryMappings = () => {
   }, [mappings]);
 
   // Function to use during import - auto-categorize based on existing mappings
-  const createCategoryMapper = useCallback((): ((merchantName: string) => string | undefined) => {
+  const createCategoryMapper = useCallback((): ((
+    merchantName: string,
+  ) => string | undefined) => {
     return (merchantName: string) => getCategoryForMerchant(merchantName);
   }, [getCategoryForMerchant]);
 

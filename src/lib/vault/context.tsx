@@ -6,8 +6,6 @@
  */
 
 import {
-  createContext,
-  useContext,
   useState,
   useCallback,
   useEffect,
@@ -25,30 +23,31 @@ import {
 } from "@ursalock/client";
 import { vaultClient, SERVER_URL, VAULT_NAME } from "./client";
 import { deriveKeysFromJwk } from "./keys";
-import { startVaultSync, clearSyncState } from "./sync";
+import {
+  startVaultSync,
+  clearSyncState,
+  type VaultSyncHandle,
+  type VaultSyncStatus,
+} from "./sync";
 import { multiKeyStorage } from "@/store/storage";
+import { resetStore } from "@/store";
+import { VaultContext } from "@/store/vault-context";
 
-// ─── Types ───
+/** Maximum time spent flushing pending edits before sign-out. */
+const SIGN_OUT_FLUSH_TIMEOUT_MS = 5_000;
 
-interface VaultContextValue {
-  /** User is authenticated and vault sync is running */
-  isReady: boolean;
-  /** Auth or initialization in progress */
-  isLoading: boolean;
-  /** Last error message */
-  error: string | null;
-  /** Browser supports passkeys */
-  supportsPasskey: boolean;
-  /** Auth actions */
-  signIn: () => Promise<void>;
-  signUp: () => Promise<void>;
-  signOut: () => Promise<void>;
-  clearError: () => void;
-  /** Retry initialization after a failure */
-  retry: () => void;
-}
+/** Maximum time to wait for the initial vault pull before rendering the app. */
+const INITIAL_SYNC_TIMEOUT_MS = 10_000;
 
-const VaultContext = createContext<VaultContextValue | null>(null);
+const withTimeout = async <T,>(
+  promise: Promise<T>,
+  ms: number,
+): Promise<void> => {
+  await Promise.race([
+    promise.then(() => undefined),
+    new Promise<void>((resolve) => setTimeout(resolve, ms)),
+  ]);
+};
 
 // ─── Provider ───
 
@@ -56,9 +55,10 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<VaultSyncStatus>("idle");
 
-  // Ref to hold sync cleanup function
-  const syncCleanupRef = useRef<(() => void) | null>(null);
+  // Ref to hold the active sync handle
+  const syncHandleRef = useRef<VaultSyncHandle | null>(null);
   // Ref to hold last credential for retry
   const credentialRef = useRef<ZKCredential | null>(null);
 
@@ -68,7 +68,8 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   const { signIn: rawSignIn, isLoading: isSigningIn } = useSignIn(vaultClient);
   const rawSignOut = useSignOut(vaultClient);
 
-  const isLoading = authState.isLoading || isSigningUp || isSigningIn || isInitializing;
+  const isLoading =
+    authState.isLoading || isSigningUp || isSigningIn || isInitializing;
 
   /**
    * After auth: get/create vault, derive keys, start sync.
@@ -97,7 +98,8 @@ export function VaultProvider({ children }: { children: ReactNode }) {
             salt: btoa("\0"),
           }),
         });
-        if (!createRes.ok) throw new Error(`Failed to create vault: ${createRes.status}`);
+        if (!createRes.ok)
+          throw new Error(`Failed to create vault: ${createRes.status}`);
         vaultUid = ((await createRes.json()) as { uid: string }).uid;
       } else {
         throw new Error(`Vault lookup failed: ${vaultRes.status}`);
@@ -115,12 +117,23 @@ export function VaultProvider({ children }: { children: ReactNode }) {
         getAuthHeader: () => vaultClient.getAuthHeader(),
       });
 
-      // 4. Start vault sync
-      syncCleanupRef.current = startVaultSync(documentClient);
-      setIsReady(true);
+      // 4. Start vault sync. Disposing a previous handle first avoids two
+      //    subscriptions/pushers if initialization is retried.
+      syncHandleRef.current?.stop();
+      const handle = startVaultSync(documentClient, {
+        onStatus: (status) => setSyncStatus(status),
+      });
+      syncHandleRef.current = handle;
+
+      // Do not render editable data before the initial pull completes: a user
+      // edit made during the pull would otherwise be overwritten by vault data.
+      await withTimeout(handle.ready, INITIAL_SYNC_TIMEOUT_MS);
+      if (syncHandleRef.current === handle) {
+        setIsReady(true);
+      }
     } catch (err) {
-      console.error("[demeter:vault] Initialization failed:", err);
       setError(err instanceof Error ? err.message : String(err));
+      setSyncStatus("error");
     } finally {
       setIsInitializing(false);
     }
@@ -129,14 +142,19 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   // Auto-initialize when credential is available (e.g. page refresh with saved session)
   useEffect(() => {
     if (authState.credential && !isReady && !isInitializing && !error) {
-      void initialize(authState.credential);
+      // Defer so initialize()'s setState calls do not run synchronously in the
+      // effect body.
+      const timer = setTimeout(() => {
+        void initialize(authState.credential!);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [authState.credential, isReady, isInitializing, error, initialize]);
 
   // Cleanup sync on unmount
   useEffect(() => {
     return () => {
-      syncCleanupRef.current?.();
+      syncHandleRef.current?.stop();
     };
   }, []);
 
@@ -175,20 +193,42 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   }, [rawSignUp, initialize]);
 
   const signOut = useCallback(async () => {
-    // Stop vault sync
-    syncCleanupRef.current?.();
-    syncCleanupRef.current = null;
+    const handle = syncHandleRef.current;
 
-    // Sign out from server
-    await rawSignOut();
+    // Flush pending edits before tearing the session down. Without this, a
+    // change made <2s before sign-out was cancelled by the debounce timer.
+    if (handle) {
+      try {
+        await withTimeout(handle.flush(), SIGN_OUT_FLUSH_TIMEOUT_MS);
+      } catch {
+        /* ignore */
+      }
+      handle.stop();
+      syncHandleRef.current = null;
+    }
 
-    // Clear sensitive data from localStorage
+    // Sign out from server (local cleanup must happen even if this fails).
+    try {
+      await rawSignOut();
+    } catch {
+      /* ignore */
+    }
+
+    // Clear sensitive data from localStorage AND memory. The in-memory store
+    // previously survived sign-out and could seed the next account's vault.
+    resetStore();
     multiKeyStorage.removeItem("demeter-store");
     clearSyncState();
+    try {
+      localStorage.removeItem("exchange-rate-cache");
+    } catch {
+      /* ignore */
+    }
 
     credentialRef.current = null;
     setIsReady(false);
     setError(null);
+    setSyncStatus("idle");
   }, [rawSignOut]);
 
   const clearError = useCallback(() => setError(null), []);
@@ -196,31 +236,27 @@ export function VaultProvider({ children }: { children: ReactNode }) {
   /** Retry initialization with last credential (e.g. after network failure) */
   const retry = useCallback(() => {
     if (credentialRef.current && !isInitializing) {
+      setError(null);
       void initialize(credentialRef.current);
     }
   }, [initialize, isInitializing]);
 
   return (
-    <VaultContext.Provider value={{
-      isReady,
-      isLoading,
-      error,
-      supportsPasskey,
-      signIn,
-      signUp,
-      signOut,
-      clearError,
-      retry,
-    }}>
+    <VaultContext.Provider
+      value={{
+        isReady,
+        isLoading,
+        error,
+        supportsPasskey,
+        syncStatus,
+        signIn,
+        signUp,
+        signOut,
+        clearError,
+        retry,
+      }}
+    >
       {children}
     </VaultContext.Provider>
   );
-}
-
-// ─── Hook ───
-
-export function useVault(): VaultContextValue {
-  const ctx = useContext(VaultContext);
-  if (!ctx) throw new Error("useVault must be used within VaultProvider");
-  return ctx;
 }

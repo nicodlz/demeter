@@ -8,13 +8,19 @@ import {
   ResponsiveContainer,
   Legend,
   ReferenceLine,
-} from 'recharts';
-import { formatCurrency } from '@/utils/formatters';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ExportableChart } from '@/components/ui/ExportableChart';
-import { CHART_COLORS } from '@/utils/chartTheme';
-import type { CashFlowMonthlyData } from '@/hooks/useExpensesDashboard';
-import type { Currency } from '@/schemas';
+} from "recharts";
+import { formatCurrency } from "@/utils/formatters";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { ExportableChart } from "@/components/ui/ExportableChart";
+import { CHART_COLORS } from "@/utils/chartTheme";
+import type { CashFlowMonthlyData } from "@/hooks/useExpensesDashboard";
+import type { Currency } from "@/schemas";
 
 interface CashFlowChartProps {
   data: CashFlowMonthlyData[];
@@ -22,8 +28,15 @@ interface CashFlowChartProps {
   privacyMode?: boolean;
 }
 
-export const CashFlowChart = ({ data, currency, privacyMode = false }: CashFlowChartProps) => {
-  if (data.length === 0 || data.every((d) => d.income === 0 && d.expenses === 0)) {
+export const CashFlowChart = ({
+  data,
+  currency,
+  privacyMode = false,
+}: CashFlowChartProps) => {
+  if (
+    data.length === 0 ||
+    data.every((d) => d.income === 0 && d.expenses === 0)
+  ) {
     return (
       <Card>
         <CardHeader>
@@ -41,7 +54,8 @@ export const CashFlowChart = ({ data, currency, privacyMode = false }: CashFlowC
   const monthsWithData = data.filter((d) => d.income > 0 || d.expenses > 0);
   const avgBalance =
     monthsWithData.length > 0
-      ? monthsWithData.reduce((sum, d) => sum + d.balance, 0) / monthsWithData.length
+      ? monthsWithData.reduce((sum, d) => sum + d.balance, 0) /
+        monthsWithData.length
       : 0;
 
   return (
@@ -50,14 +64,17 @@ export const CashFlowChart = ({ data, currency, privacyMode = false }: CashFlowC
         <CardHeader>
           <CardTitle>Cash Flow</CardTitle>
           <CardDescription>
-            Income vs Expenses (last 12 months) • Avg balance:{' '}
-            {privacyMode ? '•••••' : formatCurrency(avgBalance, currency)}/month
+            Income vs Expenses (last 12 months) • Avg balance:{" "}
+            {privacyMode ? "•••••" : formatCurrency(avgBalance, currency)}/month
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+              <BarChart
+                data={data}
+                margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
                   dataKey="monthLabel"
@@ -70,7 +87,7 @@ export const CashFlowChart = ({ data, currency, privacyMode = false }: CashFlowC
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) =>
-                    privacyMode ? '•••' : `${(value / 1000).toFixed(0)}k`
+                    privacyMode ? "•••" : `${(value / 1000).toFixed(0)}k`
                   }
                 />
                 <Tooltip
@@ -81,22 +98,35 @@ export const CashFlowChart = ({ data, currency, privacyMode = false }: CashFlowC
                       <div className="bg-popover border rounded-lg shadow-lg p-3">
                         <p className="font-medium">{d.monthLabel}</p>
                         <p className="text-green-600">
-                          Income: {privacyMode ? '•••••' : formatCurrency(d.income, currency)}
+                          Income:{" "}
+                          {privacyMode
+                            ? "•••••"
+                            : formatCurrency(d.income, currency)}
                         </p>
                         <p className="text-destructive">
-                          Expenses: {privacyMode ? '•••••' : formatCurrency(d.expenses, currency)}
+                          Expenses:{" "}
+                          {privacyMode
+                            ? "•••••"
+                            : formatCurrency(d.expenses, currency)}
                         </p>
                         <p
-                          className={`font-bold ${d.balance >= 0 ? 'text-green-600' : 'text-destructive'}`}
+                          className={`font-bold ${d.balance >= 0 ? "text-green-600" : "text-destructive"}`}
                         >
-                          Balance: {privacyMode ? '•••••' : formatCurrency(d.balance, currency)}
+                          Balance:{" "}
+                          {privacyMode
+                            ? "•••••"
+                            : formatCurrency(d.balance, currency)}
                         </p>
                       </div>
                     );
                   }}
                 />
                 <Legend />
-                <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
+                <ReferenceLine
+                  y={0}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeDasharray="3 3"
+                />
                 <Bar
                   dataKey="income"
                   name="Income"

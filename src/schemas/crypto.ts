@@ -1,10 +1,10 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const cryptoWalletSchema = z.object({
   id: z.string(),
   label: z.string(),
   address: z.string(),
-  type: z.enum(['evm', 'bitcoin']).default('evm'),
+  type: z.enum(["evm", "bitcoin"]).default("evm"),
   createdAt: z.string(),
 });
 
@@ -17,7 +17,14 @@ export const tokenPositionSchema = z.object({
   chain: z.string(),
   isStablecoin: z.boolean(),
   isNative: z.boolean(),
-  positionType: z.enum(['wallet', 'deposit', 'staked', 'reward', 'locked', 'liquidity']),
+  positionType: z.enum([
+    "wallet",
+    "deposit",
+    "staked",
+    "reward",
+    "locked",
+    "liquidity",
+  ]),
   protocol: z.string().optional(),
   walletId: z.string(),
   iconUrl: z.string().optional(),

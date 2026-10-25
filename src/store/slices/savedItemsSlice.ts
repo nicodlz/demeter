@@ -1,7 +1,7 @@
-import { generateId } from '../../utils/id';
-import type { StateCreator } from 'zustand';
-import type { SavedItem } from '@/schemas';
-import type { StoreState, SavedItemsSlice } from '../types';
+import { generateId } from "../../utils/id";
+import type { StateCreator } from "zustand";
+import type { SavedItem } from "@/schemas";
+import type { StoreState, SavedItemsSlice } from "../types";
 
 export const createSavedItemsSlice: StateCreator<
   StoreState,
@@ -14,7 +14,7 @@ export const createSavedItemsSlice: StateCreator<
   addSavedItem: (item) => {
     const { savedItems } = get();
     const existing = savedItems.find(
-      (s) => s.description.toLowerCase() === item.description.toLowerCase()
+      (s) => s.description.toLowerCase() === item.description.toLowerCase(),
     );
 
     if (existing) {
@@ -25,7 +25,7 @@ export const createSavedItemsSlice: StateCreator<
       };
       set((state) => ({
         savedItems: state.savedItems.map((s) =>
-          s.id === existing.id ? updated : s
+          s.id === existing.id ? updated : s,
         ),
       }));
       return updated;
@@ -54,9 +54,7 @@ export const createSavedItemsSlice: StateCreator<
   incrementUsage: (id) => {
     set((state) => ({
       savedItems: state.savedItems.map((item) =>
-        item.id === id
-          ? { ...item, usageCount: item.usageCount + 1 }
-          : item
+        item.id === id ? { ...item, usageCount: item.usageCount + 1 } : item,
       ),
     }));
   },
@@ -64,7 +62,7 @@ export const createSavedItemsSlice: StateCreator<
   updateSavedItem: (id, data) => {
     set((state) => ({
       savedItems: state.savedItems.map((item) =>
-        item.id === id ? { ...item, ...data } : item
+        item.id === id ? { ...item, ...data } : item,
       ),
     }));
   },

@@ -1,19 +1,19 @@
-import type { LineItem, SavedItem, VATRate } from '@/schemas';
-import { usePrivacyMode } from '@/hooks/usePrivacyMode';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { LineItem, SavedItem, VATRate } from "@/schemas";
+import { usePrivacyMode } from "@/hooks/usePrivacyMode";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Plus, X } from 'lucide-react';
-import { SavedItemAutocomplete } from './SavedItemAutocomplete';
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Plus, X } from "lucide-react";
+import { SavedItemAutocomplete } from "./SavedItemAutocomplete";
 
 interface LineItemsEditorProps {
   lineItems: LineItem[];
@@ -28,7 +28,11 @@ interface LineItemsEditorProps {
   autocompleteRef: React.RefObject<HTMLDivElement | null>;
   getFilteredSavedItems: (itemId: string) => SavedItem[];
   onAddLineItem: () => void;
-  onUpdateLineItem: <K extends keyof LineItem>(id: string, field: K, value: LineItem[K]) => void;
+  onUpdateLineItem: <K extends keyof LineItem>(
+    id: string,
+    field: K,
+    value: LineItem[K],
+  ) => void;
   onRemoveLineItem: (id: string) => void;
   onDescriptionChange: (lineItemId: string, value: string) => void;
   onFocusDescription: (lineItemId: string) => void;
@@ -61,7 +65,12 @@ export const LineItemsEditor = ({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Invoice Lines</CardTitle>
-        <Button type="button" variant="outline" size="sm" onClick={onAddLineItem}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onAddLineItem}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add Line
         </Button>
@@ -76,8 +85,8 @@ export const LineItemsEditor = ({
             <div
               className={
                 applyVAT
-                  ? 'col-span-2 sm:col-span-6 lg:col-span-3'
-                  : 'col-span-2 sm:col-span-6 lg:col-span-4'
+                  ? "col-span-2 sm:col-span-6 lg:col-span-3"
+                  : "col-span-2 sm:col-span-6 lg:col-span-4"
               }
             >
               <SavedItemAutocomplete
@@ -87,7 +96,9 @@ export const LineItemsEditor = ({
                 filteredItems={getFilteredSavedItems(item.id)}
                 savedItemsCount={savedItemsCount}
                 currencySymbol={currencySymbol}
-                autocompleteRef={activeAutocomplete === item.id ? autocompleteRef : null}
+                autocompleteRef={
+                  activeAutocomplete === item.id ? autocompleteRef : null
+                }
                 onDescriptionChange={onDescriptionChange}
                 onFocus={onFocusDescription}
                 onApply={onApplySavedItem}
@@ -105,7 +116,11 @@ export const LineItemsEditor = ({
                 step="0.01"
                 value={item.quantity}
                 onChange={(e) =>
-                  onUpdateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)
+                  onUpdateLineItem(
+                    item.id,
+                    "quantity",
+                    parseFloat(e.target.value) || 0,
+                  )
                 }
                 className="mt-1"
               />
@@ -116,7 +131,7 @@ export const LineItemsEditor = ({
               <Label className="text-xs">Unit *</Label>
               <Select
                 value={item.unit}
-                onValueChange={(v) => onUpdateLineItem(item.id, 'unit', v)}
+                onValueChange={(v) => onUpdateLineItem(item.id, "unit", v)}
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue />
@@ -137,7 +152,7 @@ export const LineItemsEditor = ({
               <Select
                 value={item.type}
                 onValueChange={(v) =>
-                  onUpdateLineItem(item.id, 'type', v as LineItem['type'])
+                  onUpdateLineItem(item.id, "type", v as LineItem["type"])
                 }
               >
                 <SelectTrigger className="mt-1">
@@ -162,7 +177,11 @@ export const LineItemsEditor = ({
                 step="0.01"
                 value={item.unitPrice}
                 onChange={(e) =>
-                  onUpdateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)
+                  onUpdateLineItem(
+                    item.id,
+                    "unitPrice",
+                    parseFloat(e.target.value) || 0,
+                  )
                 }
                 className="mt-1"
               />
@@ -175,7 +194,7 @@ export const LineItemsEditor = ({
                 <Select
                   value={item.vatRate.toString()}
                   onValueChange={(v) =>
-                    onUpdateLineItem(item.id, 'vatRate', parseFloat(v))
+                    onUpdateLineItem(item.id, "vatRate", parseFloat(v))
                   }
                 >
                   <SelectTrigger className="mt-1">

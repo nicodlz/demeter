@@ -1,5 +1,9 @@
-import type { CryptoWallet, TokenPosition } from '@/schemas';
-import { isStablecoinSymbol, stablecoinUsdRate, isAaveReceiptToken } from '@/utils/crypto';
+import type { CryptoWallet, TokenPosition } from "@/schemas";
+import {
+  isStablecoinSymbol,
+  stablecoinUsdRate,
+  isAaveReceiptToken,
+} from "@/utils/crypto";
 
 /**
  * Resolve an Aave receipt token symbol to its underlying stablecoin.
@@ -7,7 +11,7 @@ import { isStablecoinSymbol, stablecoinUsdRate, isAaveReceiptToken } from '@/uti
  */
 function resolveAaveUnderlying(symbol: string): string {
   const lower = symbol.toLowerCase();
-  if (!lower.startsWith('a')) return lower;
+  if (!lower.startsWith("a")) return lower;
   const withoutA = lower.slice(1);
 
   // Import the stablecoin set indirectly via isStablecoinSymbol — but we need
@@ -43,7 +47,8 @@ interface ZerionPositionAttributes {
   parent: null | string;
   protocol: string | null;
   name: string;
-  position_type: 'wallet' | 'deposit' | 'staked' | 'reward' | 'locked' | 'liquidity';
+  position_type:
+    "wallet" | "deposit" | "staked" | "reward" | "locked" | "liquidity";
   quantity: {
     int: string;
     decimals: number;
@@ -89,20 +94,20 @@ interface ZerionApiResponse {
 
 const ZERION_BASE_URL = import.meta.env.VITE_PROXY_URL
   ? `${import.meta.env.VITE_PROXY_URL}/zerion`
-  : 'https://api.zerion.io';
+  : "https://api.zerion.io";
 
-const PROXY_KEY = import.meta.env.VITE_PROXY_KEY ?? '';
+const PROXY_KEY = import.meta.env.VITE_PROXY_KEY ?? "";
 
 function makeAuthHeader(apiKey: string): string {
-  return `Basic ${btoa(apiKey + ':')}`;
+  return `Basic ${btoa(apiKey + ":")}`;
 }
 
 function makeHeaders(apiKey: string): Record<string, string> {
   const h: Record<string, string> = {
     Authorization: makeAuthHeader(apiKey),
-    Accept: 'application/json',
+    Accept: "application/json",
   };
-  if (PROXY_KEY) h['X-Proxy-Key'] = PROXY_KEY;
+  if (PROXY_KEY) h["X-Proxy-Key"] = PROXY_KEY;
   return h;
 }
 
@@ -112,7 +117,7 @@ export class ZerionApiError extends Error {
 
   constructor(message: string, status: number, statusText: string) {
     super(message);
-    this.name = 'ZerionApiError';
+    this.name = "ZerionApiError";
     this.status = status;
     this.statusText = statusText;
   }
@@ -136,9 +141,11 @@ export async function fetchWalletPositions(
 
   while (url) {
     // Rewrite pagination URLs through proxy if needed
-    const fetchUrl = ZERION_BASE_URL !== 'https://api.zerion.io' && url.startsWith('https://api.zerion.io')
-      ? url.replace('https://api.zerion.io', ZERION_BASE_URL)
-      : url;
+    const fetchUrl =
+      ZERION_BASE_URL !== "https://api.zerion.io" &&
+      url.startsWith("https://api.zerion.io")
+        ? url.replace("https://api.zerion.io", ZERION_BASE_URL)
+        : url;
 
     const response = await fetch(fetchUrl, {
       headers: makeHeaders(apiKey),
@@ -163,10 +170,7 @@ export async function fetchWalletPositions(
 /**
  * Map a raw Zerion position to our normalized TokenPosition type.
  */
-function mapPosition(
-  raw: ZerionPositionData,
-  walletId: string,
-): TokenPosition {
+function mapPosition(raw: ZerionPositionData, walletId: string): TokenPosition {
   const attrs = raw.attributes;
   const symbol = attrs.fungible_info.symbol;
   const chainId = raw.relationships.chain.data.id;
@@ -218,18 +222,24 @@ export async function fetchAllWalletsPositions(
   apiKey: string,
 ): Promise<AggregatedPortfolio> {
   const allPositions: TokenPosition[] = [];
-  const errors: AggregatedPortfolio['errors'] = [];
+  const errors: AggregatedPortfolio["errors"] = [];
 
   for (const wallet of wallets) {
     try {
       const rawPositions = await fetchWalletPositions(wallet.address, apiKey);
       const mapped = rawPositions
-        .filter((p) => p.attributes.flags.displayable && !p.attributes.flags.is_trash)
+        .filter(
+          (p) => p.attributes.flags.displayable && !p.attributes.flags.is_trash,
+        )
         .map((p) => mapPosition(p, wallet.id));
       allPositions.push(...mapped);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      errors.push({ walletId: wallet.id, address: wallet.address, error: message });
+      errors.push({
+        walletId: wallet.id,
+        address: wallet.address,
+        error: message,
+      });
     }
   }
 
@@ -238,11 +248,12 @@ export async function fetchAllWalletsPositions(
   // same underlying token, to avoid double-counting.
   const defiKeys = new Set(
     allPositions
-      .filter((p) => p.positionType !== 'wallet')
+      .filter((p) => p.positionType !== "wallet")
       .map((p) => `${p.walletId}-${p.symbol.toLowerCase()}-${p.chain}`),
   );
   const deduped = allPositions.filter((p) => {
-    if (p.positionType !== 'wallet' || !isAaveReceiptToken(p.symbol)) return true;
+    if (p.positionType !== "wallet" || !isAaveReceiptToken(p.symbol))
+      return true;
     // This is an aToken wallet position — check if a DeFi position exists
     // for the same underlying on the same chain & wallet
     const underlying = resolveAaveUnderlying(p.symbol);

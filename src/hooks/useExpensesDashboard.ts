@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
-import { useExpenses } from './useExpenses';
-import { CATEGORY_COLORS } from '@/utils/chartTheme';
-import type { Currency } from '@/schemas';
+import { useMemo } from "react";
+import { useExpenses } from "./useExpenses";
+import { CATEGORY_COLORS } from "@/utils/chartTheme";
+import type { Currency } from "@/schemas";
 
 export interface ExpenseMonthlyData {
   month: string;
@@ -39,8 +39,8 @@ type ConvertFn = (amount: number, from: Currency, to: Currency) => number;
 export const useExpensesDashboard = (
   startDate?: string,
   endDate?: string,
-  targetCurrency: Currency = 'USD',
-  convert?: ConvertFn
+  targetCurrency: Currency = "USD",
+  convert?: ConvertFn,
 ) => {
   const { expenses } = useExpenses();
 
@@ -54,7 +54,9 @@ export const useExpensesDashboard = (
     // ─── Expenses-only stats (filtered by date range) ───────────────────────
 
     // Filter to only expense-type entries (retrocompatible: missing type = expense)
-    let filteredExpenses = expenses.filter((e) => !e.type || e.type === 'expense');
+    let filteredExpenses = expenses.filter(
+      (e) => !e.type || e.type === "expense",
+    );
     if (startDate) {
       filteredExpenses = filteredExpenses.filter((e) => e.date >= startDate);
     }
@@ -63,7 +65,10 @@ export const useExpensesDashboard = (
     }
 
     // Total stats (converted to target currency)
-    const totalAmount = filteredExpenses.reduce((sum, e) => sum + toTarget(e.amount, e.currency), 0);
+    const totalAmount = filteredExpenses.reduce(
+      (sum, e) => sum + toTarget(e.amount, e.currency),
+      0,
+    );
     const totalCount = filteredExpenses.length;
 
     // Average per transaction
@@ -83,11 +88,14 @@ export const useExpensesDashboard = (
 
     const monthlyData: ExpenseMonthlyData[] = Array.from(monthlyMap.entries())
       .map(([month, data]) => {
-        const [year, m] = month.split('-');
+        const [year, m] = month.split("-");
         const date = new Date(parseInt(year), parseInt(m) - 1);
         return {
           month,
-          monthLabel: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+          monthLabel: date.toLocaleDateString("en-US", {
+            month: "short",
+            year: "2-digit",
+          }),
           total: data.total,
           count: data.count,
         };
@@ -98,7 +106,7 @@ export const useExpensesDashboard = (
     const categoryMap = new Map<string, { total: number; count: number }>();
 
     filteredExpenses.forEach((expense) => {
-      const category = expense.category || 'Uncategorized';
+      const category = expense.category || "Uncategorized";
       const existing = categoryMap.get(category) || { total: 0, count: 0 };
       categoryMap.set(category, {
         total: existing.total + toTarget(expense.amount, expense.currency),
@@ -106,7 +114,9 @@ export const useExpensesDashboard = (
       });
     });
 
-    const categoryData: ExpenseCategoryData[] = Array.from(categoryMap.entries())
+    const categoryData: ExpenseCategoryData[] = Array.from(
+      categoryMap.entries(),
+    )
       .map(([category, data], index) => ({
         category,
         total: data.total,
@@ -160,10 +170,17 @@ export const useExpensesDashboard = (
     // Daily average (based on date range)
     let dailyAverage = 0;
     if (filteredExpenses.length > 0) {
-      const dates = filteredExpenses.map((e) => new Date(e.date).getTime());
-      const minDate = Math.min(...dates);
-      const maxDate = Math.max(...dates);
-      const daysDiff = Math.max(1, Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1);
+      let minDate = Number.POSITIVE_INFINITY;
+      let maxDate = Number.NEGATIVE_INFINITY;
+      for (const expense of filteredExpenses) {
+        const time = new Date(expense.date).getTime();
+        if (time < minDate) minDate = time;
+        if (time > maxDate) maxDate = time;
+      }
+      const daysDiff = Math.max(
+        1,
+        Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1,
+      );
       dailyAverage = totalAmount / daysDiff;
     }
 
@@ -171,30 +188,53 @@ export const useExpensesDashboard = (
     const now = new Date();
 
     // Last completed month (previous month)
-    const lastCompletedDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastCompletedMonth = `${lastCompletedDate.getFullYear()}-${String(lastCompletedDate.getMonth() + 1).padStart(2, '0')}`;
+    const lastCompletedDate = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1,
+    );
+    const lastCompletedMonth = `${lastCompletedDate.getFullYear()}-${String(lastCompletedDate.getMonth() + 1).padStart(2, "0")}`;
 
     // Month before that
     const previousDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-    const previousMonth = `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, '0')}`;
+    const previousMonth = `${previousDate.getFullYear()}-${String(previousDate.getMonth() + 1).padStart(2, "0")}`;
 
-    const lastCompletedMonthData = monthlyMap.get(lastCompletedMonth) || { total: 0, count: 0 };
-    const previousMonthData = monthlyMap.get(previousMonth) || { total: 0, count: 0 };
+    const lastCompletedMonthData = monthlyMap.get(lastCompletedMonth) || {
+      total: 0,
+      count: 0,
+    };
+    const previousMonthData = monthlyMap.get(previousMonth) || {
+      total: 0,
+      count: 0,
+    };
 
-    const monthOverMonthChange = lastCompletedMonthData.total - previousMonthData.total;
-    const monthOverMonthPercentage = previousMonthData.total > 0
-      ? ((lastCompletedMonthData.total - previousMonthData.total) / previousMonthData.total) * 100
-      : 0;
+    const monthOverMonthChange =
+      lastCompletedMonthData.total - previousMonthData.total;
+    const monthOverMonthPercentage =
+      previousMonthData.total > 0
+        ? ((lastCompletedMonthData.total - previousMonthData.total) /
+            previousMonthData.total) *
+          100
+        : 0;
 
     // Get month labels for display
-    const lastCompletedMonthLabel = lastCompletedDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-    const previousMonthLabel = previousDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    const lastCompletedMonthLabel = lastCompletedDate.toLocaleDateString(
+      "en-US",
+      {
+        month: "short",
+        year: "2-digit",
+      },
+    );
+    const previousMonthLabel = previousDate.toLocaleDateString("en-US", {
+      month: "short",
+      year: "2-digit",
+    });
 
     // ─── Cash flow stats (all expenses, last 12 months, income + expense) ────
     // Computed independently of the date filter so the Cash Flow section always
     // shows a full rolling 12-month picture regardless of the Expenses filter.
 
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
     let currentMonthIncome = 0;
     let currentMonthExpenses = 0;
@@ -202,7 +242,7 @@ export const useExpensesDashboard = (
     expenses.forEach((e) => {
       if (!e.date.startsWith(currentMonth)) return;
       const converted = toTarget(e.amount, e.currency);
-      if (e.type === 'income') {
+      if (e.type === "income") {
         currentMonthIncome += converted;
       } else {
         currentMonthExpenses += converted;
@@ -210,16 +250,21 @@ export const useExpensesDashboard = (
     });
 
     const balance = currentMonthIncome - currentMonthExpenses;
-    const savingsRate = currentMonthIncome > 0
-      ? ((currentMonthIncome - currentMonthExpenses) / currentMonthIncome) * 100
-      : 0;
+    const savingsRate =
+      currentMonthIncome > 0
+        ? ((currentMonthIncome - currentMonthExpenses) / currentMonthIncome) *
+          100
+        : 0;
 
     // Monthly breakdown for last 12 months (income + expenses)
-    const cashFlowMonthlyMap = new Map<string, { income: number; expenses: number }>();
+    const cashFlowMonthlyMap = new Map<
+      string,
+      { income: number; expenses: number }
+    >();
 
     for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       cashFlowMonthlyMap.set(key, { income: 0, expenses: 0 });
     }
 
@@ -229,20 +274,25 @@ export const useExpensesDashboard = (
       if (!entry) return;
 
       const converted = toTarget(expense.amount, expense.currency);
-      if (expense.type === 'income') {
+      if (expense.type === "income") {
         entry.income += converted;
       } else {
         entry.expenses += converted;
       }
     });
 
-    const cashFlowMonthlyData: CashFlowMonthlyData[] = Array.from(cashFlowMonthlyMap.entries())
+    const cashFlowMonthlyData: CashFlowMonthlyData[] = Array.from(
+      cashFlowMonthlyMap.entries(),
+    )
       .map(([month, data]) => {
-        const [year, m] = month.split('-');
+        const [year, m] = month.split("-");
         const date = new Date(parseInt(year), parseInt(m) - 1);
         return {
           month,
-          monthLabel: date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+          monthLabel: date.toLocaleDateString("en-US", {
+            month: "short",
+            year: "2-digit",
+          }),
           income: data.income,
           expenses: data.expenses,
           balance: data.income - data.expenses,
@@ -256,7 +306,10 @@ export const useExpensesDashboard = (
       totalCount,
       avgPerTransaction,
       dailyAverage,
-      lastCompletedMonth: { ...lastCompletedMonthData, label: lastCompletedMonthLabel },
+      lastCompletedMonth: {
+        ...lastCompletedMonthData,
+        label: lastCompletedMonthLabel,
+      },
       previousMonth: { ...previousMonthData, label: previousMonthLabel },
       monthOverMonthChange,
       monthOverMonthPercentage,
@@ -271,6 +324,6 @@ export const useExpensesDashboard = (
       savingsRate,
       cashFlowMonthlyData,
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expenses, startDate, endDate, targetCurrency, convert]);
 };
